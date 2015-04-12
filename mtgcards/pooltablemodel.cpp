@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QFile>
 #include <QDebug>
+#include <QSettings>
 
 #include <vector>
 #include <array>
@@ -21,49 +22,60 @@ public:
 	Pimpl()
 		: data_()
 	{
-		QFile file("/home/dev/tmp/AllSets.json");
-		file.open(QIODevice::ReadOnly | QIODevice::Text);
-		QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
-		QJsonObject obj = d.object();
-		int numCards = 0;
-		for (const auto& set : obj)
-		{
-			numCards += set.toObject()["cards"].toArray().size();
-		}
-		qDebug() << "Total num cards: " << numCards;
+		loadData();
+	}
 
-		data_.reserve(numCards);
+	void loadData()
+	{
+		beginResetModel();
+		data_.clear();
 
-		for (const auto& set : obj)
+		QSettings settings;
+		QFile file(settings.value("options/datasources/allsetsjson").toString());
+		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
-			auto setName = set.toObject()["code"].toString();
-			for (const auto& c : set.toObject()["cards"].toArray())
+			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
+			QJsonObject obj = d.object();
+			int numCards = 0;
+			for (const auto& set : obj)
 			{
-				auto card = c.toObject();
-				Row r;
-				r[mtg::Set] = setName;
-				if (!card["names"].toArray().empty())
+				numCards += set.toObject()["cards"].toArray().size();
+			}
+			qDebug() << "Total num cards: " << numCards;
+
+
+			data_.reserve(numCards);
+
+			for (const auto& set : obj)
+			{
+				auto setName = set.toObject()["name"].toString();
+				for (const auto& c : set.toObject()["cards"].toArray())
 				{
-					QStringList names;
-					for (const auto& n : card["names"].toArray())
-					{
-						names.push_back(n.toString());
-					}
-					r[mtg::Name] = names;
-				}
-				else
-				{
+					auto card = c.toObject();
+					Row r;
+					r[mtg::Set] = setName;
 					r[mtg::Name] = card["name"].toString();
+					if (!card["names"].toArray().empty())
+					{
+						QStringList names;
+						for (const auto& n : card["names"].toArray())
+						{
+							names.push_back(n.toString());
+						}
+						r[mtg::Names] = names;
+					}
+					QStringList colors;
+					for (const auto& c : card["colors"].toArray())
+					{
+						colors.push_back(c.toString());
+					}
+					r[mtg::Color] = colors;
+					r[mtg::Layout] = card["layout"].toString();
+					data_.push_back(r);
 				}
-				QStringList colors;
-				for (const auto& c : card["colors"].toArray())
-				{
-					colors.push_back(c.toString());
-				}
-				r[mtg::Color] = colors;
-				data_.push_back(r);
 			}
 		}
+		endResetModel();
 	}
 
 	virtual int rowCount(const QModelIndex& ) const
@@ -82,12 +94,15 @@ public:
 		{
 			if (role == Qt::DisplayRole)
 			{
-				const QVariant& ret = data_[index.row()][index.column()];
-				if (ret.type() == QVariant::StringList)
+				if (index.row() < static_cast<int>(data_.size()) && index.column() < mtg::ColumnCount)
 				{
-					return ret.toStringList().join(" / ");
+					const QVariant& ret = data_[index.row()][index.column()];
+					if (ret.type() == QVariant::StringList)
+					{
+						return ret.toStringList().join(" / ");
+					}
+					return ret;
 				}
-				return ret;
 			}
 		}
 		return QVariant();
@@ -101,9 +116,11 @@ public:
 			{
 				switch (section)
 				{
-					case 0:	return "Set";
-					case 1: return "Name";
-					case 2: return "Color";
+					case mtg::Set:	return "Set";
+					case mtg::Name: return "Name";
+					case mtg::Names: return "Names";
+					case mtg::Color: return "Color";
+					case mtg::Layout: return "Layout";
 				}
 			}
 		}
@@ -125,4 +142,59 @@ PoolTableModel::PoolTableModel()
 PoolTableModel::~PoolTableModel()
 {
 	delete pimpl_;
+}
+
+void PoolTableModel::reload()
+{
+	pimpl_->loadData();
+}
+
+QStringList PoolTableModel::getPictureFilenames(int row)
+{
+	qDebug() << "Getting picture filenames for row " << row;
+	QStringList list;
+	if (row < static_cast<int>(pimpl_->data_.size()))
+	{
+		QSettings settings;
+		QString prefix = settings.value("options/datasources/cardpicturedir").toString();
+		qDebug() << "prefix = " << prefix;
+		QString notFoundImageFile = prefix + "/Back.jpg";
+		qDebug() << "not found image file = " << notFoundImageFile;
+		prefix += tr("/") + pimpl_->data_[row][mtg::Set].toString();
+		qDebug() << "prefix = " << prefix;
+		QString layout = pimpl_->data_[row][mtg::Layout].toString();
+		if (layout == "split" || layout == "flip")
+		{
+			qDebug() << "split layout";
+			QStringList names = pimpl_->data_[row][mtg::Names].toStringList();
+			QString imageFile = prefix + "/" + names[0] + "_" + names[1] + ".jpg";
+			qDebug() << imageFile;
+			if (QFile(imageFile).exists())
+			{
+				qDebug() << "exists!";
+				list.push_back(imageFile);
+			}
+			else
+			{
+				qDebug() << "doesn't exist :(";
+				list.push_back(notFoundImageFile);
+			}
+		}
+		else
+		{
+			QString imageFile = prefix + "/" + pimpl_->data_[row][mtg::Name].toString() + ".jpg";
+			qDebug() << imageFile;
+			if (QFile(imageFile).exists())
+			{
+				qDebug() << "exists!";
+				list.push_back(imageFile);
+			}
+			else
+			{
+				qDebug() << "doesn't exist :(";
+				list.push_back(notFoundImageFile);
+			}
+		}
+	}
+	return list;
 }

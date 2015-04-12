@@ -12,12 +12,18 @@ public:
 	explicit PoolWindow(QWidget *parent = 0);
 	~PoolWindow();
 
+	void reload();
+
 signals:
 	void windowClosed(bool);
+	void selectCardChanged(QStringList);
 
 private:
 	Ui::PoolWindow ui_;
 	PoolTableModel poolTableModel_;
 
 	void closeEvent(QCloseEvent* event);
+
+private slots:
+	void currentRowChanged(QModelIndex, QModelIndex);
 };

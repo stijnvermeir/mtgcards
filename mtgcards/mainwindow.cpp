@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "optionsdialog.h"
+
 #include <QDebug>
 #include <QSettings>
 #include <QCloseEvent>
@@ -37,6 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
 	ui_.actionDeckWindow->setChecked(deckWindow_.isVisible());
 	connect(ui_.actionDeckWindow, SIGNAL(toggled(bool)), this, SLOT(deckWindowActionToggled(bool)));
 	connect(&deckWindow_, SIGNAL(windowClosed(bool)), ui_.actionDeckWindow, SLOT(setChecked(bool)));
+
+	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
+
+	connect(&poolWindow_, SIGNAL(selectCardChanged(QStringList)), &cardWindow_, SLOT(changeCardPicture(QStringList)));
 }
 
 MainWindow::~MainWindow()
@@ -98,4 +104,17 @@ void MainWindow::collectionWindowActionToggled(bool show)
 void MainWindow::deckWindowActionToggled(bool show)
 {
 	deckWindow_.setVisible(show);
+}
+
+void MainWindow::optionsActionClicked()
+{
+	qDebug() << "Creating Options Dialog";
+	OptionsDialog options(this);
+	qDebug() << "Showing Options Dialog";
+	options.exec();
+	qDebug() << "Options Dialog closed";
+	if (options.isPoolReloadRequired())
+	{
+		poolWindow_.reload();
+	}
 }

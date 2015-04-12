@@ -19,10 +19,18 @@ PoolWindow::PoolWindow(QWidget *parent)
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
 	ui_.poolTbl_->resizeColumnsToContents();
+
+	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 }
 
 PoolWindow::~PoolWindow()
 {
+}
+
+void PoolWindow::reload()
+{
+	poolTableModel_.reload();
+	ui_.poolTbl_->resizeColumnsToContents();
 }
 
 void PoolWindow::closeEvent(QCloseEvent* event)
@@ -36,4 +44,12 @@ void PoolWindow::closeEvent(QCloseEvent* event)
 	{
 		event->accept();
 	}
+}
+
+void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/)
+{
+	qDebug() << "Changed to row " << current.row() << ")";
+	auto mappedIdx = poolTableModel_.mapToSource(current);
+	qDebug() << "Mapped row = " << mappedIdx.row();
+	emit selectCardChanged(poolTableModel_.getPictureFilenames(mappedIdx.row()));
 }

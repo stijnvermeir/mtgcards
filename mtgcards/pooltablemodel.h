@@ -8,7 +8,9 @@ enum PoolColumn
 {
 	Set,
 	Name,
+	Names,
 	Color,
+	Layout,
 
 	ColumnCount
 };
@@ -21,6 +23,9 @@ public:
 
 	PoolTableModel();
 	~PoolTableModel();
+
+	void reload();
+	QStringList getPictureFilenames(int row);
 
 private:
 	class Pimpl;

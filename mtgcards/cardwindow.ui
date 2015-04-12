@@ -31,7 +31,11 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="QGraphicsView" name="cardView_"/>
+     <widget class="QLabel" name="pcitureLbl">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

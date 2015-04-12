@@ -32,7 +32,14 @@
     <addaction name="actionCollectionWindow"/>
     <addaction name="actionDeckWindow"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionOptions"/>
+   </widget>
    <addaction name="menuWindow"/>
+   <addaction name="menuTools"/>
   </widget>
   <action name="actionCardWindow">
    <property name="checkable">
@@ -76,6 +83,11 @@
    </property>
    <property name="text">
     <string>Decks</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options</string>
    </property>
   </action>
  </widget>

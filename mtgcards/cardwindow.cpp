@@ -31,3 +31,15 @@ void CardWindow::closeEvent(QCloseEvent* event)
 		event->accept();
 	}
 }
+
+void CardWindow::changeCardPicture(QStringList imageFiles)
+{
+	qDebug() << "Changing card picture";
+	for (const auto& i : imageFiles)
+	{
+		qDebug() << i;
+		QPixmap image(i);
+		ui_.pcitureLbl->setPixmap(image);
+	}
+
+}

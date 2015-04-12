@@ -18,4 +18,7 @@ private:
 	Ui::CardWindow ui_;
 
 	void closeEvent(QCloseEvent* event);
+
+public slots:
+	void changeCardPicture(QStringList);
 };

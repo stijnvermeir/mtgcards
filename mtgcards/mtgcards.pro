@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     cardwindow.cpp \
     collectionwindow.cpp \
     deckwindow.cpp \
-    deckwidget.cpp
+    deckwidget.cpp \
+    optionsdialog.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -28,11 +29,13 @@ HEADERS  += mainwindow.h \
     cardwindow.h \
     collectionwindow.h \
     deckwindow.h \
-    deckwidget.h
+    deckwidget.h \
+    optionsdialog.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
     cardwindow.ui \
     collectionwindow.ui \
     deckwindow.ui \
-    deckwidget.ui
+    deckwidget.ui \
+    optionsdialog.ui
