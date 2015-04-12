@@ -1,18 +1,42 @@
 #pragma once
 
+#include "enum.h"
 #include <QSortFilterProxyModel>
 
 namespace mtg {
 
 enum PoolColumn
 {
+	// visible columns
 	Set,
+	SetCode,
+	SetReleaseDate,
+	SetType,
+	Block,
 	Name,
 	Names,
+	ManaCost,
+	CMC,
 	Color,
-	Layout,
+	Type,
+	SuperTypes,
+	Types,
+	SubTypes,
+	Rarity,
+	Text,
+	Flavor,
+	Artist,
+	Power,
+	Toughness,
+	Loyalty,
 
-	ColumnCount
+	VisibleColumnCount,
+
+	// hidden columns
+	Layout = VisibleColumnCount,
+	ImageName,
+
+	TotalColumnCount
 };
 
 }
@@ -25,7 +49,7 @@ public:
 	~PoolTableModel();
 
 	void reload();
-	QStringList getPictureFilenames(int row);
+	std::pair<layout_type_t, QStringList> getPictureFilenames(int row);
 
 private:
 	class Pimpl;

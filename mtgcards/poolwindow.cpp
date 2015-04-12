@@ -21,6 +21,12 @@ PoolWindow::PoolWindow(QWidget *parent)
 	ui_.poolTbl_->resizeColumnsToContents();
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
+
+	// test card picture availability
+//	for (int i = 0; i < poolTableModel_.rowCount(); ++i)
+//	{
+//		poolTableModel_.getPictureFilenames(i);
+//	}
 }
 
 PoolWindow::~PoolWindow()
@@ -51,5 +57,6 @@ void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/
 	qDebug() << "Changed to row " << current.row() << ")";
 	auto mappedIdx = poolTableModel_.mapToSource(current);
 	qDebug() << "Mapped row = " << mappedIdx.row();
-	emit selectCardChanged(poolTableModel_.getPictureFilenames(mappedIdx.row()));
+	auto rv = poolTableModel_.getPictureFilenames(mappedIdx.row());
+	emit selectCardChanged(rv.first, rv.second);
 }

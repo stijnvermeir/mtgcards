@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "optionsdialog.h"
+#include "enum.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -15,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
 	, deckWindow_(this)
 {
 	ui_.setupUi(this);
+
+	qRegisterMetaType<layout_type_t>();
 
 	QSettings settings;
 	resize(settings.value("mainwindow/size", QSize(480, 48)).toSize());
@@ -42,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
 
-	connect(&poolWindow_, SIGNAL(selectCardChanged(QStringList)), &cardWindow_, SLOT(changeCardPicture(QStringList)));
+	connect(&poolWindow_, SIGNAL(selectCardChanged(layout_type_t, QStringList)), &cardWindow_, SLOT(changeCardPicture(layout_type_t, QStringList)));
 }
 
 MainWindow::~MainWindow()

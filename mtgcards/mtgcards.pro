@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     collectionwindow.cpp \
     deckwindow.cpp \
     deckwidget.cpp \
-    optionsdialog.cpp
+    optionsdialog.cpp \
+    cardgraphicsview.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -30,7 +31,9 @@ HEADERS  += mainwindow.h \
     collectionwindow.h \
     deckwindow.h \
     deckwidget.h \
-    optionsdialog.h
+    optionsdialog.h \
+    enum.h \
+    cardgraphicsview.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
