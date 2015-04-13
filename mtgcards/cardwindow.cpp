@@ -23,10 +23,6 @@ CardWindow::CardWindow(QWidget *parent)
 	ui_.setupUi(this);
 	ui_.cardView_->setScene(&scene_);
 
-	QSettings settings;
-	resize(settings.value("cardwindow/size", QSize(480, 680)).toSize());
-	move(settings.value("cardwindow/pos", QPoint(0, 77)).toPoint());
-
 	connect(&timer_, SIGNAL(timeout()), this, SLOT(timerExpired()));
 
 }
@@ -38,14 +34,8 @@ CardWindow::~CardWindow()
 void CardWindow::closeEvent(QCloseEvent* event)
 {
 	qDebug() << "Closing Card Window";
-	QSettings settings;
-	settings.setValue("cardwindow/size", size());
-	settings.setValue("cardwindow/pos", pos());
 	emit windowClosed(false);
-	if (event)
-	{
-		event->accept();
-	}
+	event->accept();
 }
 
 void CardWindow::setCardPicture(const QString& imageFile, double rotation)

@@ -9,10 +9,6 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	, ui_()
 {
 	ui_.setupUi(this);
-
-	QSettings settings;
-	resize(settings.value("collectionwindow/size", QSize(1428, 367)).toSize());
-	move(settings.value("collectionwindow/pos", QPoint(486, 390)).toPoint());
 }
 
 CollectionWindow::~CollectionWindow()
@@ -22,13 +18,7 @@ CollectionWindow::~CollectionWindow()
 void CollectionWindow::closeEvent(QCloseEvent* event)
 {
 	qDebug() << "Closing Collection Window";
-	QSettings settings;
-	settings.setValue("collectionwindow/size", size());
-	settings.setValue("collectionwindow/pos", pos());
 	emit windowClosed(false);
-	if (event)
-	{
-		event->accept();
-	}
+	event->accept();
 }
 

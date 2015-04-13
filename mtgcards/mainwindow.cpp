@@ -10,41 +10,35 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
-	, poolWindow_(this)
-	, cardWindow_(this)
-	, collectionWindow_(this)
-	, deckWindow_(this)
+	, poolWindow_()
+	, cardWindow_()
+	, collectionWindow_()
+	, deckWindow_()
 {
 	ui_.setupUi(this);
 
 	qRegisterMetaType<layout_type_t>();
 
-	QSettings settings;
-	resize(settings.value("mainwindow/size", QSize(480, 48)).toSize());
-	move(settings.value("mainwindow/pos", QPoint(0, 0)).toPoint());
+	loadSettings();
 
-	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
+	// window management
 	ui_.actionPoolWindow->setChecked(poolWindow_.isVisible());
 	connect(ui_.actionPoolWindow, SIGNAL(toggled(bool)), this, SLOT(poolWindowActionToggled(bool)));
 	connect(&poolWindow_, SIGNAL(windowClosed(bool)), ui_.actionPoolWindow, SLOT(setChecked(bool)));
-
-	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
 	ui_.actionCardWindow->setChecked(cardWindow_.isVisible());
 	connect(ui_.actionCardWindow, SIGNAL(toggled(bool)), this, SLOT(cardWindowActionToggled(bool)));
 	connect(&cardWindow_, SIGNAL(windowClosed(bool)), ui_.actionCardWindow, SLOT(setChecked(bool)));
-
-	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
 	ui_.actionCollectionWindow->setChecked(collectionWindow_.isVisible());
 	connect(ui_.actionCollectionWindow, SIGNAL(toggled(bool)), this, SLOT(collectionWindowActionToggled(bool)));
 	connect(&collectionWindow_, SIGNAL(windowClosed(bool)), ui_.actionCollectionWindow, SLOT(setChecked(bool)));
-
-	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
 	ui_.actionDeckWindow->setChecked(deckWindow_.isVisible());
 	connect(ui_.actionDeckWindow, SIGNAL(toggled(bool)), this, SLOT(deckWindowActionToggled(bool)));
 	connect(&deckWindow_, SIGNAL(windowClosed(bool)), ui_.actionDeckWindow, SLOT(setChecked(bool)));
 
+	// options
 	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
 
+	// card preview
 	connect(&poolWindow_, SIGNAL(selectCardChanged(layout_type_t, QStringList)), &cardWindow_, SLOT(changeCardPicture(layout_type_t, QStringList)));
 }
 
@@ -53,40 +47,51 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::loadSettings()
 {
-	qDebug() << "Closing Main Window";
-
+	qDebug() << "Load Settings";
+	bool mainWindowVisibleDefault = true;
+	#ifdef __APPLE__
+		mainWindowVisibleDefault = false;
+	#endif
 	QSettings settings;
-	settings.setValue("poolwindow/visible", poolWindow_.isVisible());
-	settings.setValue("cardwindow/visible", cardWindow_.isVisible());
-	settings.setValue("collectionwindow/visible", collectionWindow_.isVisible());
-	settings.setValue("deckwindow/visible", deckWindow_.isVisible());
+	resize(settings.value("mainwindow/size", QSize(480, 48)).toSize());
+	move(settings.value("mainwindow/pos", QPoint(0, 0)).toPoint());
+	setVisible(true);
+	setVisible(settings.value("mainwindow/visible", mainWindowVisibleDefault).toBool());
+	poolWindow_.resize(settings.value("poolwindow/size", QSize(1428, 361)).toSize());
+	poolWindow_.move(settings.value("poolwindow/pos", QPoint(486, 0)).toPoint());
+	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
+	cardWindow_.resize(settings.value("cardwindow/size", QSize(480, 680)).toSize());
+	cardWindow_.move(settings.value("cardwindow/pos", QPoint(0, 77)).toPoint());
+	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
+	collectionWindow_.resize(settings.value("collectionwindow/size", QSize(1428, 367)).toSize());
+	collectionWindow_.move(settings.value("collectionwindow/pos", QPoint(486, 390)).toPoint());
+	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
+	deckWindow_.resize(settings.value("deckwindow/size", QSize(1914, 360)).toSize());
+	deckWindow_.move(settings.value("deckwindow/pos", QPoint(0, 786)).toPoint());
+	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
+}
 
-	if (poolWindow_.isVisible())
-	{
-		poolWindow_.close();
-	}
-	if (cardWindow_.isVisible())
-	{
-		cardWindow_.close();
-	}
-	if (collectionWindow_.isVisible())
-	{
-		collectionWindow_.close();
-	}
-	if (deckWindow_.isVisible())
-	{
-		deckWindow_.close();
-	}
-
+void MainWindow::saveSettings()
+{
+	qDebug() << "Save Settings";
+	QSettings settings;
+	settings.setValue("mainwindow/visible", isVisible());
 	settings.setValue("mainwindow/size", size());
 	settings.setValue("mainwindow/pos", pos());
-
-	if (event)
-	{
-		event->accept();
-	}
+	settings.setValue("poolwindow/visible", poolWindow_.isVisible());
+	settings.setValue("poolwindow/size", poolWindow_.size());
+	settings.setValue("poolwindow/pos", poolWindow_.pos());
+	settings.setValue("cardwindow/visible", cardWindow_.isVisible());
+	settings.setValue("cardwindow/size", cardWindow_.size());
+	settings.setValue("cardwindow/pos", cardWindow_.pos());
+	settings.setValue("collectionwindow/visible", collectionWindow_.isVisible());
+	settings.setValue("collectionwindow/size", collectionWindow_.size());
+	settings.setValue("collectionwindow/pos", collectionWindow_.pos());
+	settings.setValue("deckwindow/visible", deckWindow_.isVisible());
+	settings.setValue("deckwindow/size", deckWindow_.size());
+	settings.setValue("deckwindow/pos", deckWindow_.pos());
 }
 
 void MainWindow::poolWindowActionToggled(bool show)
@@ -111,11 +116,8 @@ void MainWindow::deckWindowActionToggled(bool show)
 
 void MainWindow::optionsActionClicked()
 {
-	qDebug() << "Creating Options Dialog";
 	OptionsDialog options(this);
-	qDebug() << "Showing Options Dialog";
 	options.exec();
-	qDebug() << "Options Dialog closed";
 	if (options.isPoolReloadRequired())
 	{
 		poolWindow_.reload();

@@ -16,14 +16,15 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+	void loadSettings();
+	void saveSettings();
+
 private:
 	Ui::MainWindow ui_;
 	PoolWindow poolWindow_;
 	CardWindow cardWindow_;
 	CollectionWindow collectionWindow_;
 	DeckWindow deckWindow_;
-
-	void closeEvent(QCloseEvent* event);
 
 private slots:
 	void poolWindowActionToggled(bool show);

@@ -29,7 +29,7 @@ bool OptionsDialog::isPoolReloadRequired() const
 
 void OptionsDialog::browseAllSetsJsonBtnClicked()
 {
-	auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", "", tr("AllSets (AllSets.json)"));
+    auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", "", tr("AllSets (*AllSets.json)"));
 	if (!filename.isNull())
 	{
 		ui_.allSetsJsonTxt->setText(filename);

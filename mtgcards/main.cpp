@@ -21,8 +21,31 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 		case QtFatalMsg:	cout << "(FAT)"; break;
 	}
 	cout << " " << msg.toStdString() << " [" << context.file << ":" << context.function << ":" << context.line << "]" << endl;
-	//cout << " " << msg.toStdString() << endl;
 }
+
+class MyApplication : public QApplication
+{
+public:
+	MyApplication(int &argc, char **argv)
+		: QApplication(argc, argv)
+		, mainWindow_()
+	{
+	}
+
+protected:
+	virtual bool event(QEvent* e)
+	{
+		qDebug() << "Event type = " << e->type();
+		if (e->type() == QEvent::Close)
+		{
+			mainWindow_.saveSettings();
+		}
+		return QApplication::event(e);
+	}
+
+private:
+	MainWindow mainWindow_;
+};
 
 int main(int argc, char *argv[])
 {
@@ -32,10 +55,9 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("stijn-v.be");
 	QCoreApplication::setApplicationName("MTGCards");
 	QCoreApplication::setApplicationVersion("0.0.1");
+	QGuiApplication::setQuitOnLastWindowClosed(false);
 
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-
+	MyApplication a(argc, argv);
     return a.exec();
 }
+

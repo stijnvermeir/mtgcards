@@ -11,10 +11,6 @@ PoolWindow::PoolWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
-	QSettings settings;
-	resize(settings.value("poolwindow/size", QSize(1428, 361)).toSize());
-	move(settings.value("poolwindow/pos", QPoint(486, 0)).toPoint());
-
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
@@ -22,11 +18,13 @@ PoolWindow::PoolWindow(QWidget *parent)
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
+#if 0
 	// test card picture availability
-//	for (int i = 0; i < poolTableModel_.rowCount(); ++i)
-//	{
-//		poolTableModel_.getPictureFilenames(i);
-//	}
+	for (int i = 0; i < poolTableModel_.rowCount(); ++i)
+	{
+		poolTableModel_.getPictureFilenames(i);
+	}
+#endif
 }
 
 PoolWindow::~PoolWindow()
@@ -42,14 +40,8 @@ void PoolWindow::reload()
 void PoolWindow::closeEvent(QCloseEvent* event)
 {
 	qDebug() << "Closing Pool Window";
-	QSettings settings;
-	settings.setValue("poolwindow/size", size());
-	settings.setValue("poolwindow/pos", pos());
 	emit windowClosed(false);
-	if (event)
-	{
-		event->accept();
-	}
+	event->accept();
 }
 
 void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/)
