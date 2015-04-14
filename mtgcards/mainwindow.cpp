@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QCloseEvent>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -122,4 +123,23 @@ void MainWindow::optionsActionClicked()
 	{
 		poolWindow_.reload();
 	}
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+#ifdef __APPLE__
+	event->accept();
+#else
+	int ret = QMessageBox::question(this, tr("Quit?"), tr("Are you sure?"));
+	if (ret == QMessageBox::Yes)
+	{
+		event->accept();
+		saveSettings();
+		QCoreApplication::quit();
+	}
+	else
+	{
+		event->ignore();
+	}
+#endif
 }

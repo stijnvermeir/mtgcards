@@ -26,6 +26,8 @@ private:
 	CollectionWindow collectionWindow_;
 	DeckWindow deckWindow_;
 
+	virtual void closeEvent(QCloseEvent*);
+
 private slots:
 	void poolWindowActionToggled(bool show);
 	void cardWindowActionToggled(bool show);
