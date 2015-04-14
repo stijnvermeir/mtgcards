@@ -1,4 +1,5 @@
 #include "pooltablemodel.h"
+#include "richtext.h"
 
 #include <QAbstractTableModel>
 #include <QJsonDocument>
@@ -139,7 +140,7 @@ public:
 					// card
 					r[mtg::Name] = card["name"].toString();
 					r[mtg::Names] = jsonArrayToStringList(card["names"].toArray());
-					r[mtg::ManaCost] = card["manaCost"].toString();
+					r[mtg::ManaCost] = QVariant::fromValue(RichText(card["manaCost"].toString()));
 					r[mtg::CMC] = card["cmc"].toInt();
 					r[mtg::Color] = jsonArrayToStringList(card["colors"].toArray());
 					r[mtg::Type] = card["type"].toString();

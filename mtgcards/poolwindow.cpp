@@ -1,4 +1,5 @@
 #include "poolwindow.h"
+#include "richtextdelegate.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -11,6 +12,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
+	ui_.poolTbl_->setItemDelegate(new RichTextDelegate());
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
