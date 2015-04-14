@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
+#include <QMessageBox>
 
 #include <iostream>
 
@@ -33,15 +34,16 @@ public:
 	}
 
 protected:
+#ifdef __APPLE__
 	virtual bool event(QEvent* e)
 	{
-		qDebug() << "Event type = " << e->type();
 		if (e->type() == QEvent::Close)
 		{
-			mainWindow_.saveSettings();
+			return mainWindow_.toQuitOrNotToQuit(e);
 		}
 		return QApplication::event(e);
 	}
+#endif
 
 private:
 	MainWindow mainWindow_;
@@ -61,3 +63,4 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
+;

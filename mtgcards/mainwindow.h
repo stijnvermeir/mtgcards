@@ -18,6 +18,7 @@ public:
 
 	void loadSettings();
 	void saveSettings();
+	bool toQuitOrNotToQuit(QEvent* event);
 
 private:
 	Ui::MainWindow ui_;

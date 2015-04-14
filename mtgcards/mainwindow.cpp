@@ -95,6 +95,25 @@ void MainWindow::saveSettings()
 	settings.setValue("deckwindow/pos", deckWindow_.pos());
 }
 
+bool MainWindow::toQuitOrNotToQuit(QEvent* event)
+{
+	int ret = QMessageBox::Yes;
+	// TODO: check for unsaved stuff before asking for confirmation at exit
+	// ret = QMessageBox::question(this, tr("Quit?"), tr("Are you sure you want to quit?"));
+	if (ret == QMessageBox::Yes)
+	{
+		event->accept();
+		saveSettings();
+		QCoreApplication::quit();
+		return true;
+	}
+	else
+	{
+		event->ignore();
+		return false;
+	}
+}
+
 void MainWindow::poolWindowActionToggled(bool show)
 {
 	poolWindow_.setVisible(show);
@@ -130,16 +149,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 #ifdef __APPLE__
 	event->accept();
 #else
-	int ret = QMessageBox::question(this, tr("Quit?"), tr("Are you sure?"));
-	if (ret == QMessageBox::Yes)
-	{
-		event->accept();
-		saveSettings();
-		QCoreApplication::quit();
-	}
-	else
-	{
-		event->ignore();
-	}
+	toQuitOrNotToQuit(event);
 #endif
 }
