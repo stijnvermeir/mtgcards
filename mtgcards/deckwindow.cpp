@@ -17,7 +17,6 @@ DeckWindow::~DeckWindow()
 
 void DeckWindow::closeEvent(QCloseEvent* event)
 {
-	qDebug() << "Closing Deck Window";
 	emit windowClosed(false);
 	event->accept();
 }

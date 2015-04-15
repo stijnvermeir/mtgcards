@@ -1,8 +1,13 @@
 #include "richtextdelegate.h"
 #include "richtext.h"
 
-#include <QLabel>
 #include <QPaintEngine>
+#include <QLabel>
+
+RichTextDelegate::RichTextDelegate(QWidget* parent)
+	: QStyledItemDelegate(parent)
+{
+}
 
 void RichTextDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -20,12 +25,11 @@ void RichTextDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 		{
 			palette.setColor(label.backgroundRole(), option.palette.base().color());
 		}
-		label.setPalette(palette);
 		label.setTextFormat(Qt::RichText);
+		label.setAlignment(Qt::AlignCenter);
+		label.setPalette(palette);
 		label.setGeometry(option.rect);
 		label.setText(richText.getText());
-		label.setAlignment(Qt::AlignCenter);
-
 		QPixmap pixmap(label.size());
 		label.render(&pixmap);
 

@@ -17,7 +17,6 @@ CollectionWindow::~CollectionWindow()
 
 void CollectionWindow::closeEvent(QCloseEvent* event)
 {
-	qDebug() << "Closing Collection Window";
 	emit windowClosed(false);
 	event->accept();
 }

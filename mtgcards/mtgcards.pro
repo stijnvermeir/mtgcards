@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     deckwidget.cpp \
     optionsdialog.cpp \
     cardgraphicsview.cpp \
-    richtextdelegate.cpp
+    richtextdelegate.cpp \
+    manacostdelegate.cpp \
+    manacost.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -36,7 +38,9 @@ HEADERS  += mainwindow.h \
     enum.h \
     cardgraphicsview.h \
     richtext.h \
-    richtextdelegate.h
+    richtextdelegate.h \
+    manacostdelegate.h \
+    manacost.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
@@ -45,3 +49,8 @@ FORMS    += mainwindow.ui \
     deckwindow.ui \
     deckwidget.ui \
     optionsdialog.ui
+
+RESOURCES += \
+    mtgcards.qrc
+
+DISTFILES +=

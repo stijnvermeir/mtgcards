@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtCore>
+#include <QMetaType>
 
 class RichText
 {

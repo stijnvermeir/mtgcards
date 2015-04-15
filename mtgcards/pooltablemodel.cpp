@@ -1,5 +1,5 @@
 #include "pooltablemodel.h"
-#include "richtext.h"
+#include "manacost.h"
 
 #include <QAbstractTableModel>
 #include <QJsonDocument>
@@ -114,8 +114,6 @@ public:
 			{
 				numCards += set.toObject()["cards"].toArray().size();
 			}
-			qDebug() << "Total num cards: " << numCards;
-
 
 			data_.reserve(numCards);
 
@@ -140,7 +138,7 @@ public:
 					// card
 					r[mtg::Name] = card["name"].toString();
 					r[mtg::Names] = jsonArrayToStringList(card["names"].toArray());
-					r[mtg::ManaCost] = QVariant::fromValue(RichText(card["manaCost"].toString()));
+					r[mtg::ManaCost] = QVariant::fromValue(ManaCost(card["manaCost"].toString()));
 					r[mtg::CMC] = card["cmc"].toInt();
 					r[mtg::Color] = jsonArrayToStringList(card["colors"].toArray());
 					r[mtg::Type] = card["type"].toString();
@@ -257,7 +255,6 @@ void PoolTableModel::reload()
 
 std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int row)
 {
-	qDebug() << "Getting picture filenames for row " << row;
 	QStringList list;
 	layout_type_t layout = layout_type_t::Normal;
 	if (row < static_cast<int>(pimpl_->data_.size()))
@@ -265,22 +262,17 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 		const Pimpl::Row& card = pimpl_->data_[row];
 		QSettings settings;
 		QString prefix = settings.value("options/datasources/cardpicturedir").toString();
-		qDebug() << "prefix = " << prefix;
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
-		qDebug() << "not found image file = " << notFoundImageFile;
 		auto addToListLambda = [&list, &notFoundImageFile, &card](QString imageFile)
 		{
-			qDebug() << imageFile;
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
 			imageFile.replace(":", "");
 			imageFile.replace("?", "");
 			imageFile.replace("\"", "");
 			imageFile = removeAccents(imageFile);
-			qDebug() << "Replaced: " << imageFile;
 			if (QFileInfo::exists(imageFile))
 			{
-				qDebug() << "exists!";
 				list.push_back(imageFile);
 			}
 			else
@@ -295,10 +287,8 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 					suffix = tr(" [") + imageName + "]";
 				}
 				imageFile = fileInfo.path() + QDir::separator() + fileInfo.baseName() + suffix + ".jpg";
-				qDebug() << imageFile;
 				if (QFileInfo::exists(imageFile))
 				{
-					qDebug() << "exists!";
 					list.push_back(imageFile);
 				}
 				else
@@ -306,7 +296,6 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 					imageFile.replace(".jpg", ".Full.jpg");
 					if (QFileInfo::exists(imageFile))
 					{
-						qDebug() << ".Full version exists!";
 						list.push_back(imageFile);
 					}
 					else
@@ -318,11 +307,9 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 			}
 		};
 		prefix += QDir::separator() + card[mtg::Set].toString() + QDir::separator();
-		qDebug() << "prefix = " << prefix;
 		layout = to_layout_type_t(card[mtg::Layout].toString());
 		if (layout == layout_type_t::Split || layout == layout_type_t::Flip)
 		{
-			qDebug() << "split or flip layout";
 			QStringList names = card[mtg::Names].toStringList();
 			QString imageFile = prefix + names.join("_") + ".jpg";
 			addToListLambda(imageFile);
@@ -330,7 +317,6 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 		else
 		if (layout == layout_type_t::DoubleFaced)
 		{
-			qDebug() << "double-faced layout";
 			QStringList names = card[mtg::Names].toStringList();
 			for (const auto& n : names)
 			{
@@ -341,7 +327,6 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 		else
 		if (layout == layout_type_t::Token)
 		{
-			qDebug() << "token layout";
 			prefix += tr("token") + QDir::separator();
 			QString tokenName = card[mtg::ImageName].toString();
 			tokenName[0] = tokenName[0].toUpper();
@@ -350,7 +335,6 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 		}
 		else
 		{
-			qDebug() << "normal layout";
 			QString imageFile = prefix + card[mtg::Name].toString() + ".jpg";
 			addToListLambda(imageFile);
 		}

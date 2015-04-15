@@ -1,5 +1,5 @@
 #include "poolwindow.h"
-#include "richtextdelegate.h"
+#include "manacostdelegate.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -12,7 +12,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
-	ui_.poolTbl_->setItemDelegate(new RichTextDelegate());
+	ui_.poolTbl_->setItemDelegate(new ManaCostDelegate());
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
@@ -41,16 +41,13 @@ void PoolWindow::reload()
 
 void PoolWindow::closeEvent(QCloseEvent* event)
 {
-	qDebug() << "Closing Pool Window";
 	emit windowClosed(false);
 	event->accept();
 }
 
 void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/)
 {
-	qDebug() << "Changed to row " << current.row() << ")";
 	auto mappedIdx = poolTableModel_.mapToSource(current);
-	qDebug() << "Mapped row = " << mappedIdx.row();
 	auto rv = poolTableModel_.getPictureFilenames(mappedIdx.row());
 	emit selectCardChanged(rv.first, rv.second);
 }

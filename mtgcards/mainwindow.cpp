@@ -50,7 +50,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadSettings()
 {
-	qDebug() << "Load Settings";
 	bool mainWindowVisibleDefault = true;
 	#ifdef __APPLE__
 		mainWindowVisibleDefault = false;
@@ -76,7 +75,6 @@ void MainWindow::loadSettings()
 
 void MainWindow::saveSettings()
 {
-	qDebug() << "Save Settings";
 	QSettings settings;
 	settings.setValue("mainwindow/visible", isVisible());
 	settings.setValue("mainwindow/size", size());

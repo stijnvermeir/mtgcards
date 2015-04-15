@@ -33,7 +33,6 @@ CardWindow::~CardWindow()
 
 void CardWindow::closeEvent(QCloseEvent* event)
 {
-	qDebug() << "Closing Card Window";
 	emit windowClosed(false);
 	event->accept();
 }
@@ -50,8 +49,6 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 
 void CardWindow::changeCardPicture(layout_type_t layout, QStringList imageFiles)
 {
-	qDebug() << "Changing card picture";
-	qDebug() << "Layout: " << static_cast<int>(layout);
 	imageFiles_ = imageFiles;
 	layoutType_ = layout;
 

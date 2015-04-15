@@ -1,2 +1,6 @@
-<RCC/>
-
+<RCC>
+    <qresource prefix="/">
+        <file>resources/fonts/MagicSymbols2013.ttf</file>
+        <file>resources/fonts/style.css</file>
+    </qresource>
+</RCC>
