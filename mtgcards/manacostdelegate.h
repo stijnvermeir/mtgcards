@@ -1,0 +1,5 @@
+#ifndef MANADELEGATE_H
+#define MANADELEGATE_H
+
+#endif // MANADELEGATE_H
+

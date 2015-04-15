@@ -1,0 +1,65 @@
+.symbol
+{
+	font-size: 24pt;
+	font-family: "Magic Symbols 2013";
+}
+
+.border, .text
+{
+	color: #000000;
+}
+
+.gray
+{
+	color: #ccc2c0;
+}
+
+.white
+{
+	color: #fffcd6;
+}
+
+.darkwhite
+{
+	color: #eae2b1;
+}
+
+.blue
+{
+	color: #aae0fa;
+}
+
+.darkblue
+{
+	color: #8ebbd0;
+}
+
+.black
+{
+	color: #a19390;
+}
+
+.darkblack
+{
+	color: #9a8c89;
+}
+
+.red
+{
+	color: #f9a990;
+}
+
+.darkred
+{
+	color: #de8066;
+}
+
+.green
+{
+	color: #9bd3ae;
+}
+
+.darkgreen
+{
+	color: #81af92;
+}
