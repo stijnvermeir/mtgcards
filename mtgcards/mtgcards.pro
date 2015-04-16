@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     cardgraphicsview.cpp \
     richtextdelegate.cpp \
     manacostdelegate.cpp \
-    manacost.cpp
+    manacost.cpp \
+    magicsortfilterproxymodel.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -40,7 +41,8 @@ HEADERS  += mainwindow.h \
     richtext.h \
     richtextdelegate.h \
     manacostdelegate.h \
-    manacost.h
+    manacost.h \
+    magicsortfilterproxymodel.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

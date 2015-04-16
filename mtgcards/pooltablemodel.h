@@ -1,7 +1,7 @@
 #pragma once
 
 #include "enum.h"
-#include <QSortFilterProxyModel>
+#include "magicsortfilterproxymodel.h"
 
 namespace mtg {
 
@@ -41,7 +41,7 @@ enum PoolColumn
 
 }
 
-class PoolTableModel : public virtual QSortFilterProxyModel
+class PoolTableModel : public MagicSortFilterProxyModel
 {
 public:
 

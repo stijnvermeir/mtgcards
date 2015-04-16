@@ -138,7 +138,7 @@ public:
 					// card
 					r[mtg::Name] = card["name"].toString();
 					r[mtg::Names] = jsonArrayToStringList(card["names"].toArray());
-					r[mtg::ManaCost] = QVariant::fromValue(ManaCost(card["manaCost"].toString()));
+					r[mtg::ManaCost] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), card["cmc"].toInt()));
 					r[mtg::CMC] = card["cmc"].toInt();
 					r[mtg::Color] = jsonArrayToStringList(card["colors"].toArray());
 					r[mtg::Type] = card["type"].toString();

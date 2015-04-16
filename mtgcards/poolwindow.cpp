@@ -16,6 +16,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
+	ui_.poolTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui_.poolTbl_->resizeColumnsToContents();
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
