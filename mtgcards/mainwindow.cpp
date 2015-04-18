@@ -66,6 +66,7 @@ void MainWindow::loadSettings()
 	poolWindow_.resize(settings.value("poolwindow/size", QSize(1428, 361)).toSize());
 	poolWindow_.move(settings.value("poolwindow/pos", QPoint(486, 0)).toPoint());
 	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
+	poolWindow_.loadSettings();
 	cardWindow_.resize(settings.value("cardwindow/size", QSize(480, 680)).toSize());
 	cardWindow_.move(settings.value("cardwindow/pos", QPoint(0, 77)).toPoint());
 	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
@@ -83,6 +84,7 @@ void MainWindow::saveSettings()
 	settings.setValue("mainwindow/visible", isVisible());
 	settings.setValue("mainwindow/size", size());
 	settings.setValue("mainwindow/pos", pos());
+	poolWindow_.saveSettings();
 	settings.setValue("poolwindow/visible", poolWindow_.isVisible());
 	settings.setValue("poolwindow/size", poolWindow_.size());
 	settings.setValue("poolwindow/pos", poolWindow_.pos());

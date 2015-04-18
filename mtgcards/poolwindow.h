@@ -15,6 +15,9 @@ public:
 
 	void reload();
 
+	void loadSettings();
+	void saveSettings();
+
 signals:
 	void windowClosed(bool);
 	void selectCardChanged(layout_type_t layout, QStringList);

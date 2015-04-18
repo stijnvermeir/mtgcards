@@ -18,8 +18,6 @@ PoolWindow::PoolWindow(QWidget *parent)
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
 	ui_.poolTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
-	ui_.poolTbl_->resizeColumnsToContents();
-	poolTableModel_.sort(-1);
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
@@ -70,6 +68,28 @@ void PoolWindow::reload()
 {
 	poolTableModel_.reload();
 	ui_.poolTbl_->resizeColumnsToContents();
+}
+
+void PoolWindow::loadSettings()
+{
+	QSettings settings;
+	if (settings.contains("poolwindow/headerstate"))
+	{
+		if (!ui_.poolTbl_->horizontalHeader()->restoreState(settings.value("poolwindow/headerstate").toByteArray()))
+		{
+			qWarning() << "Failed to restore header state";
+		}
+	}
+	else
+	{
+		ui_.poolTbl_->resizeColumnsToContents();
+	}
+}
+
+void PoolWindow::saveSettings()
+{
+	QSettings settings;
+	settings.setValue("poolwindow/headerstate", ui_.poolTbl_->horizontalHeader()->saveState());
 }
 
 void PoolWindow::closeEvent(QCloseEvent* event)
