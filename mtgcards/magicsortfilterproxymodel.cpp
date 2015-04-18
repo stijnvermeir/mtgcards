@@ -46,6 +46,11 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 		{
 			return node.filter.function(data(index(source_row, node.filter.column)));
 		}
+		else
+		if (node.type == FilterNode::Type::NO_FILTER)
+		{
+			return true;
+		}
 		return false;
 	};
 

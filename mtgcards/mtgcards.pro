@@ -9,7 +9,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = mtgcards
+TARGET = MTGCards
 TEMPLATE = app
 
 
@@ -26,7 +26,9 @@ SOURCES += main.cpp\
     richtextdelegate.cpp \
     manacostdelegate.cpp \
     manacost.cpp \
-    magicsortfilterproxymodel.cpp
+    magicsortfilterproxymodel.cpp \
+    aboutdialog.cpp \
+    filtereditordialog.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -43,7 +45,9 @@ HEADERS  += mainwindow.h \
     manacostdelegate.h \
     manacost.h \
     magicsortfilterproxymodel.h \
-    filter.h
+    filter.h \
+    aboutdialog.h \
+    filtereditordialog.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
@@ -51,7 +55,9 @@ FORMS    += mainwindow.ui \
     collectionwindow.ui \
     deckwindow.ui \
     deckwidget.ui \
-    optionsdialog.ui
+    optionsdialog.ui \
+    aboutdialog.ui \
+    filtereditordialog.ui
 
 RESOURCES += \
     mtgcards.qrc

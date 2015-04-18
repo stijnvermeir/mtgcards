@@ -27,4 +27,5 @@ private:
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
+	void actionAdvancedFilterToggled(bool);
 };

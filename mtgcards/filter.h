@@ -27,10 +27,18 @@ struct FilterNode
 	{
 		AND,
 		OR,
-		LEAF
+		LEAF,
+		NO_FILTER
 	};
 
 	Type type;
 	std::list<Ptr> children;
 	Filter filter;
+
+	FilterNode()
+		: type(Type::NO_FILTER)
+		, children()
+		, filter()
+	{
+	}
 };

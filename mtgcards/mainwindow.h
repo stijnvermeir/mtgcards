@@ -35,4 +35,5 @@ private slots:
 	void collectionWindowActionToggled(bool show);
 	void deckWindowActionToggled(bool show);
 	void optionsActionClicked();
+	void aboutActionClicked();
 };

@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>resources/fonts/MagicSymbols2013.ttf</file>
         <file>resources/fonts/style.css</file>
+        <file>resources/icons/funnel2.svg</file>
     </qresource>
 </RCC>

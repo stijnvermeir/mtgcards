@@ -1,5 +1,6 @@
 #include "poolwindow.h"
 #include "manacostdelegate.h"
+#include "filtereditordialog.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -21,6 +22,8 @@ PoolWindow::PoolWindow(QWidget *parent)
 	poolTableModel_.sort(-1);
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
+
+	connect(ui_.actionAdvancedFilter, SIGNAL(toggled(bool)), this, SLOT(actionAdvancedFilterToggled(bool)));
 
 #if 0 // test card picture availability
 	for (int i = 0; i < poolTableModel_.rowCount(); ++i)
@@ -80,4 +83,17 @@ void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/
 	auto mappedIdx = poolTableModel_.mapToSource(current);
 	auto rv = poolTableModel_.getPictureFilenames(mappedIdx.row());
 	emit selectCardChanged(rv.first, rv.second);
+}
+
+void PoolWindow::actionAdvancedFilterToggled(bool enabled)
+{
+	if (enabled)
+	{
+		FilterEditorDialog editor;
+		editor.exec();
+	}
+	else
+	{
+		poolTableModel_.setFilterRootNode(FilterNode());
+	}
 }

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "optionsdialog.h"
+#include "aboutdialog.h"
 #include "enum.h"
 
 #include <QDebug>
@@ -38,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// options
 	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
+
+	// about
+	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
 
 	// card preview
 	connect(&poolWindow_, SIGNAL(selectCardChanged(layout_type_t, QStringList)), &cardWindow_, SLOT(changeCardPicture(layout_type_t, QStringList)));
@@ -112,6 +116,15 @@ bool MainWindow::toQuitOrNotToQuit(QEvent* event)
 	}
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+#ifdef __APPLE__
+	event->accept();
+#else
+	toQuitOrNotToQuit(event);
+#endif
+}
+
 void MainWindow::poolWindowActionToggled(bool show)
 {
 	poolWindow_.setVisible(show);
@@ -142,11 +155,8 @@ void MainWindow::optionsActionClicked()
 	}
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::aboutActionClicked()
 {
-#ifdef __APPLE__
-	event->accept();
-#else
-	toQuitOrNotToQuit(event);
-#endif
+	AboutDialog about(this);
+	about.exec();
 }
