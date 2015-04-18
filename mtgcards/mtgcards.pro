@@ -42,7 +42,8 @@ HEADERS  += mainwindow.h \
     richtextdelegate.h \
     manacostdelegate.h \
     manacost.h \
-    magicsortfilterproxymodel.h
+    magicsortfilterproxymodel.h \
+    filter.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
