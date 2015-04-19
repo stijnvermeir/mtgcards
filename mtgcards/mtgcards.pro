@@ -23,12 +23,12 @@ SOURCES += main.cpp\
     deckwidget.cpp \
     optionsdialog.cpp \
     cardgraphicsview.cpp \
-    richtextdelegate.cpp \
     manacostdelegate.cpp \
     manacost.cpp \
     magicsortfilterproxymodel.cpp \
     aboutdialog.cpp \
-    filtereditordialog.cpp
+    filtereditordialog.cpp \
+    filtermodel.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -40,14 +40,13 @@ HEADERS  += mainwindow.h \
     optionsdialog.h \
     enum.h \
     cardgraphicsview.h \
-    richtext.h \
-    richtextdelegate.h \
     manacostdelegate.h \
     manacost.h \
     magicsortfilterproxymodel.h \
     filter.h \
     aboutdialog.h \
-    filtereditordialog.h
+    filtereditordialog.h \
+    filtermodel.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

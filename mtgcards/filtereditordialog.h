@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ui_filtereditordialog.h"
+#include "filtermodel.h"
+
 #include <QDialog>
 
 class FilterEditorDialog : public QDialog
@@ -13,4 +15,5 @@ public:
 
 private:
 	Ui::FilterEditorDialog ui_;
+	FilterModel model_;
 };
