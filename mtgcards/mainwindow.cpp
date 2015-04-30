@@ -2,7 +2,6 @@
 
 #include "optionsdialog.h"
 #include "aboutdialog.h"
-#include "enum.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -19,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
-	qRegisterMetaType<layout_type_t>();
+	qRegisterMetaType<mtg::LayoutType>();
 
 	loadSettings();
 
@@ -44,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
 
 	// card preview
-	connect(&poolWindow_, SIGNAL(selectCardChanged(layout_type_t, QStringList)), &cardWindow_, SLOT(changeCardPicture(layout_type_t, QStringList)));
+	connect(&poolWindow_, SIGNAL(selectCardChanged(mtg::LayoutType, QStringList)), &cardWindow_, SLOT(changeCardPicture(mtg::LayoutType, QStringList)));
 }
 
 MainWindow::~MainWindow()

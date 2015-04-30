@@ -15,7 +15,7 @@ CardWindow::CardWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
 	, scene_()
-	, layoutType_(layout_type_t::Normal)
+	, layoutType_(mtg::LayoutType::Normal)
 	, imageFiles_()
 	, secondViewActive_(false)
 	, timer_()
@@ -47,24 +47,24 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 	ui_.cardView_->fitInView(item, Qt::KeepAspectRatio);
 }
 
-void CardWindow::changeCardPicture(layout_type_t layout, QStringList imageFiles)
+void CardWindow::changeCardPicture(mtg::LayoutType layout, QStringList imageFiles)
 {
 	imageFiles_ = imageFiles;
 	layoutType_ = layout;
 
-	if (layoutType_ == layout_type_t::Split)
+	if (layoutType_ == mtg::LayoutType::Split)
 	{
 		setCardPicture(imageFiles_.front(), 90);
 	}
 	else
-	if (layoutType_ == layout_type_t::DoubleFaced)
+	if (layoutType_ == mtg::LayoutType::DoubleFaced)
 	{
 		secondViewActive_ = false;
 		setCardPicture(imageFiles_.front(), 0);
 		timer_.start(PICTURE_SWITCH_INTERVAL);
 	}
 	else
-	if (layoutType_ == layout_type_t::Flip)
+	if (layoutType_ == mtg::LayoutType::Flip)
 	{
 		secondViewActive_ = false;
 		setCardPicture(imageFiles_.front(), 0);
@@ -78,7 +78,7 @@ void CardWindow::changeCardPicture(layout_type_t layout, QStringList imageFiles)
 
 void CardWindow::timerExpired()
 {
-	if (layoutType_ == layout_type_t::DoubleFaced)
+	if (layoutType_ == mtg::LayoutType::DoubleFaced)
 	{
 		if (secondViewActive_)
 		{
@@ -92,7 +92,7 @@ void CardWindow::timerExpired()
 		timer_.start(PICTURE_SWITCH_INTERVAL);
 	}
 	else
-	if (layoutType_ == layout_type_t::Flip)
+	if (layoutType_ == mtg::LayoutType::Flip)
 	{
 		if (secondViewActive_)
 		{

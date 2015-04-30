@@ -12,7 +12,7 @@ public:
 		, cmc_(0)
 	{}
 
-	explicit ManaCost(const QString& text, const int cmc)
+	explicit ManaCost(const QString& text, const double cmc)
 		: text_(text)
 		, cmc_(cmc)
 	{
@@ -23,7 +23,7 @@ public:
 		return text_;
 	}
 
-	int getCmc() const
+	double getCmc() const
 	{
 		return cmc_;
 	}
@@ -32,7 +32,7 @@ public:
 
 private:
 	QString text_;
-	int cmc_;
+	double cmc_;
 };
 
 bool operator<(const ManaCost& lhs, const ManaCost& rhs);

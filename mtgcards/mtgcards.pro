@@ -28,7 +28,10 @@ SOURCES += main.cpp\
     magicsortfilterproxymodel.cpp \
     aboutdialog.cpp \
     filtereditordialog.cpp \
-    filtermodel.cpp
+    filtermodel.cpp \
+    magiccolumntype.cpp \
+    magiclayouttype.cpp \
+    magiccarddata.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -38,7 +41,6 @@ HEADERS  += mainwindow.h \
     deckwindow.h \
     deckwidget.h \
     optionsdialog.h \
-    enum.h \
     cardgraphicsview.h \
     manacostdelegate.h \
     manacost.h \
@@ -46,7 +48,10 @@ HEADERS  += mainwindow.h \
     filter.h \
     aboutdialog.h \
     filtereditordialog.h \
-    filtermodel.h
+    filtermodel.h \
+    magiccolumntype.h \
+    magiclayouttype.h \
+    magiccarddata.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

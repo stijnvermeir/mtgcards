@@ -1,14 +1,12 @@
 #include "pooltablemodel.h"
 #include "manacost.h"
+#include "magiccarddata.h"
 
 #include <QAbstractTableModel>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
 #include <QFileInfo>
-#include <QDebug>
+#include <QDir>
 #include <QSettings>
+#include <QDebug>
 
 #include <vector>
 #include <array>
@@ -16,37 +14,6 @@
 using namespace std;
 
 namespace {
-
-layout_type_t to_layout_type_t(const QString& str)
-{
-	if (str == "split")
-	{
-		return layout_type_t::Split;
-	}
-	if (str == "flip")
-	{
-		return layout_type_t::Flip;
-	}
-	if (str == "double-faced")
-	{
-		return layout_type_t::DoubleFaced;
-	}
-	if (str == "token")
-	{
-		return layout_type_t::Token;
-	}
-	return layout_type_t::Normal;
-}
-
-QStringList jsonArrayToStringList(const QJsonArray& array)
-{
-	QStringList list;
-	for (const auto& n : array)
-	{
-		list.push_back(n.toString());
-	}
-	return list;
-}
 
 QString removeAccents(QString s)
 {
@@ -84,16 +51,38 @@ QString removeAccents(QString s)
 	return output;
 }
 
+const vector<mtg::ColumnType> POOLTABLE_COLUMNS =
+{
+	mtg::ColumnType::Set,
+	mtg::ColumnType::SetCode,
+	mtg::ColumnType::SetReleaseDate,
+	mtg::ColumnType::SetType,
+	mtg::ColumnType::Block,
+	mtg::ColumnType::Name,
+	mtg::ColumnType::Names,
+	mtg::ColumnType::ManaCost,
+	mtg::ColumnType::CMC,
+	mtg::ColumnType::Color,
+	mtg::ColumnType::Type,
+	mtg::ColumnType::SuperTypes,
+	mtg::ColumnType::Types,
+	mtg::ColumnType::SubTypes,
+	mtg::ColumnType::Rarity,
+	mtg::ColumnType::Text,
+	mtg::ColumnType::Flavor,
+	mtg::ColumnType::Artist,
+	mtg::ColumnType::Power,
+	mtg::ColumnType::Toughness,
+	mtg::ColumnType::Loyalty
+};
+
 } // namespace
 
 class PoolTableModel::Pimpl : public virtual QAbstractTableModel
 {
 public:
-	typedef array<QVariant, mtg::TotalColumnCount> Row;
-	vector<Row> data_;
 
 	Pimpl()
-		: data_()
 	{
 		loadData();
 	}
@@ -101,77 +90,18 @@ public:
 	void loadData()
 	{
 		beginResetModel();
-		data_.clear();
-
-		QSettings settings;
-		QFile file(settings.value("options/datasources/allsetsjson").toString());
-		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-		{
-			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
-			QJsonObject obj = d.object();
-			int numCards = 0;
-			for (const auto& set : obj)
-			{
-				numCards += set.toObject()["cards"].toArray().size();
-			}
-
-			data_.reserve(numCards);
-
-			for (const auto& set : obj)
-			{
-				auto setName = set.toObject()["name"].toString();
-				auto setCode = set.toObject()["code"].toString();
-				auto setReleaseDate = QDate::fromString(set.toObject()["releaseDate"].toString(), "yyyy-MM-dd");
-				auto setType = set.toObject()["type"].toString();
-				auto block = set.toObject()["block"].toString();
-				for (const auto& c : set.toObject()["cards"].toArray())
-				{
-					auto card = c.toObject();
-					Row r;
-					// set
-					r[mtg::Set] = setName;
-					r[mtg::SetCode] = setCode;
-					r[mtg::SetReleaseDate] = setReleaseDate;
-					r[mtg::SetType] = setType;
-					r[mtg::Block] = block;
-
-					// card
-					r[mtg::Name] = card["name"].toString();
-					r[mtg::Names] = jsonArrayToStringList(card["names"].toArray());
-					r[mtg::ManaCost] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), card["cmc"].toInt()));
-					r[mtg::CMC] = card["cmc"].toInt();
-					r[mtg::Color] = jsonArrayToStringList(card["colors"].toArray());
-					r[mtg::Type] = card["type"].toString();
-					r[mtg::SuperTypes] = jsonArrayToStringList(card["supertypes"].toArray());
-					r[mtg::Types] = jsonArrayToStringList(card["types"].toArray());
-					r[mtg::SubTypes] = jsonArrayToStringList(card["subtypes"].toArray());
-					r[mtg::Rarity] = card["rarity"].toString();
-					r[mtg::Text] = card["text"].toString();
-					r[mtg::Flavor] = card["flavor"].toString();
-					r[mtg::Artist] = card["artist"].toString();
-					r[mtg::Power] = card["power"].toString();
-					r[mtg::Toughness] = card["toughness"].toString();
-					r[mtg::Loyalty] = card["loyalty"].toInt();
-
-					// hidden
-					r[mtg::Layout] = card["layout"].toString();
-					r[mtg::ImageName] = card["imageName"].toString();
-
-					data_.push_back(r);
-				}
-			}
-		}
+		mtg::CardData::instance().reload();
 		endResetModel();
 	}
 
 	virtual int rowCount(const QModelIndex& ) const
 	{
-		return data_.size();
+		return mtg::CardData::instance().getNumRows();
 	}
 
-	virtual int columnCount(const QModelIndex& ) const
+	virtual int columnCount(const QModelIndex& = QModelIndex()) const
 	{
-		return mtg::VisibleColumnCount;
+		return static_cast<int>(POOLTABLE_COLUMNS.size());
 	}
 
 	virtual QVariant data(const QModelIndex& index, int role) const
@@ -180,9 +110,9 @@ public:
 		{
 			if (role == Qt::DisplayRole)
 			{
-				if (index.row() < static_cast<int>(data_.size()) && index.column() < mtg::VisibleColumnCount)
+				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{
-					const QVariant& ret = data_[index.row()][index.column()];
+					const QVariant& ret = mtg::CardData::instance().get(index.row(), POOLTABLE_COLUMNS[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
 						return ret.toStringList().join("/");
@@ -200,31 +130,9 @@ public:
 		{
 			if (role == Qt::DisplayRole)
 			{
-				switch (section)
+				if (section >= 0 && section < columnCount())
 				{
-					case mtg::Set:	return "Set";
-					case mtg::SetCode: return "Set Code";
-					case mtg::SetReleaseDate: return "Set Release Date";
-					case mtg::SetType: return "Set Type";
-					case mtg::Block: return "Block";
-					case mtg::Name: return "Name";
-					case mtg::Names: return "Names";
-					case mtg::ManaCost: return "Mana Cost";
-					case mtg::CMC: return "CMC";
-					case mtg::Color: return "Color";
-					case mtg::Type: return "Type";
-					case mtg::SuperTypes: return "Super Types";
-					case mtg::Types: return "Types";
-					case mtg::SubTypes: return "Sub Types";
-					case mtg::Rarity: return "Rarity";
-					case mtg::Text: return "Text";
-					case mtg::Flavor: return "Flavor";
-					case mtg::Artist: return "Artist";
-					case mtg::Power: return "Power";
-					case mtg::Toughness: return "Toughness";
-					case mtg::Loyalty: return "Loyalty";
-
-					default: break;
+					return static_cast<QString>(POOLTABLE_COLUMNS[section]);
 				}
 			}
 		}
@@ -240,12 +148,11 @@ public:
 PoolTableModel::PoolTableModel()
 	: pimpl_(new Pimpl())
 {
-	setSourceModel(pimpl_);
+	setSourceModel(pimpl_.get());
 }
 
 PoolTableModel::~PoolTableModel()
 {
-	delete pimpl_;
 }
 
 void PoolTableModel::reload()
@@ -253,17 +160,18 @@ void PoolTableModel::reload()
 	pimpl_->loadData();
 }
 
-std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int row)
+std::pair<mtg::LayoutType, QStringList> PoolTableModel::getPictureFilenames(int row)
 {
 	QStringList list;
-	layout_type_t layout = layout_type_t::Normal;
-	if (row < static_cast<int>(pimpl_->data_.size()))
+	mtg::LayoutType layout = mtg::LayoutType::Normal;
+	const auto& data = mtg::CardData::instance();
+	if (row < data.getNumRows())
 	{
-		const Pimpl::Row& card = pimpl_->data_[row];
 		QSettings settings;
 		QString prefix = settings.value("options/datasources/cardpicturedir").toString();
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
-		auto addToListLambda = [&list, &notFoundImageFile, &card](QString imageFile)
+		QString imageName = data.get(row, mtg::ColumnType::ImageName).toString();
+		auto addToListLambda = [&list, &notFoundImageFile, &imageName](QString imageFile)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -279,12 +187,12 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 			{
 				// try with a version tag
 				QFileInfo fileInfo(imageFile);
-				QString imageName = card[mtg::ImageName].toString();
-				imageName.replace(fileInfo.baseName().toLower(), "");
+				QString imageNameCopy = imageName;
+				imageNameCopy.replace(fileInfo.baseName().toLower(), "");
 				QString suffix = "";
-				if (!imageName.isEmpty())
+				if (!imageNameCopy.isEmpty())
 				{
-					suffix = tr(" [") + imageName + "]";
+					suffix = tr(" [") + imageNameCopy + "]";
 				}
 				imageFile = fileInfo.path() + QDir::separator() + fileInfo.baseName() + suffix + ".jpg";
 				if (QFileInfo::exists(imageFile))
@@ -293,31 +201,23 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 				}
 				else
 				{
-					imageFile.replace(".jpg", ".Full.jpg");
-					if (QFileInfo::exists(imageFile))
-					{
-						list.push_back(imageFile);
-					}
-					else
-					{
-						qWarning() << imageFile << " not found! (" << card[mtg::ImageName].toString() << ")";
-						list.push_back(notFoundImageFile);
-					}
+					qWarning() << imageFile << " not found! (" << imageName << ")";
+					list.push_back(notFoundImageFile);
 				}
 			}
 		};
-		prefix += QDir::separator() + card[mtg::Set].toString() + QDir::separator();
-		layout = to_layout_type_t(card[mtg::Layout].toString());
-		if (layout == layout_type_t::Split || layout == layout_type_t::Flip)
+		prefix += QDir::separator() + data.get(row, mtg::ColumnType::Set).toString() + QDir::separator();
+		layout = mtg::LayoutType(data.get(row, mtg::ColumnType::Layout).toString());
+		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Flip)
 		{
-			QStringList names = card[mtg::Names].toStringList();
+			QStringList names = data.get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_") + ".jpg";
 			addToListLambda(imageFile);
 		}
 		else
-		if (layout == layout_type_t::DoubleFaced)
+		if (layout == mtg::LayoutType::DoubleFaced)
 		{
-			QStringList names = card[mtg::Names].toStringList();
+			QStringList names = data.get(row, mtg::ColumnType::Names).toStringList();
 			for (const auto& n : names)
 			{
 				QString imageFile = prefix + n + ".jpg";
@@ -325,17 +225,17 @@ std::pair<layout_type_t, QStringList> PoolTableModel::getPictureFilenames(int ro
 			}
 		}
 		else
-		if (layout == layout_type_t::Token)
+		if (layout == mtg::LayoutType::Token)
 		{
 			prefix += tr("token") + QDir::separator();
-			QString tokenName = card[mtg::ImageName].toString();
+			QString tokenName = data.get(row, mtg::ColumnType::ImageName).toString();
 			tokenName[0] = tokenName[0].toUpper();
 			QString imageFile = prefix + tokenName + ".jpg";
 			addToListLambda(imageFile);
 		}
 		else
 		{
-			QString imageFile = prefix + card[mtg::Name].toString() + ".jpg";
+			QString imageFile = prefix + data.get(row, mtg::ColumnType::Name).toString() + ".jpg";
 			addToListLambda(imageFile);
 		}
 	}

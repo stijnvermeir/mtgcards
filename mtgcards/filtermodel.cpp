@@ -1,6 +1,7 @@
 #include "filtermodel.h"
 
 #include <QList>
+#include <QDebug>
 
 using namespace std;
 
@@ -36,8 +37,10 @@ FilterModel::FilterModel(QObject* parent)
 	, rootNode_(nullptr)
 {
 	rootNode_ = new Node();
-	rootNode_->data = "OR";
-	Node* child1 = new Node(rootNode_);
+
+	Node* root = new Node(rootNode_);
+	root->data = "OR";
+	Node* child1 = new Node(root);
 	child1->data = "AND";
 	Node* child1a = new Node(child1);
 	child1a->data = "Rarity = Mythic Rare";
@@ -45,10 +48,12 @@ FilterModel::FilterModel(QObject* parent)
 	Node* child1b = new Node(child1);
 	child1b->data = "CMC = 4";
 	child1->children.push_back(child1b);
-	rootNode_->children.push_back(child1);
-	Node* child2 = new Node(rootNode_);
+	root->children.push_back(child1);
+	Node* child2 = new Node(root);
 	child2->data = "It's an elf";
-	rootNode_->children.push_back(child2);
+	root->children.push_back(child2);
+
+	rootNode_->children.push_back(root);
 }
 
 FilterModel::~FilterModel()

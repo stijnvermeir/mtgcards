@@ -1,6 +1,5 @@
 #pragma once
 
-#include "enum.h"
 #include "pooltablemodel.h"
 #include "ui_poolwindow.h"
 #include <QMainWindow>
@@ -20,7 +19,7 @@ public:
 
 signals:
 	void windowClosed(bool);
-	void selectCardChanged(layout_type_t layout, QStringList);
+	void selectCardChanged(mtg::LayoutType layout, QStringList);
 
 private:
 	Ui::PoolWindow ui_;
