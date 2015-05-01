@@ -241,3 +241,13 @@ std::pair<mtg::LayoutType, QStringList> PoolTableModel::getPictureFilenames(int 
 	}
 	return make_pair(layout, list);
 }
+
+int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const
+{
+	auto it = find(POOLTABLE_COLUMNS.begin(), POOLTABLE_COLUMNS.end(), column);
+	if (it != POOLTABLE_COLUMNS.end())
+	{
+		return (it - POOLTABLE_COLUMNS.begin());
+	}
+	return -1;
+}

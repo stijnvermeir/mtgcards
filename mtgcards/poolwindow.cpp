@@ -1,5 +1,5 @@
 #include "poolwindow.h"
-#include "manacostdelegate.h"
+#include "magicitemdelegate.h"
 #include "filtereditordialog.h"
 
 #include <QSettings>
@@ -13,7 +13,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
-	ui_.poolTbl_->setItemDelegate(new ManaCostDelegate());
+	ui_.poolTbl_->setItemDelegate(new MagicItemDelegate());
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
@@ -67,7 +67,6 @@ PoolWindow::~PoolWindow()
 void PoolWindow::reload()
 {
 	poolTableModel_.reload();
-	ui_.poolTbl_->resizeColumnsToContents();
 }
 
 void PoolWindow::loadSettings()
@@ -114,6 +113,6 @@ void PoolWindow::actionAdvancedFilterToggled(bool enabled)
 	}
 	else
 	{
-		poolTableModel_.setFilterRootNode(FilterNode());
+		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
 	}
 }

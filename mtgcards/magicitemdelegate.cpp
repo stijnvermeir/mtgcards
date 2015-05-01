@@ -1,4 +1,5 @@
-#include "manacostdelegate.h"
+#include "magicitemdelegate.h"
+
 #include "manacost.h"
 
 #include <QPaintEngine>
@@ -6,13 +7,13 @@
 #include <QFile>
 #include <QTextStream>
 
-ManaCostDelegate::ManaCostDelegate(QWidget* parent)
+MagicItemDelegate::MagicItemDelegate(QWidget* parent)
 	: QStyledItemDelegate(parent)
 {
 
 }
 
-void ManaCostDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void MagicItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	if (index.data().canConvert<ManaCost>())
 	{

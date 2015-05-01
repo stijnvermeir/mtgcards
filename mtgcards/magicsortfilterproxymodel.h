@@ -8,15 +8,17 @@ class MagicSortFilterProxyModel : public QSortFilterProxyModel
 {
 public:
 
-	void setFilterRootNode(FilterNode node)
+	void setFilterRootNode(const FilterNode::Ptr& node)
 	{
-		filterRootNode_ = std::move(node);
+		filterRootNode_ = node;
 		invalidateFilter();
 	}
 protected:
 	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 	virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
 
+	virtual int columnToIndex(const mtg::ColumnType& column) const = 0;
+
 private:
-	FilterNode filterRootNode_;
+	FilterNode::Ptr filterRootNode_;
 };

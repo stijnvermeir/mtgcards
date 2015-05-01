@@ -16,6 +16,8 @@ public:
 	std::pair<mtg::LayoutType, QStringList> getPictureFilenames(int row);
 
 private:
+	virtual int columnToIndex(const mtg::ColumnType& column) const;
+
 	class Pimpl;
 	std::unique_ptr<Pimpl> pimpl_;
 };

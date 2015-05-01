@@ -2,12 +2,12 @@
 
 #include <QStyledItemDelegate>
 
-class ManaCostDelegate : public QStyledItemDelegate
+class MagicItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 
 public:
-	ManaCostDelegate(QWidget* parent = 0);
+	MagicItemDelegate(QWidget* parent = 0);
 
 	virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 };

@@ -16,13 +16,18 @@ bool MagicSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIn
 
 bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& /*source_parent*/) const
 {
-	function<bool(const FilterNode&)> applyFilter = [this, source_row, &applyFilter](const FilterNode& node)
+	function<bool(const FilterNode::Ptr&)> applyFilter = [this, source_row, &applyFilter](const FilterNode::Ptr& node)
 	{
-		if (node.type == FilterNode::Type::AND)
+		if (!node)
 		{
-			for (const FilterNode::Ptr& child : node.children)
+			return true;
+		}
+
+		if (node->getType() == FilterNode::Type::AND)
+		{
+			for (const FilterNode::Ptr& child : node->getChildren())
 			{
-				if (!applyFilter(*child))
+				if (!applyFilter(child))
 				{
 					return false;
 				}
@@ -30,11 +35,11 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 			return true;
 		}
 		else
-		if (node.type == FilterNode::Type::OR)
+		if (node->getType() == FilterNode::Type::OR)
 		{
-			for (const FilterNode::Ptr& child : node.children)
+			for (const FilterNode::Ptr& child : node->getChildren())
 			{
-				if (applyFilter(*child))
+				if (applyFilter(child))
 				{
 					return true;
 				}
@@ -42,14 +47,18 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 			return false;
 		}
 		else
-		if (node.type == FilterNode::Type::LEAF)
+		if (node->getType() == FilterNode::Type::LEAF)
 		{
-			return node.filter.function(data(index(source_row, node.filter.column)));
-		}
-		else
-		if (node.type == FilterNode::Type::NO_FILTER)
-		{
-			return true;
+			auto columnIndex = columnToIndex(node->getFilter().column);
+			if (columnIndex < 0)
+			{
+				return true;
+			}
+			if (!node->getFilter().function)
+			{
+				return true;
+			}
+			return node->getFilter().function->apply(data(index(source_row, columnIndex)));
 		}
 		return false;
 	};
