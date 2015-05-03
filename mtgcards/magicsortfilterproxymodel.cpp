@@ -5,6 +5,17 @@
 
 using namespace std;
 
+const FilterNode::Ptr& MagicSortFilterProxyModel::getFilterRootNode() const
+{
+	return filterRootNode_;
+}
+
+void MagicSortFilterProxyModel::setFilterRootNode(const FilterNode::Ptr& rootNode)
+{
+	filterRootNode_ = rootNode;
+	invalidateFilter();
+}
+
 bool MagicSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
 	if (left.data().canConvert<ManaCost>())

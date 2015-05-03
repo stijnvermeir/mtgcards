@@ -1,7 +1,9 @@
 #pragma once
 
+#include "magiclayouttype.h"
 #include "pooltablemodel.h"
 #include "ui_poolwindow.h"
+
 #include <QMainWindow>
 
 class PoolWindow : public QMainWindow

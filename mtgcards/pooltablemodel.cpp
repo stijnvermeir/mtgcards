@@ -1,55 +1,12 @@
 #include "pooltablemodel.h"
-#include "manacost.h"
 #include "magiccarddata.h"
 
 #include <QAbstractTableModel>
-#include <QFileInfo>
-#include <QDir>
-#include <QSettings>
 #include <QDebug>
-
-#include <vector>
-#include <array>
 
 using namespace std;
 
 namespace {
-
-QString removeAccents(QString s)
-{
-	static QString diacriticLetters;
-	static QStringList noDiacriticLetters;
-	if (diacriticLetters.isEmpty())
-	{
-		diacriticLetters = QString::fromUtf8("ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ");
-		noDiacriticLetters << "S"<<"OE"<<"Z"<<"s"<<"oe"<<"z"<<"Y"<<"Y"<<"u";
-		noDiacriticLetters << "A"<<"A"<<"A"<<"A"<<"A"<<"A"<<"AE";
-		noDiacriticLetters << "C"<<"E"<<"E"<<"E"<<"E"<<"I"<<"I"<<"I"<<"I";
-		noDiacriticLetters << "D"<<"N"<<"O"<<"O"<<"O"<<"O"<<"O"<<"O";
-		noDiacriticLetters << "U"<<"U"<<"U"<<"U"<<"Y"<<"s";
-		noDiacriticLetters << "a"<<"a"<<"a"<<"a"<<"a"<<"a"<<"ae";
-		noDiacriticLetters << "c"<<"e"<<"e"<<"e"<<"e"<<"i"<<"i"<<"i"<<"i";
-		noDiacriticLetters << "o"<<"n"<<"o"<<"o"<<"o"<<"o"<<"o"<<"o";
-		noDiacriticLetters << "u"<<"u"<<"u"<<"u"<<"y"<<"y";
-	}
-
-	QString output = "";
-	for (int i = 0; i < s.length(); i++)
-	{
-		QChar c = s[i];
-		int dIndex = diacriticLetters.indexOf(c);
-		if (dIndex < 0)
-		{
-			output.append(c);
-		}
-		else
-		{
-			QString replacement = noDiacriticLetters[dIndex];
-			output.append(replacement);
-		}
-	}
-	return output;
-}
 
 const vector<mtg::ColumnType> POOLTABLE_COLUMNS =
 {
@@ -158,88 +115,6 @@ PoolTableModel::~PoolTableModel()
 void PoolTableModel::reload()
 {
 	pimpl_->loadData();
-}
-
-std::pair<mtg::LayoutType, QStringList> PoolTableModel::getPictureFilenames(int row)
-{
-	QStringList list;
-	mtg::LayoutType layout = mtg::LayoutType::Normal;
-	const auto& data = mtg::CardData::instance();
-	if (row < data.getNumRows())
-	{
-		QSettings settings;
-		QString prefix = settings.value("options/datasources/cardpicturedir").toString();
-		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
-		QString imageName = data.get(row, mtg::ColumnType::ImageName).toString();
-		auto addToListLambda = [&list, &notFoundImageFile, &imageName](QString imageFile)
-		{
-			// replace special characters
-			imageFile.replace("\xc2\xae", ""); // (R)
-			imageFile.replace(":", "");
-			imageFile.replace("?", "");
-			imageFile.replace("\"", "");
-			imageFile = removeAccents(imageFile);
-			if (QFileInfo::exists(imageFile))
-			{
-				list.push_back(imageFile);
-			}
-			else
-			{
-				// try with a version tag
-				QFileInfo fileInfo(imageFile);
-				QString imageNameCopy = imageName;
-				imageNameCopy.replace(fileInfo.baseName().toLower(), "");
-				QString suffix = "";
-				if (!imageNameCopy.isEmpty())
-				{
-					suffix = tr(" [") + imageNameCopy + "]";
-				}
-				imageFile = fileInfo.path() + QDir::separator() + fileInfo.baseName() + suffix + ".jpg";
-				if (QFileInfo::exists(imageFile))
-				{
-					list.push_back(imageFile);
-				}
-				else
-				{
-					qWarning() << imageFile << " not found! (" << imageName << ")";
-					list.push_back(notFoundImageFile);
-				}
-			}
-		};
-		prefix += QDir::separator() + data.get(row, mtg::ColumnType::Set).toString() + QDir::separator();
-		layout = mtg::LayoutType(data.get(row, mtg::ColumnType::Layout).toString());
-		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Flip)
-		{
-			QStringList names = data.get(row, mtg::ColumnType::Names).toStringList();
-			QString imageFile = prefix + names.join("_") + ".jpg";
-			addToListLambda(imageFile);
-		}
-		else
-		if (layout == mtg::LayoutType::DoubleFaced)
-		{
-			QStringList names = data.get(row, mtg::ColumnType::Names).toStringList();
-			for (const auto& n : names)
-			{
-				QString imageFile = prefix + n + ".jpg";
-				addToListLambda(imageFile);
-			}
-		}
-		else
-		if (layout == mtg::LayoutType::Token)
-		{
-			prefix += tr("token") + QDir::separator();
-			QString tokenName = data.get(row, mtg::ColumnType::ImageName).toString();
-			tokenName[0] = tokenName[0].toUpper();
-			QString imageFile = prefix + tokenName + ".jpg";
-			addToListLambda(imageFile);
-		}
-		else
-		{
-			QString imageFile = prefix + data.get(row, mtg::ColumnType::Name).toString() + ".jpg";
-			addToListLambda(imageFile);
-		}
-	}
-	return make_pair(layout, list);
 }
 
 int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const

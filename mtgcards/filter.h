@@ -20,14 +20,17 @@ public:
 	{
 		Regex,
 
-		COUNT
+		COUNT,
+		UNKNOWN = -1
 	};
 
-	FilterFunctionType(const type_t value = Regex);
+	FilterFunctionType(const type_t value = UNKNOWN);
 	FilterFunctionType(const QString& stringValue);
 
 	operator QString () const;
 	operator type_t () const;
+
+	static const std::vector<FilterFunctionType>& list();
 private:
 	type_t value_;
 };
@@ -39,21 +42,25 @@ private:
 class FilterFunction
 {
 public:
-	typedef std::shared_ptr<FilterFunction> Ptr;
+	typedef std::unique_ptr<FilterFunction> Ptr;
 
 	virtual ~FilterFunction() {}
 	virtual FilterFunctionType getType() const = 0;
 	virtual bool apply(const QVariant& data) const = 0;
+	virtual QString getDescription() const = 0;
 };
 
 class RegexFilterFunction : public FilterFunction
 {
 public:
 	RegexFilterFunction();
+
+	const QRegularExpression& getRegex() const;
 	void setRegex(const QRegularExpression& regex);
 
 	virtual FilterFunctionType getType() const;
 	virtual bool apply(const QVariant& data) const;
+	virtual QString getDescription() const;
 private:
 	QRegularExpression regex_;
 };
@@ -65,7 +72,7 @@ private:
 class FilterFunctionFactory
 {
 public:
-	static FilterFunction::Ptr createRegex(const QRegularExpression& r);
+	static FilterFunction::Ptr createRegex(const QString& regexPattern);
 };
 
 // ================================================================
@@ -76,6 +83,10 @@ struct Filter
 {
 	mtg::ColumnType column;
 	FilterFunction::Ptr function;
+
+	Filter()
+		: column(mtg::ColumnType::Name)
+		, function(nullptr) {}
 };
 
 class FilterNode : public std::enable_shared_from_this<FilterNode>
@@ -94,8 +105,8 @@ public:
 
 	FilterNode();
 
-	void loadFromFile(const QString& file);
-	void saveToFile(const QString& file) const;
+	bool loadFromFile(const QString& file);
+	bool saveToFile(const QString& file) const;
 
 	Type getType() const;
 	void setType(const Type type);
@@ -106,7 +117,7 @@ public:
 	Ptr getParent() const;
 
 	const Filter& getFilter() const;
-	void setFilter(const Filter& filter);
+	void setFilter(Filter filter);
 
 private:
 	Type type_;

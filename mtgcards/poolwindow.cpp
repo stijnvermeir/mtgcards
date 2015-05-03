@@ -1,4 +1,6 @@
 #include "poolwindow.h"
+
+#include "magiccarddata.h"
 #include "magicitemdelegate.h"
 #include "filtereditordialog.h"
 
@@ -22,42 +24,6 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
 	connect(ui_.actionAdvancedFilter, SIGNAL(toggled(bool)), this, SLOT(actionAdvancedFilterToggled(bool)));
-
-#if 0 // test card picture availability
-	for (int i = 0; i < poolTableModel_.rowCount(); ++i)
-	{
-		poolTableModel_.getPictureFilenames(i);
-	}
-#endif
-
-#if 0 // test filter tree
-	FilterNode root;
-	root.type = FilterNode::Type::AND;
-	root.children.push_back(FilterNode::create());
-	root.children.back()->type = FilterNode::Type::LEAF;
-	root.children.back()->filter.column = mtg::Text;
-	root.children.back()->filter.function = [](QVariant data)
-	{
-		return data.toString().contains("+1/+1");
-	};
-	root.children.push_back(FilterNode::create());
-	root.children.back()->type = FilterNode::Type::OR;
-	root.children.back()->children.push_back(FilterNode::create());
-	root.children.back()->children.back()->type = FilterNode::Type::LEAF;
-	root.children.back()->children.back()->filter.column = mtg::CMC;
-	root.children.back()->children.back()->filter.function = [](QVariant data)
-	{
-		return data.toInt() == 3;
-	};
-	root.children.back()->children.push_back(FilterNode::create());
-	root.children.back()->children.back()->type = FilterNode::Type::LEAF;
-	root.children.back()->children.back()->filter.column = mtg::Rarity;
-	root.children.back()->children.back()->filter.function = [](QVariant data)
-	{
-		return data.toString() == "Mythic Rare";
-	};
-	poolTableModel_.setFilterRootNode(std::move(root));
-#endif
 }
 
 PoolWindow::~PoolWindow()
@@ -100,7 +66,7 @@ void PoolWindow::closeEvent(QCloseEvent* event)
 void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/)
 {
 	auto mappedIdx = poolTableModel_.mapToSource(current);
-	auto rv = poolTableModel_.getPictureFilenames(mappedIdx.row());
+	auto rv = mtg::CardData::instance().getPictureFilenames(mappedIdx.row());
 	emit selectCardChanged(rv.first, rv.second);
 }
 
@@ -109,7 +75,42 @@ void PoolWindow::actionAdvancedFilterToggled(bool enabled)
 	if (enabled)
 	{
 		FilterEditorDialog editor;
+		FilterNode::Ptr root = FilterNode::create();
+		/*
+		root->setType(FilterNode::Type::AND);
+		FilterNode::Ptr a = FilterNode::create();
+		root->addChild(a);
+		a->setType(FilterNode::Type::OR);
+		FilterNode::Ptr a1 = FilterNode::create();
+		a->addChild(a1);
+		a1->setType(FilterNode::Type::LEAF);
+		Filter a1Filter;
+		a1Filter.column = mtg::ColumnType::ManaCost;
+		a1Filter.function = FilterFunctionFactory::createRegex(".*R.*");
+		a1->setFilter(std::move(a1Filter));
+		FilterNode::Ptr a2 = FilterNode::create();
+		a->addChild(a2);
+		a2->setType(FilterNode::Type::LEAF);
+		Filter a2Filter;
+		a2Filter.column = mtg::ColumnType::Text;
+		a2Filter.function = FilterFunctionFactory::createRegex(".*counter.*");
+		a2->setFilter(std::move(a2Filter));
+		FilterNode::Ptr b = FilterNode::create();
+		root->addChild(b);
+		b->setType(FilterNode::Type::LEAF);
+		Filter bFilter;
+		bFilter.column = mtg::ColumnType::SetCode;
+		bFilter.function = FilterFunctionFactory::createRegex("M15");
+		b->setFilter(std::move(bFilter));
+		root->saveToFile("test.json");
+		*/
+		root->loadFromFile("test.json");
+
+		editor.setFilterRootNode(root);
+
+		//editor.setFilterRootNode(poolTableModel_.getFilterRootNode());
 		editor.exec();
+		//poolTableModel_.setFilterRootNode(editor.getFilterRootNode());
 	}
 	else
 	{

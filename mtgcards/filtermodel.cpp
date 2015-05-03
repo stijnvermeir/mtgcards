@@ -5,90 +5,37 @@
 
 using namespace std;
 
-struct FilterModel::Node
-{
-	QList<Node*> children;
-	Node* parent;
-	QString data;
-
-	explicit Node(Node* parentNode = nullptr)
-		: children()
-		, parent(parentNode)
-	{
-	}
-
-	~Node()
-	{
-		qDeleteAll(children);
-	}
-
-	int row()
-	{
-		if (parent)
-		{
-			return parent->children.indexOf(this);
-		}
-		return 0;
-	}
-};
-
 FilterModel::FilterModel(QObject* parent)
 	: QAbstractItemModel(parent)
 	, rootNode_(nullptr)
 {
-	rootNode_ = new Node();
-
-	Node* root = new Node(rootNode_);
-	root->data = "OR";
-	Node* child1 = new Node(root);
-	child1->data = "AND";
-	Node* child1a = new Node(child1);
-	child1a->data = "Rarity = Mythic Rare";
-	child1->children.push_back(child1a);
-	Node* child1b = new Node(child1);
-	child1b->data = "CMC = 4";
-	child1->children.push_back(child1b);
-	root->children.push_back(child1);
-	Node* child2 = new Node(root);
-	child2->data = "It's an elf";
-	root->children.push_back(child2);
-
-	rootNode_->children.push_back(root);
 }
 
 FilterModel::~FilterModel()
 {
-	if (rootNode_)
-	{
-		delete rootNode_;
-	}
+}
+
+void FilterModel::setFilterRootNode(const FilterNode::Ptr& rootNode)
+{
+	rootNode_ = rootNode;
+}
+
+const FilterNode::Ptr& FilterModel::getFilterRootNode() const
+{
+	return rootNode_;
 }
 
 QModelIndex FilterModel::index(int row, int column, const QModelIndex& parent) const
 {
-	if (!hasIndex(row, column, parent))
-	{
-		return QModelIndex();
-	}
-
-	Node* parentNode;
 	if (!parent.isValid())
 	{
-		parentNode = rootNode_;
+		return createIndex(row, column, rootNode_.get());
 	}
 	else
 	{
-		parentNode = static_cast<Node*>(parent.internalPointer());
-	}
-
-	Node* childNode = parentNode->children.value(row);
-	if (childNode)
-	{
-		return createIndex(row, column, childNode);
-	}
-	else
-	{
-		return QModelIndex();
+		FilterNode* parentNode = reinterpret_cast<FilterNode*>(parent.internalPointer());
+		FilterNode* childNode = parentNode->getChildren()[static_cast<size_t>(row)].get();
+		return createIndex(row, column, reinterpret_cast<void*>(childNode));
 	}
 }
 
@@ -99,26 +46,43 @@ QModelIndex FilterModel::parent(const QModelIndex& child) const
 		return QModelIndex();
 	}
 
-	Node* parentNode = static_cast<Node*>(child.internalPointer())->parent;
-	if (parentNode == rootNode_)
+	FilterNode* childNode = reinterpret_cast<FilterNode*>(child.internalPointer());
+	if (childNode == nullptr)
 	{
 		return QModelIndex();
 	}
-	return createIndex(parentNode->row(), 0, parentNode);
+	FilterNode* parentNode = childNode->getParent().get();
+	if (parentNode == nullptr)
+	{
+		return QModelIndex();
+	}
+	if (parentNode == rootNode_.get())
+	{
+		return createIndex(0, 0, reinterpret_cast<void*>(parentNode));
+	}
+	FilterNode* parentParentNode = parentNode->getParent().get();
+	for (int row = 0; row < static_cast<int>(parentParentNode->getChildren().size()); ++row)
+	{
+		if (parentParentNode->getChildren().at(row).get() == parentNode)
+		{
+			return createIndex(row, 0, reinterpret_cast<void*>(parentNode));
+		}
+	}
+	return QModelIndex();
 }
 
 int FilterModel::rowCount(const QModelIndex& parent) const
 {
-	Node* parentNode;
 	if (!parent.isValid())
 	{
-		parentNode = rootNode_;
+		return 1;
 	}
-	else
+	FilterNode* node = reinterpret_cast<FilterNode*>(parent.internalPointer());
+	if (node)
 	{
-		parentNode = static_cast<Node*>(parent.internalPointer());
+		return static_cast<int>(node->getChildren().size());
 	}
-	return parentNode->children.count();
+	return 0;
 }
 
 int FilterModel::columnCount(const QModelIndex& /*parent*/) const
@@ -128,16 +92,52 @@ int FilterModel::columnCount(const QModelIndex& /*parent*/) const
 
 QVariant FilterModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid())
-	{
-		return QVariant();
-	}
-
 	if (role != Qt::DisplayRole)
 	{
 		return QVariant();
 	}
 
-	Node* node = static_cast<Node*>(index.internalPointer());
-	return node->data;
+	const FilterNode* node;
+	if (index.isValid())
+	{
+		node = reinterpret_cast<const FilterNode*>(index.internalPointer());
+	}
+	else
+	{
+		node = rootNode_.get();
+	}
+	if (node)
+	{
+		if (node->getType() == FilterNode::Type::AND)
+		{
+			return "AND";
+		}
+		else
+		if (node->getType() == FilterNode::Type::OR)
+		{
+			return "OR";
+		}
+		else
+		if (node->getType() == FilterNode::Type::LEAF)
+		{
+			QString val = node->getFilter().column;
+			val += ": ";
+			val += node->getFilter().function->getDescription();
+			return val;
+		}
+	}
+	return QVariant();
+}
+
+Qt::ItemFlags FilterModel::flags(const QModelIndex& index) const
+{
+	FilterNode* node = reinterpret_cast<FilterNode*>(index.internalPointer());
+	if (node)
+	{
+		if (node->getType() == FilterNode::Type::LEAF && node->getFilter().function)
+		{
+			return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
+		}
+	}
+	return QAbstractItemModel::flags(index);
 }

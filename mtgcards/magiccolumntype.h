@@ -3,6 +3,8 @@
 #include <QString>
 #include <QMetaType>
 
+#include <vector>
+
 namespace mtg {
 
 class ColumnType
@@ -47,6 +49,8 @@ public:
 
 	operator QString () const;
 	operator type_t () const;
+
+	static const std::vector<ColumnType>& list();
 
 private:
 	type_t value_;

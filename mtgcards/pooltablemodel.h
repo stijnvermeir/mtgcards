@@ -1,6 +1,5 @@
 #pragma once
 
-#include "magiclayouttype.h"
 #include "magicsortfilterproxymodel.h"
 
 #include <memory>
@@ -13,7 +12,6 @@ public:
 	~PoolTableModel();
 
 	void reload();
-	std::pair<mtg::LayoutType, QStringList> getPictureFilenames(int row);
 
 private:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;

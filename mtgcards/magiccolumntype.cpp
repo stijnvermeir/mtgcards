@@ -73,3 +73,19 @@ ColumnType::operator type_t () const
 {
 	return value_;
 }
+
+const vector<ColumnType>& ColumnType::list()
+{
+	static vector<ColumnType> l;
+	static bool ready = false;
+	if (!ready)
+	{
+		l.reserve(COUNT);
+		for (int i = 0; i < COUNT; ++i)
+		{
+			l.push_back(ColumnType(static_cast<ColumnType::type_t>(i)));
+		}
+		ready = true;
+	}
+	return l;
+}
