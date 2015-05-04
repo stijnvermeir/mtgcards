@@ -149,7 +149,7 @@ bool RegexFilterFunction::apply(const QVariant& data) const
 
 QString RegexFilterFunction::getDescription() const
 {
-	return QString("Regex = '") + regex_.pattern() + "'";
+	return regex_.pattern();
 }
 
 // ================================================================
@@ -170,6 +170,13 @@ FilterFunction::Ptr FilterFunctionFactory::createRegex(const QString& regexPatte
 FilterNode::Ptr FilterNode::create()
 {
 	return make_shared<FilterNode>();
+}
+
+FilterNode::Ptr FilterNode::createFromFile(const QString& file)
+{
+	FilterNode::Ptr node = create();
+	node->loadFromFile(file);
+	return node;
 }
 
 FilterNode::FilterNode()
@@ -271,12 +278,26 @@ void FilterNode::addChild(Ptr& child)
 	children_.push_back(child);
 }
 
+void FilterNode::removeChild(Ptr& child)
+{
+	auto it = std::find(children_.begin(), children_.end(), child);
+	if (it != children_.end())
+	{
+		children_.erase(it);
+	}
+}
+
 FilterNode::Ptr FilterNode::getParent() const
 {
 	return parent_.lock();
 }
 
 const Filter& FilterNode::getFilter() const
+{
+	return filter_;
+}
+
+Filter& FilterNode::getFilter()
 {
 	return filter_;
 }

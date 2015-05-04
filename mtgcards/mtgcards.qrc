@@ -3,5 +3,11 @@
         <file>resources/fonts/MagicSymbols2013.ttf</file>
         <file>resources/fonts/style.css</file>
         <file>resources/icons/funnel2.svg</file>
+        <file>resources/icons/blank33.svg</file>
+        <file>resources/icons/clear5.svg</file>
+        <file>resources/icons/folder215.svg</file>
+        <file>resources/icons/round57.svg</file>
+        <file>resources/icons/save20.svg</file>
+        <file>resources/icons/square181.svg</file>
     </qresource>
 </RCC>

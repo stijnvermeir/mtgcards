@@ -17,7 +17,9 @@ FilterModel::~FilterModel()
 
 void FilterModel::setFilterRootNode(const FilterNode::Ptr& rootNode)
 {
+	beginResetModel();
 	rootNode_ = rootNode;
+	endResetModel();
 }
 
 const FilterNode::Ptr& FilterModel::getFilterRootNode() const
@@ -87,7 +89,7 @@ int FilterModel::rowCount(const QModelIndex& parent) const
 
 int FilterModel::columnCount(const QModelIndex& /*parent*/) const
 {
-	return 1;
+	return 3;
 }
 
 QVariant FilterModel::data(const QModelIndex& index, int role) const
@@ -108,24 +110,70 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 	}
 	if (node)
 	{
-		if (node->getType() == FilterNode::Type::AND)
+		if (index.column() == 0)
 		{
-			return "AND";
+			if (node->getType() == FilterNode::Type::AND)
+			{
+				return "AND";
+			}
+			else
+			if (node->getType() == FilterNode::Type::OR)
+			{
+				return "OR";
+			}
+			else
+			if (node->getType() == FilterNode::Type::LEAF)
+			{
+				 return static_cast<QString>(node->getFilter().function->getType());
+			}
 		}
 		else
-		if (node->getType() == FilterNode::Type::OR)
+		if (index.column() == 1)
 		{
-			return "OR";
+			if (node->getType() == FilterNode::Type::LEAF)
+			{
+				return static_cast<QString>(node->getFilter().column);
+			}
 		}
 		else
-		if (node->getType() == FilterNode::Type::LEAF)
+		if (index.column() == 2)
 		{
-			QString val = node->getFilter().column;
-			val += ": ";
-			val += node->getFilter().function->getDescription();
-			return val;
+			if (node->getType() == FilterNode::Type::LEAF)
+			{
+				return node->getFilter().function->getDescription();
+			}
 		}
 	}
+	return QVariant();
+}
+
+QVariant FilterModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if (role != Qt::DisplayRole)
+	{
+		return QVariant();
+	}
+
+	if (orientation != Qt::Horizontal)
+	{
+		return QVariant();
+	}
+
+	if (section == 0)
+	{
+		return "Type";
+	}
+
+	if (section == 1)
+	{
+		return "Field";
+	}
+
+	if (section == 2)
+	{
+		return "Filter";
+	}
+
 	return QVariant();
 }
 
@@ -134,10 +182,58 @@ Qt::ItemFlags FilterModel::flags(const QModelIndex& index) const
 	FilterNode* node = reinterpret_cast<FilterNode*>(index.internalPointer());
 	if (node)
 	{
-		if (node->getType() == FilterNode::Type::LEAF && node->getFilter().function)
-		{
-			return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
-		}
+		return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
 	}
 	return QAbstractItemModel::flags(index);
+}
+
+void FilterModel::addNode(FilterNode::Ptr& node, const QModelIndex& index)
+{
+	beginResetModel();
+	FilterNode* n = reinterpret_cast<FilterNode*>(index.internalPointer());
+	if (n)
+	{
+		FilterNode* parentNode = n;
+		if (n->getType() == FilterNode::Type::LEAF)
+		{
+			parentNode = n->getParent().get();
+			if (parentNode == nullptr)
+			{
+				auto oldRoot = rootNode_;
+				rootNode_ = FilterNode::create();
+				rootNode_->setType(FilterNode::Type::AND);
+				rootNode_->addChild(oldRoot);
+				parentNode = rootNode_.get();
+			}
+		}
+		parentNode->addChild(node);
+	}
+	else
+	{
+		if (rootNode_ == nullptr)
+		{
+			rootNode_ = node;
+		}
+	}
+	endResetModel();
+}
+
+void FilterModel::deleteNode(const QModelIndex& index)
+{
+	FilterNode* node = reinterpret_cast<FilterNode*>(index.internalPointer());
+	if (node)
+	{
+		beginResetModel();
+		FilterNode* parentNode = node->getParent().get();
+		if (parentNode == nullptr)
+		{
+			rootNode_ = FilterNode::Ptr();
+		}
+		else
+		{
+			auto n = node->shared_from_this();
+			parentNode->removeChild(n);
+		}
+		endResetModel();
+	}
 }

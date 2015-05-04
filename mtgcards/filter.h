@@ -95,6 +95,7 @@ public:
 	typedef std::shared_ptr<FilterNode> Ptr;
 
 	static Ptr create();
+	static Ptr createFromFile(const QString& file);
 
 	enum class Type
 	{
@@ -113,10 +114,12 @@ public:
 
 	const std::vector<Ptr>& getChildren() const;
 	void addChild(Ptr& child);
+	void removeChild(Ptr& child);
 
 	Ptr getParent() const;
 
 	const Filter& getFilter() const;
+	Filter& getFilter();
 	void setFilter(Filter filter);
 
 private:

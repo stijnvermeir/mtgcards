@@ -1,6 +1,8 @@
 #include "magicsortfilterproxymodel.h"
 #include "manacost.h"
 
+#include <QDebug>
+
 #include <functional>
 
 using namespace std;
@@ -69,7 +71,8 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 			{
 				return true;
 			}
-			return node->getFilter().function->apply(data(index(source_row, columnIndex)));
+			QVariant d = sourceModel()->data(sourceModel()->index(source_row, columnIndex));
+			return node->getFilter().function->apply(d);
 		}
 		return false;
 	};

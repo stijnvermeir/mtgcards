@@ -12,6 +12,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
 	, poolTableModel_()
+	, rootFilterNode_()
 {
 	ui_.setupUi(this);
 
@@ -23,7 +24,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
-	connect(ui_.actionAdvancedFilter, SIGNAL(toggled(bool)), this, SLOT(actionAdvancedFilterToggled(bool)));
+	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
 }
 
 PoolWindow::~PoolWindow()
@@ -70,50 +71,11 @@ void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/
 	emit selectCardChanged(rv.first, rv.second);
 }
 
-void PoolWindow::actionAdvancedFilterToggled(bool enabled)
+void PoolWindow::actionAdvancedFilter()
 {
-	if (enabled)
-	{
-		FilterEditorDialog editor;
-		FilterNode::Ptr root = FilterNode::create();
-		/*
-		root->setType(FilterNode::Type::AND);
-		FilterNode::Ptr a = FilterNode::create();
-		root->addChild(a);
-		a->setType(FilterNode::Type::OR);
-		FilterNode::Ptr a1 = FilterNode::create();
-		a->addChild(a1);
-		a1->setType(FilterNode::Type::LEAF);
-		Filter a1Filter;
-		a1Filter.column = mtg::ColumnType::ManaCost;
-		a1Filter.function = FilterFunctionFactory::createRegex(".*R.*");
-		a1->setFilter(std::move(a1Filter));
-		FilterNode::Ptr a2 = FilterNode::create();
-		a->addChild(a2);
-		a2->setType(FilterNode::Type::LEAF);
-		Filter a2Filter;
-		a2Filter.column = mtg::ColumnType::Text;
-		a2Filter.function = FilterFunctionFactory::createRegex(".*counter.*");
-		a2->setFilter(std::move(a2Filter));
-		FilterNode::Ptr b = FilterNode::create();
-		root->addChild(b);
-		b->setType(FilterNode::Type::LEAF);
-		Filter bFilter;
-		bFilter.column = mtg::ColumnType::SetCode;
-		bFilter.function = FilterFunctionFactory::createRegex("M15");
-		b->setFilter(std::move(bFilter));
-		root->saveToFile("test.json");
-		*/
-		root->loadFromFile("test.json");
-
-		editor.setFilterRootNode(root);
-
-		//editor.setFilterRootNode(poolTableModel_.getFilterRootNode());
-		editor.exec();
-		//poolTableModel_.setFilterRootNode(editor.getFilterRootNode());
-	}
-	else
-	{
-		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
-	}
+	FilterEditorDialog editor;
+	editor.setFilterRootNode(rootFilterNode_);
+	editor.exec();
+	rootFilterNode_ = editor.getFilterRootNode();
+	poolTableModel_.setFilterRootNode(rootFilterNode_);
 }

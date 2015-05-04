@@ -19,4 +19,12 @@ public:
 private:
 	Ui::FilterEditorDialog ui_;
 	FilterModel model_;
+
+private slots:
+	void newBtnClicked();
+	void openBtnClicked();
+	void saveBtnClicked();
+	void addGroupBtnClicked();
+	void addFilterBtnClicked();
+	void deleteNodeBtnClicked();
 };

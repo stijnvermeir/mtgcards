@@ -2,6 +2,7 @@
 
 #include "magiclayouttype.h"
 #include "pooltablemodel.h"
+#include "filter.h"
 #include "ui_poolwindow.h"
 
 #include <QMainWindow>
@@ -26,10 +27,11 @@ signals:
 private:
 	Ui::PoolWindow ui_;
 	PoolTableModel poolTableModel_;
+	FilterNode::Ptr rootFilterNode_;
 
 	void closeEvent(QCloseEvent* event);
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
-	void actionAdvancedFilterToggled(bool);
+	void actionAdvancedFilter();
 };
