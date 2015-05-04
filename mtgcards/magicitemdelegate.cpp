@@ -4,8 +4,6 @@
 
 #include <QPaintEngine>
 #include <QLabel>
-#include <QFile>
-#include <QTextStream>
 
 MagicItemDelegate::MagicItemDelegate(QWidget* parent)
 	: QStyledItemDelegate(parent)

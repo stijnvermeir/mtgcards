@@ -2,6 +2,7 @@
 
 #include "magiclayouttype.h"
 #include "ui_cardwindow.h"
+
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QTimer>

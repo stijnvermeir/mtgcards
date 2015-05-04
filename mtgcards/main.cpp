@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
-#include <QMessageBox>
 
 #include <iostream>
 

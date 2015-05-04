@@ -1,6 +1,5 @@
 #include "filtermodel.h"
 
-#include <QList>
 #include <QDebug>
 
 using namespace std;
@@ -15,18 +14,6 @@ FilterModel::~FilterModel()
 {
 }
 
-void FilterModel::setFilterRootNode(const FilterNode::Ptr& rootNode)
-{
-	beginResetModel();
-	rootNode_ = rootNode;
-	endResetModel();
-}
-
-const FilterNode::Ptr& FilterModel::getFilterRootNode() const
-{
-	return rootNode_;
-}
-
 QModelIndex FilterModel::index(int row, int column, const QModelIndex& parent) const
 {
 	if (!parent.isValid())
@@ -36,9 +23,13 @@ QModelIndex FilterModel::index(int row, int column, const QModelIndex& parent) c
 	else
 	{
 		FilterNode* parentNode = reinterpret_cast<FilterNode*>(parent.internalPointer());
-		FilterNode* childNode = parentNode->getChildren()[static_cast<size_t>(row)].get();
-		return createIndex(row, column, reinterpret_cast<void*>(childNode));
+		if (parentNode && row >= 0 && static_cast<size_t>(row) < parentNode->getChildren().size())
+		{
+			FilterNode* childNode = parentNode->getChildren()[static_cast<size_t>(row)].get();
+			return createIndex(row, column, childNode);
+		}
 	}
+	return QModelIndex();
 }
 
 QModelIndex FilterModel::parent(const QModelIndex& child) const
@@ -60,7 +51,7 @@ QModelIndex FilterModel::parent(const QModelIndex& child) const
 	}
 	if (parentNode == rootNode_.get())
 	{
-		return createIndex(0, 0, reinterpret_cast<void*>(parentNode));
+		return createIndex(0, 0, parentNode);
 	}
 	FilterNode* parentParentNode = parentNode->getParent().get();
 	for (int row = 0; row < static_cast<int>(parentParentNode->getChildren().size()); ++row)
@@ -89,7 +80,7 @@ int FilterModel::rowCount(const QModelIndex& parent) const
 
 int FilterModel::columnCount(const QModelIndex& /*parent*/) const
 {
-	return 3;
+	return Column::COUNT;
 }
 
 QVariant FilterModel::data(const QModelIndex& index, int role) const
@@ -99,7 +90,7 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 	}
 
-	const FilterNode* node;
+	const FilterNode* node = nullptr;
 	if (index.isValid())
 	{
 		node = reinterpret_cast<const FilterNode*>(index.internalPointer());
@@ -110,25 +101,19 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 	}
 	if (node)
 	{
-		if (index.column() == 0)
+		if (index.column() == Column::Type)
 		{
-			if (node->getType() == FilterNode::Type::AND)
-			{
-				return "AND";
-			}
-			else
-			if (node->getType() == FilterNode::Type::OR)
-			{
-				return "OR";
-			}
-			else
 			if (node->getType() == FilterNode::Type::LEAF)
 			{
-				 return static_cast<QString>(node->getFilter().function->getType());
+				 return node->getFilter().function->getId();
+			}
+			else
+			{
+				return static_cast<QString>(node->getType());
 			}
 		}
 		else
-		if (index.column() == 1)
+		if (index.column() == Column::Field)
 		{
 			if (node->getType() == FilterNode::Type::LEAF)
 			{
@@ -136,7 +121,7 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 			}
 		}
 		else
-		if (index.column() == 2)
+		if (index.column() == Column::Filter)
 		{
 			if (node->getType() == FilterNode::Type::LEAF)
 			{
@@ -159,17 +144,17 @@ QVariant FilterModel::headerData(int section, Qt::Orientation orientation, int r
 		return QVariant();
 	}
 
-	if (section == 0)
+	if (section == Column::Type)
 	{
 		return "Type";
 	}
 
-	if (section == 1)
+	if (section == Column::Field)
 	{
 		return "Field";
 	}
 
-	if (section == 2)
+	if (section == Column::Filter)
 	{
 		return "Filter";
 	}
@@ -185,6 +170,18 @@ Qt::ItemFlags FilterModel::flags(const QModelIndex& index) const
 		return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
 	}
 	return QAbstractItemModel::flags(index);
+}
+
+void FilterModel::setFilterRootNode(const FilterNode::Ptr& rootNode)
+{
+	beginResetModel();
+	rootNode_ = rootNode;
+	endResetModel();
+}
+
+const FilterNode::Ptr& FilterModel::getFilterRootNode() const
+{
+	return rootNode_;
 }
 
 void FilterModel::addNode(FilterNode::Ptr& node, const QModelIndex& index)

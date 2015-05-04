@@ -1,6 +1,5 @@
 #include "deckwindow.h"
 
-#include <QSettings>
 #include <QCloseEvent>
 #include <QDebug>
 

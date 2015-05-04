@@ -1,7 +1,5 @@
 #include "filter.h"
 
-#include "magicconvert.h"
-
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -9,163 +7,111 @@
 #include <QDebug>
 
 #include <array>
-#include <functional>
+#include <map>
 
 using namespace std;
 
-namespace {
-
-const array<QString, FilterFunctionType::COUNT> NAMES =
-{{
-	"Regex"
-}};
-
-FilterNode::Type filterNodeTypeFromString(const QString& s)
+struct FilterFunctionManager::Pimpl
 {
-	if (s == "AND")
+	map<QString, CreateFunc> createFunctions;
+	vector<QString> registeredFunctions;
+
+	bool registerFilterFunction(const QString& id, const CreateFunc& createFunc)
 	{
-		return FilterNode::Type::AND;
+		qDebug() << "Registering filter function with ID " << id;
+		auto it = createFunctions.find(id);
+		if (it == createFunctions.end())
+		{
+			createFunctions[id] = createFunc;
+			registeredFunctions.push_back(id);
+			qDebug() << "Filter function with ID " << id << " registered.";
+			return true;
+		}
+		qWarning() << "Failed to register filter function with ID " << id;
+		return false;
 	}
-	if (s == "OR")
+
+	FilterFunction::Ptr createFromId(const QString& id) const
 	{
-		return FilterNode::Type::OR;
+		auto it = createFunctions.find(id);
+		if (it != createFunctions.end())
+		{
+			return it->second();
+		}
+		return FilterFunction::Ptr();
 	}
-	return FilterNode::Type::LEAF;
+};
+
+FilterFunctionManager& FilterFunctionManager::instance()
+{
+	static FilterFunctionManager inst;
+	return inst;
 }
 
-QString filterNodeTypeToString(const FilterNode::Type t)
+FilterFunctionManager::FilterFunctionManager()
+	: pimpl_(new Pimpl())
 {
-	if (t == FilterNode::Type::AND)
+}
+
+FilterFunctionManager::~FilterFunctionManager()
+{
+}
+
+bool FilterFunctionManager::registerFilterFunction(const QString& id, const CreateFunc& createFunc)
+{
+	return pimpl_->registerFilterFunction(id, createFunc);
+}
+
+FilterFunction::Ptr FilterFunctionManager::createFromId(const QString& id) const
+{
+	return pimpl_->createFromId(id);
+}
+
+const vector<QString>& FilterFunctionManager::getRegisteredFunctions() const
+{
+	return pimpl_->registeredFunctions;
+}
+
+// =================================================================
+// FilterNode
+// =================================================================
+
+FilterNode::Type::Type(const type_t value)
+	: value_(value)
+{
+}
+
+FilterNode::Type::Type(const QString& stringValue)
+	: value_(LEAF)
+{
+	if (stringValue == "AND")
+	{
+		value_ = Type::AND;
+	}
+	else
+	if (stringValue == "OR")
+	{
+		value_ = Type::OR;
+	}
+}
+
+FilterNode::Type::operator QString() const
+{
+	if (value_ == Type::AND)
 	{
 		return "AND";
 	}
-	if (t == FilterNode::Type::OR)
+	if (value_ == Type::OR)
 	{
 		return "OR";
 	}
 	return "LEAF";
 }
 
-QJsonObject filterFunctionToJson(const FilterFunction::Ptr& function)
-{
-	QJsonObject obj;
-	if (function->getType() == FilterFunctionType::Regex)
-	{
-		obj["type"] = static_cast<QString>(function->getType());
-		obj["regex"] = static_cast<const RegexFilterFunction*>(function.get())->getRegex().pattern();
-	}
-	return obj;
-}
-
-FilterFunction::Ptr filterFunctionFromJson(const QJsonObject& obj)
-{
-	FilterFunctionType  filterFunctionType (obj["type"].toString());
-	if (filterFunctionType == FilterFunctionType::Regex)
-	{
-		return FilterFunctionFactory::createRegex(obj["regex"].toString());
-	}
-	return FilterFunction::Ptr();
-}
-
-} // namespace
-
-// ================================================================
-// FilterFunctionType
-// ================================================================
-
-FilterFunctionType::FilterFunctionType(const type_t value)
-	: value_(value)
-{
-}
-
-FilterFunctionType::FilterFunctionType(const QString& stringValue)
-	: value_(UNKNOWN)
-{
-	auto it = find(NAMES.begin(), NAMES.end(), stringValue);
-	if (it != NAMES.end())
-	{
-		value_ = static_cast<type_t>(it - NAMES.begin());
-	}
-}
-
-FilterFunctionType::operator QString () const
-{
-	if (value_ >= 0 && value_ < COUNT)
-	{
-		return NAMES[value_];
-	}
-	return "UNKNOWN";
-}
-
-FilterFunctionType::operator type_t () const
+FilterNode::Type::operator type_t() const
 {
 	return value_;
 }
-
-const vector<FilterFunctionType>& FilterFunctionType::list()
-{
-	static vector<FilterFunctionType> l;
-	static bool ready = false;
-	if (!ready)
-	{
-		l.reserve(COUNT);
-		for (int i = 0; i < COUNT; ++i)
-		{
-			l.push_back(FilterFunctionType(static_cast<FilterFunctionType::type_t>(i)));
-		}
-		ready = true;
-	}
-	return l;
-}
-
-// ================================================================
-// RegexFilterFunction
-// ================================================================
-
-RegexFilterFunction::RegexFilterFunction()
-	: regex_()
-{
-}
-
-void RegexFilterFunction::setRegex(const QRegularExpression& regex)
-{
-	regex_ = regex;
-}
-
-const QRegularExpression& RegexFilterFunction::getRegex() const
-{
-	return regex_;
-}
-
-FilterFunctionType RegexFilterFunction::getType() const
-{
-	return FilterFunctionType::Regex;
-}
-
-bool RegexFilterFunction::apply(const QVariant& data) const
-{
-	return regex_.match(mtg::toString(data)).hasMatch();
-}
-
-QString RegexFilterFunction::getDescription() const
-{
-	return regex_.pattern();
-}
-
-// ================================================================
-// FilterFunctionFactory
-// ================================================================
-
-FilterFunction::Ptr FilterFunctionFactory::createRegex(const QString& regexPattern)
-{
-	auto func = new RegexFilterFunction();
-	func->setRegex(QRegularExpression(regexPattern));
-	return FilterFunction::Ptr(func);
-}
-
-// ================================================================
-// FilterNode
-// ================================================================
 
 FilterNode::Ptr FilterNode::create()
 {
@@ -204,7 +150,7 @@ bool FilterNode::loadFromFile(const QString& file)
 
 	std::function<void(const QJsonObject&, FilterNode&)> jsonToNode = [&jsonToNode](const QJsonObject& obj, FilterNode& node)
 	{
-		node.setType(filterNodeTypeFromString(obj["type"].toString()));
+		node.setType(obj["type"].toString());
 		auto childArray = obj["children"].toArray();
 		for (const auto& childObj : childArray)
 		{
@@ -215,7 +161,12 @@ bool FilterNode::loadFromFile(const QString& file)
 		if (obj.contains("filter"))
 		{
 			node.filter_.column = mtg::ColumnType(obj["filter"].toObject()["column"].toString());
-			node.filter_.function = filterFunctionFromJson(obj["filter"].toObject()["function"].toObject());
+			QJsonObject filterFunction = obj["filter"].toObject()["function"].toObject();
+			node.filter_.function = FilterFunctionManager::instance().createFromId(filterFunction["type"].toString());
+			if (node.filter_.function)
+			{
+				node.filter_.function->fromJson(filterFunction);
+			}
 		}
 	};
 
@@ -228,7 +179,7 @@ bool FilterNode::saveToFile(const QString& file) const
 	std::function<QJsonObject(const FilterNode& node)> nodeToJson = [&nodeToJson](const FilterNode& node)
 	{
 		QJsonObject o;
-		o["type"] = filterNodeTypeToString(node.getType());
+		o["type"] = static_cast<QString>(node.getType());
 		QJsonArray childArray;
 		for (const FilterNode::Ptr& child : node.getChildren())
 		{
@@ -239,7 +190,7 @@ bool FilterNode::saveToFile(const QString& file) const
 		{
 			QJsonObject filterObject;
 			filterObject["column"] = static_cast<QString>(node.getFilter().column);
-			filterObject["function"] = filterFunctionToJson(node.getFilter().function);
+			filterObject["function"] = node.getFilter().function->toJson();
 			o["filter"] = filterObject;
 		}
 		return o;

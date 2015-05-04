@@ -14,7 +14,6 @@ class CardData
 {
 public:
 	static CardData& instance();
-	~CardData();
 
 	void reload();
 	int getNumRows() const;
@@ -24,6 +23,7 @@ public:
 
 private:
 	CardData();
+	~CardData();
 
 	struct Pimpl;
 	std::unique_ptr<Pimpl> pimpl_;

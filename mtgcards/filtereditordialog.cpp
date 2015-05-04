@@ -4,7 +4,6 @@
 #include <QFileDialog>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QLineEdit>
 
 namespace {
 
@@ -18,7 +17,21 @@ public:
 		{
 			if (filterNode->getType() == FilterNode::Type::LEAF)
 			{
-				if (index.column() == 1)
+				if (index.column() == FilterModel::Column::Type)
+				{
+					QComboBox* typeCbx = new QComboBox(parent);
+					for (const auto& type : FilterFunctionManager::instance().getRegisteredFunctions())
+					{
+						typeCbx->addItem(type);
+					}
+					if (filterNode->getFilter().function)
+					{
+						typeCbx->setCurrentText(filterNode->getFilter().function->getId());
+					}
+					return typeCbx;
+				}
+				else
+				if (index.column() == FilterModel::Column::Field)
 				{
 					QComboBox* columnCbx = new QComboBox(parent);
 					for (const auto& col : mtg::ColumnType::list())
@@ -29,24 +42,22 @@ public:
 					return columnCbx;
 				}
 				else
-				if (index.column() == 2)
+				if (index.column() == FilterModel::Column::Filter)
 				{
-					if (filterNode->getFilter().function && filterNode->getFilter().function->getType() == FilterFunctionType::Regex)
+					if (filterNode->getFilter().function)
 					{
-						QLineEdit* regexTxt = new QLineEdit(parent);
-						regexTxt->setText(static_cast<RegexFilterFunction*>(filterNode->getFilter().function.get())->getRegex().pattern());
-						return regexTxt;
+						return filterNode->getFilter().function->createEditor(parent);
 					}
 				}
 			}
 			else
 			{
-				if (index.column() == 0)
+				if (index.column() == FilterModel::Column::Type)
 				{
 					QComboBox* nodeTypeCbx = new QComboBox(parent);
-					nodeTypeCbx->addItem("AND");
-					nodeTypeCbx->addItem("OR");
-					nodeTypeCbx->setCurrentText(filterNode->getType() == FilterNode::Type::AND ? "AND" : "OR");
+					nodeTypeCbx->addItem(static_cast<QString>(FilterNode::Type(FilterNode::Type::AND)));
+					nodeTypeCbx->addItem(static_cast<QString>(FilterNode::Type(FilterNode::Type::OR)));
+					nodeTypeCbx->setCurrentText(filterNode->getType());
 					return nodeTypeCbx;
 				}
 			}
@@ -65,27 +76,35 @@ public:
 			{
 				if (filterNode->getType() == FilterNode::Type::LEAF)
 				{
-					if (index.column() == 1)
+					if (index.column() == FilterModel::Column::Type)
+					{
+						QComboBox* typeCbx = static_cast<QComboBox*>(editor);
+						if (!filterNode->getFilter().function || filterNode->getFilter().function->getId() != typeCbx->currentText())
+						{
+							filterNode->getFilter().function = FilterFunctionManager::instance().createFromId(typeCbx->currentText());
+						}
+					}
+					else
+					if (index.column() == FilterModel::Column::Field)
 					{
 						QComboBox* columnCbx = static_cast<QComboBox*>(editor);
 						filterNode->getFilter().column = mtg::ColumnType(columnCbx->currentText());
 					}
 					else
-					if (index.column() == 2)
+					if (index.column() == FilterModel::Column::Filter)
 					{
-						if (filterNode->getFilter().function && filterNode->getFilter().function->getType() == FilterFunctionType::Regex)
+						if (filterNode->getFilter().function)
 						{
-							QLineEdit* regexTxt = static_cast<QLineEdit*>(editor);
-							static_cast<RegexFilterFunction*>(filterNode->getFilter().function.get())->setRegex(QRegularExpression(regexTxt->text()));
+							filterNode->getFilter().function->updateFromEditor(editor);
 						}
 					}
 				}
 				else
 				{
-					if (index.column() == 0)
+					if (index.column() == FilterModel::Column::Type)
 					{
 						QComboBox* nodeTypeCbx = static_cast<QComboBox*>(editor);
-						filterNode->setType(nodeTypeCbx->currentText() == "AND" ? FilterNode::Type::AND : FilterNode::Type::OR);
+						filterNode->setType(nodeTypeCbx->currentText());
 					}
 				}
 			}
@@ -171,7 +190,8 @@ void FilterEditorDialog::addGroupBtnClicked()
 void FilterEditorDialog::addFilterBtnClicked()
 {
 	FilterNode::Ptr child = FilterNode::create();
-	child->getFilter().function = FilterFunctionFactory::createRegex("");
+	auto firstFilterFuncId = FilterFunctionManager::instance().getRegisteredFunctions().front();
+	child->getFilter().function = FilterFunctionManager::instance().createFromId(firstFilterFuncId);
 
 	auto currentIndex = ui_.treeView->currentIndex();
 	model_.addNode(child, currentIndex);
@@ -183,4 +203,5 @@ void FilterEditorDialog::deleteNodeBtnClicked()
 {
 	model_.deleteNode(ui_.treeView->currentIndex());
 	ui_.treeView->expandAll();
+	// TODO: set some node that makes sense as current
 }

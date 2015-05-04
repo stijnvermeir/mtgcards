@@ -4,40 +4,12 @@
 
 #include <QVariant>
 #include <QString>
-#include <QRegularExpression>
+#include <QJsonObject>
+#include <QWidget>
 
 #include <vector>
 #include <memory>
-
-// ================================================================
-// FilterFunctionType
-// ================================================================
-
-class FilterFunctionType
-{
-public:
-	enum type_t
-	{
-		Regex,
-
-		COUNT,
-		UNKNOWN = -1
-	};
-
-	FilterFunctionType(const type_t value = UNKNOWN);
-	FilterFunctionType(const QString& stringValue);
-
-	operator QString () const;
-	operator type_t () const;
-
-	static const std::vector<FilterFunctionType>& list();
-private:
-	type_t value_;
-};
-
-// ================================================================
-// FilterFunction
-// ================================================================
+#include <functional>
 
 class FilterFunction
 {
@@ -45,39 +17,34 @@ public:
 	typedef std::unique_ptr<FilterFunction> Ptr;
 
 	virtual ~FilterFunction() {}
-	virtual FilterFunctionType getType() const = 0;
+	virtual const QString& getId() const = 0;
 	virtual bool apply(const QVariant& data) const = 0;
 	virtual QString getDescription() const = 0;
+	virtual QJsonObject toJson() const = 0;
+	virtual void fromJson(const QJsonObject& obj) = 0;
+	virtual QWidget* createEditor(QWidget* parent) const = 0;
+	virtual void updateFromEditor(const QWidget* editor) = 0;
 };
 
-class RegexFilterFunction : public FilterFunction
+class FilterFunctionManager
 {
-public:
-	RegexFilterFunction();
-
-	const QRegularExpression& getRegex() const;
-	void setRegex(const QRegularExpression& regex);
-
-	virtual FilterFunctionType getType() const;
-	virtual bool apply(const QVariant& data) const;
-	virtual QString getDescription() const;
 private:
-	QRegularExpression regex_;
-};
+	FilterFunctionManager();
+	~FilterFunctionManager();
 
-// ================================================================
-// FilterFunctionFactory
-// ================================================================
-
-class FilterFunctionFactory
-{
 public:
-	static FilterFunction::Ptr createRegex(const QString& regexPattern);
-};
+	typedef std::function<FilterFunction::Ptr(void)> CreateFunc;
 
-// ================================================================
-// FilterNode
-// ================================================================
+	static FilterFunctionManager& instance();
+
+	bool registerFilterFunction(const QString& id, const CreateFunc& createFunc);
+	FilterFunction::Ptr createFromId(const QString& id) const;
+	const std::vector<QString>& getRegisteredFunctions() const;
+
+private:
+	struct Pimpl;
+	std::unique_ptr<Pimpl> pimpl_;
+};
 
 struct Filter
 {
@@ -92,17 +59,29 @@ struct Filter
 class FilterNode : public std::enable_shared_from_this<FilterNode>
 {
 public:
+	class Type
+	{
+	public:
+		enum type_t
+		{
+			AND,
+			OR,
+			LEAF
+		};
+
+		Type(const type_t value = AND);
+		Type(const QString& stringValue);
+
+		operator QString() const;
+		operator type_t () const;
+	private:
+		type_t value_;
+	};
+
 	typedef std::shared_ptr<FilterNode> Ptr;
 
 	static Ptr create();
 	static Ptr createFromFile(const QString& file);
-
-	enum class Type
-	{
-		AND,
-		OR,
-		LEAF
-	};
 
 	FilterNode();
 

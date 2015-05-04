@@ -1,6 +1,5 @@
 #include "cardwindow.h"
 
-#include <QSettings>
 #include <QCloseEvent>
 #include <QGraphicsPixmapItem>
 #include <QDebug>
