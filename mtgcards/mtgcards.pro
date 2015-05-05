@@ -36,7 +36,9 @@ SOURCES += main.cpp\
     magicconvert.cpp \
     filters/regexfilterfunction.cpp \
     filters/datefilterfunction.cpp \
-    settings.cpp
+    settings.cpp \
+    collectiontablemodel.cpp \
+    magiccollection.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -60,7 +62,9 @@ HEADERS  += mainwindow.h \
     magicconvert.h \
     filters/regexfilterfunction.h \
     filters/datefilterfunction.h \
-    settings.h
+    settings.h \
+    collectiontablemodel.h \
+    magiccollection.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

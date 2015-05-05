@@ -121,6 +121,7 @@ struct CardData::Pimpl
 	Pimpl()
 		: data()
 	{
+		reload();
 	}
 
 	void reload()

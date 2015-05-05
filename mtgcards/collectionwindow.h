@@ -1,6 +1,9 @@
 #pragma once
 
+#include "collectiontablemodel.h"
+#include "filter.h"
 #include "ui_collectionwindow.h"
+
 #include <QMainWindow>
 
 class CollectionWindow : public QMainWindow
@@ -16,6 +19,11 @@ signals:
 
 private:
 	Ui::CollectionWindow ui_;
+	CollectionTableModel collectionTableModel_;
+	FilterNode::Ptr rootFilterNode_;
 
 	void closeEvent(QCloseEvent* event);
+
+private slots:
+	void hideColumnsContextMenuRequested(const QPoint& pos);
 };

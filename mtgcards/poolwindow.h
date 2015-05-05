@@ -34,4 +34,5 @@ private:
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
 	void actionAdvancedFilter();
+	void hideColumnsContextMenuRequested(const QPoint& pos);
 };

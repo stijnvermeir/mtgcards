@@ -6,6 +6,7 @@
 
 #include <QSettings>
 #include <QCloseEvent>
+#include <QMenu>
 #include <QDebug>
 
 PoolWindow::PoolWindow(QWidget *parent)
@@ -18,9 +19,12 @@ PoolWindow::PoolWindow(QWidget *parent)
 
 	ui_.poolTbl_->setItemDelegate(new MagicItemDelegate());
 	ui_.poolTbl_->setModel(&poolTableModel_);
-	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.poolTbl_->setSortingEnabled(true);
 	ui_.poolTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
+	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
+
+	ui_.poolTbl_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui_.poolTbl_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
 
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
@@ -78,4 +82,23 @@ void PoolWindow::actionAdvancedFilter()
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
 	poolTableModel_.setFilterRootNode(rootFilterNode_);
+}
+
+void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)
+{
+	QMenu contextMenu(this);
+	for (int i = 0; i < poolTableModel_.columnCount(); ++i)
+	{
+		QAction* action = new QAction(&contextMenu);
+		action->setCheckable(true);
+		action->setText(poolTableModel_.headerData(i, Qt::Horizontal).toString());
+		action->setData(i);
+		action->setChecked(!ui_.poolTbl_->horizontalHeader()->isSectionHidden(i));
+		contextMenu.addAction(action);
+	}
+	QAction* a = contextMenu.exec(ui_.poolTbl_->horizontalHeader()->mapToGlobal(pos));
+	if (a)
+	{
+		ui_.poolTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+	}
 }
