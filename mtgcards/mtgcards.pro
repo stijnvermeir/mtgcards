@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     magicitemdelegate.cpp \
     filter.cpp \
     magicconvert.cpp \
-    filters/regexfilterfunction.cpp
+    filters/regexfilterfunction.cpp \
+    filters/datefilterfunction.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -56,7 +57,8 @@ HEADERS  += mainwindow.h \
     magiccarddata.h \
     magicitemdelegate.h \
     magicconvert.h \
-    filters/regexfilterfunction.h
+    filters/regexfilterfunction.h \
+    filters/datefilterfunction.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
