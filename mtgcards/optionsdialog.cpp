@@ -1,7 +1,7 @@
 #include "optionsdialog.h"
+#include "settings.h"
 
 #include <QFileDialog>
-#include <QSettings>
 
 OptionsDialog::OptionsDialog(QWidget *parent)
 	: QDialog(parent)
@@ -12,10 +12,11 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
 	connect(ui_.browseAllSetsJsonBtn, SIGNAL(clicked()), this, SLOT(browseAllSetsJsonBtnClicked()));
 	connect(ui_.browseCardPictureDirBtn, SIGNAL(clicked()), this, SLOT(browseCardPictureDirBtnClicked()));
+	connect(ui_.browseAppDataDirBtn, SIGNAL(clicked()), this, SLOT(browseAppDataDirBtnClicked()));
 
-	QSettings settings;
-	ui_.allSetsJsonTxt->setText(settings.value("options/datasources/allsetsjson").toString());
-	ui_.cardPictureDirTxt->setText(settings.value("options/datasources/cardpicturedir").toString());
+	ui_.allSetsJsonTxt->setText(Settings::instance().getPoolDataFile());
+	ui_.cardPictureDirTxt->setText(Settings::instance().getCardImageDir());
+	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
 }
 
 OptionsDialog::~OptionsDialog()
@@ -29,23 +30,46 @@ bool OptionsDialog::isPoolReloadRequired() const
 
 void OptionsDialog::browseAllSetsJsonBtnClicked()
 {
-    auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", "", tr("AllSets (*AllSets.json)"));
+	QString startDir = ui_.allSetsJsonTxt->text();
+	if (startDir.isEmpty())
+	{
+		startDir = QDir::homePath();
+	}
+	auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", startDir, tr("AllSets (*AllSets.json)"));
 	if (!filename.isNull())
 	{
 		ui_.allSetsJsonTxt->setText(filename);
-		QSettings settings;
-		settings.setValue("options/datasources/allsetsjson", filename);
+		Settings::instance().setPoolDataFile(filename);
 		poolReloadRequired_ = true;
 	}
 }
 
 void OptionsDialog::browseCardPictureDirBtnClicked()
 {
-	auto dir = QFileDialog::getExistingDirectory(this, "Locate Card Picture Dir");
+	QString startDir = ui_.cardPictureDirTxt->text();
+	if (startDir.isEmpty())
+	{
+		startDir = QDir::homePath();
+	}
+	auto dir = QFileDialog::getExistingDirectory(this, "Locate Card Picture Dir", startDir);
 	if (!dir.isNull())
 	{
 		ui_.cardPictureDirTxt->setText(dir);
-		QSettings settings;
-		settings.setValue("options/datasources/cardpicturedir", dir);
+		Settings::instance().setCardImageDir(dir);
+	}
+}
+
+void OptionsDialog::browseAppDataDirBtnClicked()
+{
+	QString startDir = ui_.appDataDirTxt->text();
+	if (startDir.isEmpty())
+	{
+		startDir = QDir::homePath();
+	}
+	auto dir = QFileDialog::getExistingDirectory(this, "Locate App Data Dir", startDir);
+	if (!dir.isNull())
+	{
+		ui_.appDataDirTxt->setText(dir);
+		Settings::instance().setAppDataDir(dir);
 	}
 }

@@ -20,4 +20,5 @@ private:
 private slots:
 	void browseAllSetsJsonBtnClicked();
 	void browseCardPictureDirBtnClicked();
+	void browseAppDataDirBtnClicked();
 };

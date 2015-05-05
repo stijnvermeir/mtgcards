@@ -1,6 +1,7 @@
 #include "magiccarddata.h"
 
 #include "manacost.h"
+#include "settings.h"
 
 #include <QDate>
 #include <QDir>
@@ -9,7 +10,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QSettings>
 #include <QDebug>
 
 #include <array>
@@ -127,8 +127,7 @@ struct CardData::Pimpl
 	{
 		data.clear();
 
-		QSettings settings;
-		QFile file(settings.value("options/datasources/allsetsjson").toString());
+		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
 			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
@@ -282,8 +281,7 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 	mtg::LayoutType layout = mtg::LayoutType::Normal;
 	if (row < getNumRows())
 	{
-		QSettings settings;
-		QString prefix = settings.value("options/datasources/cardpicturedir").toString();
+		QString prefix = Settings::instance().getCardImageDir();
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
 		auto addToListLambda = [&list, &notFoundImageFile, &imageName](QString imageFile)

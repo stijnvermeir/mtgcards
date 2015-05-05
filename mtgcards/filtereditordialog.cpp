@@ -1,5 +1,7 @@
 #include "filtereditordialog.h"
 
+#include "settings.h"
+
 #include <QStyledItemDelegate>
 #include <QFileDialog>
 #include <QtWidgets/QHBoxLayout>
@@ -159,7 +161,7 @@ void FilterEditorDialog::newBtnClicked()
 
 void FilterEditorDialog::openBtnClicked()
 {
-	auto filename = QFileDialog::getOpenFileName(this, "Open Filter Tree file", QDir::homePath(), "Filters (*.filter)");
+	auto filename = QFileDialog::getOpenFileName(this, "Open Filter Tree file", Settings::instance().getFiltersDir(), "Filters (*.filter)");
 	if (!filename.isNull())
 	{
 		model_.setFilterRootNode(FilterNode::createFromFile(filename));
@@ -169,7 +171,7 @@ void FilterEditorDialog::openBtnClicked()
 
 void FilterEditorDialog::saveBtnClicked()
 {
-	auto filename = QFileDialog::getSaveFileName(this, "Save Filter Tree file", QDir::homePath(), "Filters (*.filter)");
+	auto filename = QFileDialog::getSaveFileName(this, "Save Filter Tree file", Settings::instance().getFiltersDir(), "Filters (*.filter)");
 	if (!filename.isNull())
 	{
 		model_.getFilterRootNode()->saveToFile(filename);
