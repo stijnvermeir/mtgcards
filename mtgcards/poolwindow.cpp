@@ -29,6 +29,8 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
+	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
+	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 }
 
 PoolWindow::~PoolWindow()
@@ -82,6 +84,20 @@ void PoolWindow::actionAdvancedFilter()
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
 	poolTableModel_.setFilterRootNode(rootFilterNode_);
+}
+
+void PoolWindow::actionAddToCollection()
+{
+	QModelIndex proxyIndex = ui_.poolTbl_->currentIndex();
+	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+	emit addToCollection(sourceIndex.row());
+}
+
+void PoolWindow::actionAddToDeck()
+{
+	QModelIndex proxyIndex = ui_.poolTbl_->currentIndex();
+	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+	emit addToDeck(sourceIndex.row());
 }
 
 void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)

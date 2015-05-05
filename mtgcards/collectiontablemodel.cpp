@@ -53,6 +53,14 @@ public:
 		endResetModel();
 	}
 
+	void addCard(int row)
+	{
+		beginResetModel();
+		int currentQuantity = mtg::Collection::instance().getQuantity(row);
+		mtg::Collection::instance().setQuantity(row, currentQuantity + 1);
+		endResetModel();
+	}
+
 	virtual int rowCount(const QModelIndex& ) const
 	{
 		return mtg::Collection::instance().getNumRows();
@@ -117,6 +125,11 @@ CollectionTableModel::~CollectionTableModel()
 void CollectionTableModel::reload()
 {
 	pimpl_->loadData();
+}
+
+void CollectionTableModel::addCard(int row)
+{
+	pimpl_->addCard(row);
 }
 
 int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const

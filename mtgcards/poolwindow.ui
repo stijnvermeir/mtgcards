@@ -46,6 +46,8 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAdvancedFilter"/>
+   <addaction name="actionAddToCollection"/>
+   <addaction name="actionAddToDeck"/>
   </widget>
   <action name="actionAdvancedFilter">
    <property name="checkable">
@@ -57,6 +59,36 @@
    </property>
    <property name="text">
     <string>Advanced Filter</string>
+   </property>
+  </action>
+  <action name="actionAddToCollection">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/addd.svg</normaloff>:/resources/icons/addd.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add to collection</string>
+   </property>
+   <property name="toolTip">
+    <string>Add to collection</string>
+   </property>
+   <property name="shortcut">
+    <string>+</string>
+   </property>
+  </action>
+  <action name="actionAddToDeck">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/add113.svg</normaloff>:/resources/icons/add113.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add to deck</string>
+   </property>
+   <property name="toolTip">
+    <string>Add to deck</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
    </property>
   </action>
  </widget>

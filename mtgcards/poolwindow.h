@@ -23,6 +23,8 @@ public:
 signals:
 	void windowClosed(bool);
 	void selectCardChanged(mtg::LayoutType layout, QStringList);
+	void addToCollection(int);
+	void addToDeck(int);
 
 private:
 	Ui::PoolWindow ui_;
@@ -34,5 +36,7 @@ private:
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
 	void actionAdvancedFilter();
+	void actionAddToCollection();
+	void actionAddToDeck();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 };

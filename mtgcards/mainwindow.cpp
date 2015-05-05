@@ -44,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// card preview
 	connect(&poolWindow_, SIGNAL(selectCardChanged(mtg::LayoutType, QStringList)), &cardWindow_, SLOT(changeCardPicture(mtg::LayoutType, QStringList)));
+
+	// add to collection from pool
+	connect(&poolWindow_, SIGNAL(addToCollection(int)), &collectionWindow_, SLOT(addToCollection(int)));
 }
 
 MainWindow::~MainWindow()

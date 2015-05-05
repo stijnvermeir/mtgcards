@@ -24,6 +24,9 @@ private:
 
 	void closeEvent(QCloseEvent* event);
 
+public slots:
+	void addToCollection(int);
+
 private slots:
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 };

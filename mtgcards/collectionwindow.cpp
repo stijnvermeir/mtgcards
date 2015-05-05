@@ -35,6 +35,11 @@ void CollectionWindow::closeEvent(QCloseEvent* event)
 	event->accept();
 }
 
+void CollectionWindow::addToCollection(int row)
+{
+	collectionTableModel_.addCard(row);
+}
+
 void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 {
 	QMenu contextMenu(this);

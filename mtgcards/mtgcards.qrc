@@ -9,5 +9,10 @@
         <file>resources/icons/round57.svg</file>
         <file>resources/icons/save20.svg</file>
         <file>resources/icons/square181.svg</file>
+        <file>resources/icons/add113.svg</file>
+        <file>resources/icons/add119.svg</file>
+        <file>resources/icons/add148.svg</file>
+        <file>resources/icons/addd.svg</file>
+        <file>resources/icons/squares40.svg</file>
     </qresource>
 </RCC>

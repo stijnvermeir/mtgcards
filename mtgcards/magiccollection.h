@@ -17,6 +17,9 @@ public:
 	int getNumRows() const;
 	const QVariant& get(const int row, const ColumnType& column) const;
 
+	int getQuantity(const int dataRowIndex) const;
+	void setQuantity(const int dataRowIndex, const int newQuantity);
+
 private:
 	Collection();
 	~Collection();

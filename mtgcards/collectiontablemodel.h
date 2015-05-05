@@ -12,6 +12,7 @@ public:
 	~CollectionTableModel();
 
 	void reload();
+	void addCard(int row);
 
 private:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;

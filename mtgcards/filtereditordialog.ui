@@ -114,7 +114,7 @@
        </property>
        <property name="icon">
         <iconset resource="mtgcards.qrc">
-         <normaloff>:/resources/icons/square181.svg</normaloff>:/resources/icons/square181.svg</iconset>
+         <normaloff>:/resources/icons/squares40.svg</normaloff>:/resources/icons/squares40.svg</iconset>
        </property>
        <property name="shortcut">
         <string>G</string>
