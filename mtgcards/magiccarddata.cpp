@@ -20,7 +20,8 @@ using namespace mtg;
 
 namespace {
 
-const array<ColumnType, 23> COLUMNS =
+const size_t COLUMNS_SIZE = 23;
+const array<ColumnType, COLUMNS_SIZE> COLUMNS =
 {{
 	ColumnType::Set,
 	ColumnType::SetCode,
@@ -114,7 +115,7 @@ QString removeAccents(QString s)
 
 struct CardData::Pimpl
 {
-	typedef array<QVariant, COLUMNS.max_size()> Row;
+	typedef array<QVariant, COLUMNS_SIZE> Row;
 	vector<Row> data;
 
 	Pimpl()
