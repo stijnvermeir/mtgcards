@@ -30,7 +30,7 @@ private:
 	void setCardPicture(const QString& imageFile, double rotation);
 
 public slots:
-	void changeCardPicture(mtg::LayoutType, QStringList);
+	void changeCardPicture(int);
 
 private slots:
 	void timerExpired();

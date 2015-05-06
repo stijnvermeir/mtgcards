@@ -5,6 +5,7 @@
 #include "ui_collectionwindow.h"
 
 #include <QMainWindow>
+#include <QVector>
 
 class CollectionWindow : public QMainWindow
 {
@@ -12,21 +13,37 @@ class CollectionWindow : public QMainWindow
 
 public:
 	explicit CollectionWindow(QWidget *parent = 0);
-	~CollectionWindow();
+	virtual ~CollectionWindow();
+
+	void reload();
+	void loadSettings();
+	void saveSettings();
 
 signals:
 	void windowClosed(bool);
+	void selectedCardChanged(int);
+	void addToDeck(QVector<int>);
+	void removeFromDeck(QVector<int>);
 
 private:
 	Ui::CollectionWindow ui_;
 	CollectionTableModel collectionTableModel_;
 	FilterNode::Ptr rootFilterNode_;
 
-	void closeEvent(QCloseEvent* event);
+	virtual void closeEvent(QCloseEvent* event);
+	int currentDataRowIndex() const;
+	QVector<int> currentDataRowIndices() const;
 
 public slots:
-	void addToCollection(int);
+	void addToCollection(const QVector<int>&);
+	void removeFromCollection(const QVector<int>&);
 
 private slots:
+	void currentRowChanged(QModelIndex, QModelIndex);
+	void actionAdvancedFilter();
+	void actionAddToCollection();
+	void actionRemoveFromCollection();
+	void actionAddToDeck();
+	void actionRemoveFromDeck();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 };

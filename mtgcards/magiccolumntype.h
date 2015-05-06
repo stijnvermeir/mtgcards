@@ -1,8 +1,6 @@
 #pragma once
 
 #include <QString>
-#include <QMetaType>
-
 #include <vector>
 
 namespace mtg {
@@ -57,5 +55,3 @@ private:
 };
 
 } // namespace mtg
-
-Q_DECLARE_METATYPE(mtg::ColumnType)

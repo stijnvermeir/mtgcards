@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QString>
-#include <QMetaType>
 
 namespace mtg {
 
@@ -31,5 +30,3 @@ private:
 };
 
 } // namespace mtg
-
-Q_DECLARE_METATYPE(mtg::LayoutType)

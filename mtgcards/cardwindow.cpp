@@ -1,5 +1,7 @@
 #include "cardwindow.h"
 
+#include "magiccarddata.h"
+
 #include <QCloseEvent>
 #include <QGraphicsPixmapItem>
 #include <QDebug>
@@ -46,10 +48,11 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 	ui_.cardView_->fitInView(item, Qt::KeepAspectRatio);
 }
 
-void CardWindow::changeCardPicture(mtg::LayoutType layout, QStringList imageFiles)
+void CardWindow::changeCardPicture(int row)
 {
-	imageFiles_ = imageFiles;
-	layoutType_ = layout;
+	auto rv = mtg::CardData::instance().getPictureFilenames(row);
+	imageFiles_ = rv.second;
+	layoutType_ = rv.first;
 
 	if (layoutType_ == mtg::LayoutType::Split)
 	{

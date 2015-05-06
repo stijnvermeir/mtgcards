@@ -49,15 +49,19 @@ public:
 	void loadData()
 	{
 		beginResetModel();
-		mtg::Collection::instance().reload();
+		mtg::Collection::instance().load();
 		endResetModel();
 	}
 
-	void addCard(int row)
+	int getQuantity(const int dataRowIndex) const
+	{
+		return mtg::Collection::instance().getQuantity(dataRowIndex);
+	}
+
+	void setQuantity(const int dataRowIndex, const int newQuantity)
 	{
 		beginResetModel();
-		int currentQuantity = mtg::Collection::instance().getQuantity(row);
-		mtg::Collection::instance().setQuantity(row, currentQuantity + 1);
+		mtg::Collection::instance().setQuantity(dataRowIndex, newQuantity);
 		endResetModel();
 	}
 
@@ -127,9 +131,14 @@ void CollectionTableModel::reload()
 	pimpl_->loadData();
 }
 
-void CollectionTableModel::addCard(int row)
+int CollectionTableModel::getQuantity(const int dataRowIndex) const
 {
-	pimpl_->addCard(row);
+	return pimpl_->getQuantity(dataRowIndex);
+}
+
+void CollectionTableModel::setQuantity(const int dataRowIndex, const int newQuantity)
+{
+	pimpl_->setQuantity(dataRowIndex, newQuantity);
 }
 
 int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const

@@ -18,8 +18,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui_.setupUi(this);
 
-	qRegisterMetaType<mtg::LayoutType>();
-
 	loadSettings();
 
 	// window management
@@ -43,10 +41,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
 
 	// card preview
-	connect(&poolWindow_, SIGNAL(selectCardChanged(mtg::LayoutType, QStringList)), &cardWindow_, SLOT(changeCardPicture(mtg::LayoutType, QStringList)));
+	connect(&poolWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
+	connect(&collectionWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
 
-	// add to collection from pool
-	connect(&poolWindow_, SIGNAL(addToCollection(int)), &collectionWindow_, SLOT(addToCollection(int)));
+	// add / remove
+	connect(&poolWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
+	connect(&poolWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
 }
 
 MainWindow::~MainWindow()
@@ -75,6 +75,7 @@ void MainWindow::loadSettings()
 	collectionWindow_.resize(settings.value("collectionwindow/size", QSize(1428, 367)).toSize());
 	collectionWindow_.move(settings.value("collectionwindow/pos", QPoint(486, 390)).toPoint());
 	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
+	collectionWindow_.loadSettings();
 	deckWindow_.resize(settings.value("deckwindow/size", QSize(1914, 360)).toSize());
 	deckWindow_.move(settings.value("deckwindow/pos", QPoint(0, 786)).toPoint());
 	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
@@ -93,6 +94,7 @@ void MainWindow::saveSettings()
 	settings.setValue("cardwindow/visible", cardWindow_.isVisible());
 	settings.setValue("cardwindow/size", cardWindow_.size());
 	settings.setValue("cardwindow/pos", cardWindow_.pos());
+	collectionWindow_.saveSettings();
 	settings.setValue("collectionwindow/visible", collectionWindow_.isVisible());
 	settings.setValue("collectionwindow/size", collectionWindow_.size());
 	settings.setValue("collectionwindow/pos", collectionWindow_.pos());

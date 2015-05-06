@@ -1,6 +1,5 @@
 #include "poolwindow.h"
 
-#include "magiccarddata.h"
 #include "magicitemdelegate.h"
 #include "filtereditordialog.h"
 
@@ -16,21 +15,19 @@ PoolWindow::PoolWindow(QWidget *parent)
 	, rootFilterNode_()
 {
 	ui_.setupUi(this);
-
 	ui_.poolTbl_->setItemDelegate(new MagicItemDelegate());
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->setSortingEnabled(true);
 	ui_.poolTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui_.poolTbl_->horizontalHeader()->setSectionsMovable(true);
-
 	ui_.poolTbl_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui_.poolTbl_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
-
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
-
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
 	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
+	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
+	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 }
 
 PoolWindow::~PoolWindow()
@@ -70,11 +67,29 @@ void PoolWindow::closeEvent(QCloseEvent* event)
 	event->accept();
 }
 
-void PoolWindow::currentRowChanged(QModelIndex current, QModelIndex /*previous*/)
+int PoolWindow::currentDataRowIndex() const
 {
-	auto mappedIdx = poolTableModel_.mapToSource(current);
-	auto rv = mtg::CardData::instance().getPictureFilenames(mappedIdx.row());
-	emit selectCardChanged(rv.first, rv.second);
+	QModelIndex proxyIndex = ui_.poolTbl_->currentIndex();
+	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+	return sourceIndex.row();
+}
+
+QVector<int> PoolWindow::currentDataRowIndices() const
+{
+	QModelIndexList list = ui_.poolTbl_->selectionModel()->selectedRows();
+	QVector<int> indices;
+	indices.reserve(list.size());
+	for (const auto& proxyIndex : list)
+	{
+		QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+		indices.push_back(sourceIndex.row());
+	}
+	return indices;
+}
+
+void PoolWindow::currentRowChanged(QModelIndex, QModelIndex)
+{
+	emit selectedCardChanged(currentDataRowIndex());
 }
 
 void PoolWindow::actionAdvancedFilter()
@@ -88,16 +103,22 @@ void PoolWindow::actionAdvancedFilter()
 
 void PoolWindow::actionAddToCollection()
 {
-	QModelIndex proxyIndex = ui_.poolTbl_->currentIndex();
-	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
-	emit addToCollection(sourceIndex.row());
+	emit addToCollection(currentDataRowIndices());
+}
+
+void PoolWindow::actionRemoveFromCollection()
+{
+	emit removeFromCollection(currentDataRowIndices());
 }
 
 void PoolWindow::actionAddToDeck()
 {
-	QModelIndex proxyIndex = ui_.poolTbl_->currentIndex();
-	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
-	emit addToDeck(sourceIndex.row());
+	emit addToDeck(currentDataRowIndices());
+}
+
+void PoolWindow::actionRemoveFromDeck()
+{
+	emit removeFromDeck(currentDataRowIndices());
 }
 
 void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)

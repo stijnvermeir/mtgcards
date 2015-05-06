@@ -47,7 +47,9 @@
    </attribute>
    <addaction name="actionAdvancedFilter"/>
    <addaction name="actionAddToCollection"/>
+   <addaction name="actionRemoveFromCollection"/>
    <addaction name="actionAddToDeck"/>
+   <addaction name="actionRemoveFromDeck"/>
   </widget>
   <action name="actionAdvancedFilter">
    <property name="checkable">
@@ -64,7 +66,7 @@
   <action name="actionAddToCollection">
    <property name="icon">
     <iconset resource="mtgcards.qrc">
-     <normaloff>:/resources/icons/addd.svg</normaloff>:/resources/icons/addd.svg</iconset>
+     <normaloff>:/resources/icons/add182.svg</normaloff>:/resources/icons/add182.svg</iconset>
    </property>
    <property name="text">
     <string>Add to collection</string>
@@ -73,13 +75,13 @@
     <string>Add to collection</string>
    </property>
    <property name="shortcut">
-    <string>+</string>
+    <string>Ctrl++</string>
    </property>
   </action>
   <action name="actionAddToDeck">
    <property name="icon">
     <iconset resource="mtgcards.qrc">
-     <normaloff>:/resources/icons/add113.svg</normaloff>:/resources/icons/add113.svg</iconset>
+     <normaloff>:/resources/icons/rounded54.svg</normaloff>:/resources/icons/rounded54.svg</iconset>
    </property>
    <property name="text">
     <string>Add to deck</string>
@@ -88,7 +90,37 @@
     <string>Add to deck</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl++</string>
+    <string>+</string>
+   </property>
+  </action>
+  <action name="actionRemoveFromCollection">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/rounded56.svg</normaloff>:/resources/icons/rounded56.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove from collection</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove from collection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionRemoveFromDeck">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/round56.svg</normaloff>:/resources/icons/round56.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove from deck</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove from deck</string>
+   </property>
+   <property name="shortcut">
+    <string>-</string>
    </property>
   </action>
  </widget>

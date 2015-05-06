@@ -6,13 +6,14 @@
         <file>resources/icons/blank33.svg</file>
         <file>resources/icons/clear5.svg</file>
         <file>resources/icons/folder215.svg</file>
-        <file>resources/icons/round57.svg</file>
         <file>resources/icons/save20.svg</file>
-        <file>resources/icons/square181.svg</file>
-        <file>resources/icons/add113.svg</file>
         <file>resources/icons/add119.svg</file>
-        <file>resources/icons/add148.svg</file>
-        <file>resources/icons/addd.svg</file>
         <file>resources/icons/squares40.svg</file>
+        <file>resources/icons/add182.svg</file>
+        <file>resources/icons/add186.svg</file>
+        <file>resources/icons/horizontal39.svg</file>
+        <file>resources/icons/round56.svg</file>
+        <file>resources/icons/rounded54.svg</file>
+        <file>resources/icons/rounded56.svg</file>
     </qresource>
 </RCC>

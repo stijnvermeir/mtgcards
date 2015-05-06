@@ -131,7 +131,7 @@
        </property>
        <property name="icon">
         <iconset resource="mtgcards.qrc">
-         <normaloff>:/resources/icons/round57.svg</normaloff>:/resources/icons/round57.svg</iconset>
+         <normaloff>:/resources/icons/add186.svg</normaloff>:/resources/icons/add186.svg</iconset>
        </property>
        <property name="shortcut">
         <string>F</string>

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "magiclayouttype.h"
 #include "pooltablemodel.h"
 #include "filter.h"
 #include "ui_poolwindow.h"
 
 #include <QMainWindow>
+#include <QVector>
 
 class PoolWindow : public QMainWindow
 {
@@ -13,30 +13,35 @@ class PoolWindow : public QMainWindow
 
 public:
 	explicit PoolWindow(QWidget *parent = 0);
-	~PoolWindow();
+	virtual ~PoolWindow();
 
 	void reload();
-
 	void loadSettings();
 	void saveSettings();
 
 signals:
 	void windowClosed(bool);
-	void selectCardChanged(mtg::LayoutType layout, QStringList);
-	void addToCollection(int);
-	void addToDeck(int);
+	void selectedCardChanged(int);
+	void addToCollection(QVector<int>);
+	void removeFromCollection(QVector<int>);
+	void addToDeck(QVector<int>);
+	void removeFromDeck(QVector<int>);
 
 private:
 	Ui::PoolWindow ui_;
 	PoolTableModel poolTableModel_;
 	FilterNode::Ptr rootFilterNode_;
 
-	void closeEvent(QCloseEvent* event);
+	virtual void closeEvent(QCloseEvent* event);
+	int currentDataRowIndex() const;
+	QVector<int> currentDataRowIndices() const;
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
 	void actionAdvancedFilter();
 	void actionAddToCollection();
+	void actionRemoveFromCollection();
 	void actionAddToDeck();
+	void actionRemoveFromDeck();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 };
