@@ -33,7 +33,9 @@ const vector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 	mtg::ColumnType::Artist,
 	mtg::ColumnType::Power,
 	mtg::ColumnType::Toughness,
-	mtg::ColumnType::Loyalty
+	mtg::ColumnType::Loyalty,
+	mtg::ColumnType::Layout,
+	mtg::ColumnType::ImageName
 };
 
 } // namespace

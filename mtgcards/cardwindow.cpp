@@ -6,12 +6,6 @@
 #include <QGraphicsPixmapItem>
 #include <QDebug>
 
-namespace {
-
-const int PICTURE_SWITCH_INTERVAL = 5000; // ms
-
-} // namespace
-
 CardWindow::CardWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
@@ -19,13 +13,10 @@ CardWindow::CardWindow(QWidget *parent)
 	, layoutType_(mtg::LayoutType::Normal)
 	, imageFiles_()
 	, secondViewActive_(false)
-	, timer_()
 {
 	ui_.setupUi(this);
 	ui_.cardView_->setScene(&scene_);
-
-	connect(&timer_, SIGNAL(timeout()), this, SLOT(timerExpired()));
-
+	connect(ui_.cardView_, SIGNAL(clicked()), this, SLOT(switchPicture()));
 }
 
 CardWindow::~CardWindow()
@@ -53,58 +44,32 @@ void CardWindow::changeCardPicture(int row)
 	auto rv = mtg::CardData::instance().getPictureFilenames(row);
 	imageFiles_ = rv.second;
 	layoutType_ = rv.first;
-
-	if (layoutType_ == mtg::LayoutType::Split)
-	{
-		setCardPicture(imageFiles_.front(), 90);
-	}
-	else
-	if (layoutType_ == mtg::LayoutType::DoubleFaced)
-	{
-		secondViewActive_ = false;
-		setCardPicture(imageFiles_.front(), 0);
-		timer_.start(PICTURE_SWITCH_INTERVAL);
-	}
-	else
-	if (layoutType_ == mtg::LayoutType::Flip)
-	{
-		secondViewActive_ = false;
-		setCardPicture(imageFiles_.front(), 0);
-		timer_.start(PICTURE_SWITCH_INTERVAL);
-	}
-	else
-	{
-		setCardPicture(imageFiles_.front(), 0);
-	}
+	secondViewActive_ = false;
+	setCardPicture(imageFiles_.front(), 0);
 }
 
-void CardWindow::timerExpired()
+void CardWindow::switchPicture()
 {
-	if (layoutType_ == mtg::LayoutType::DoubleFaced)
+	if (secondViewActive_)
 	{
-		if (secondViewActive_)
+		setCardPicture(imageFiles_.front(), 0);
+	}
+	else
+	{
+		if (layoutType_ == mtg::LayoutType::Split)
 		{
-			setCardPicture(imageFiles_.front(), 0);
+			setCardPicture(imageFiles_.front(), 90);
 		}
 		else
+		if (layoutType_ == mtg::LayoutType::DoubleFaced)
 		{
 			setCardPicture(imageFiles_.back(), 0);
 		}
-		secondViewActive_ = !secondViewActive_;
-		timer_.start(PICTURE_SWITCH_INTERVAL);
-	}
-	else
-	if (layoutType_ == mtg::LayoutType::Flip)
-	{
-		if (secondViewActive_)
-		{
-			setCardPicture(imageFiles_.front(), 0);
-		}
 		else
+		if (layoutType_ == mtg::LayoutType::Flip)
 		{
 			setCardPicture(imageFiles_.front(), 180);
 		}
-		secondViewActive_ = !secondViewActive_;
-		timer_.start(PICTURE_SWITCH_INTERVAL);
 	}
+	secondViewActive_ = !secondViewActive_;
 }

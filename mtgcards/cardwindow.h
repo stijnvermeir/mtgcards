@@ -24,7 +24,6 @@ private:
 	mtg::LayoutType layoutType_;
 	QStringList imageFiles_;
 	bool secondViewActive_;
-	QTimer timer_;
 
 	void closeEvent(QCloseEvent* event);
 	void setCardPicture(const QString& imageFile, double rotation);
@@ -33,5 +32,5 @@ public slots:
 	void changeCardPicture(int);
 
 private slots:
-	void timerExpired();
+	void switchPicture();
 };

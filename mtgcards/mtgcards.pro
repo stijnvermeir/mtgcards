@@ -48,7 +48,7 @@ HEADERS  += mainwindow.h \
     deckwindow.h \
     deckwidget.h \
     optionsdialog.h \
-    cardgraphicsview.h \
+	cardgraphicsview.h \
     manacost.h \
     magicsortfilterproxymodel.h \
     filter.h \

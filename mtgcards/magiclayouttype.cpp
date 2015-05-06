@@ -12,7 +12,7 @@ const array<QString, LayoutType::COUNT> NAMES =
 {{
 	"normal",
 	"double-faced",
-	"flipped",
+	"flip",
 	"split",
 	"token"
 }};
