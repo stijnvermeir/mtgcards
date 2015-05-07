@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QString>
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QWidget>
 
 #include <vector>
@@ -82,11 +83,14 @@ public:
 
 	static Ptr create();
 	static Ptr createFromFile(const QString& file);
+	static Ptr createFromJson(const QJsonDocument& doc);
 
 	FilterNode();
 
 	bool loadFromFile(const QString& file);
 	bool saveToFile(const QString& file) const;
+	void loadFromJson(const QJsonDocument& doc);
+	QJsonDocument toJson() const;
 
 	Type getType() const;
 	void setType(const Type type);

@@ -125,6 +125,13 @@ FilterNode::Ptr FilterNode::createFromFile(const QString& file)
 	return node;
 }
 
+FilterNode::Ptr FilterNode::createFromJson(const QJsonDocument& doc)
+{
+	FilterNode::Ptr node = create();
+	node->loadFromJson(doc);
+	return node;
+}
+
 FilterNode::FilterNode()
 	: type_(Type::LEAF)
 	, children_()
@@ -141,9 +148,24 @@ bool FilterNode::loadFromFile(const QString& file)
 		qWarning() << "Failed to load from file " << file;
 		return false;
 	}
-	auto doc = QJsonDocument::fromJson(f.readAll());
-	QJsonObject obj = doc.object();
+	loadFromJson(QJsonDocument::fromJson(f.readAll()));
+	return true;
+}
 
+bool FilterNode::saveToFile(const QString& file) const
+{
+	QFile f(file);
+	if (!f.open(QIODevice::WriteOnly))
+	{
+		qWarning() << "Failed to save to file " << file;
+		return false;
+	}
+	f.write(toJson().toJson());
+	return true;
+}
+
+void FilterNode::loadFromJson(const QJsonDocument& doc)
+{
 	type_ = Type::AND;
 	children_.clear();
 	filter_.function.reset();
@@ -169,12 +191,10 @@ bool FilterNode::loadFromFile(const QString& file)
 			}
 		}
 	};
-
-	jsonToNode(obj, *this);
-	return true;
+	jsonToNode(doc.object(), *this);
 }
 
-bool FilterNode::saveToFile(const QString& file) const
+QJsonDocument FilterNode::toJson() const
 {
 	std::function<QJsonObject(const FilterNode& node)> nodeToJson = [&nodeToJson](const FilterNode& node)
 	{
@@ -195,17 +215,7 @@ bool FilterNode::saveToFile(const QString& file) const
 		}
 		return o;
 	};
-
-	QJsonObject obj = nodeToJson(*this);
-	QJsonDocument doc(obj);
-	QFile f(file);
-	if (!f.open(QIODevice::WriteOnly))
-	{
-		qWarning() << "Failed to save to file " << file;
-		return false;
-	}
-	f.write(doc.toJson());
-	return true;
+	return QJsonDocument(nodeToJson(*this));
 }
 
 FilterNode::Type FilterNode::getType() const

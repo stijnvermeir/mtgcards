@@ -103,7 +103,7 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 	{
 		if (index.column() == Column::Type)
 		{
-			if (node->getType() == FilterNode::Type::LEAF)
+			if (node->getType() == FilterNode::Type::LEAF && node->getFilter().function)
 			{
 				 return node->getFilter().function->getId();
 			}
@@ -123,7 +123,7 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 		else
 		if (index.column() == Column::Filter)
 		{
-			if (node->getType() == FilterNode::Type::LEAF)
+			if (node->getType() == FilterNode::Type::LEAF && node->getFilter().function)
 			{
 				return node->getFilter().function->getDescription();
 			}

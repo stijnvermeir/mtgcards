@@ -31,8 +31,10 @@ private:
 	FilterNode::Ptr rootFilterNode_;
 
 	virtual void closeEvent(QCloseEvent* event);
+	virtual bool event(QEvent* event);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
+	void updateStatusBar();
 
 public slots:
 	void addToCollection(const QVector<int>&);

@@ -16,6 +16,7 @@ public:
 	void save();
 
 	int getNumRows() const;
+	int getNumCards() const;
 	const QVariant& get(const int row, const ColumnType& column) const;
 	int getDataRowIndex(const int row) const;
 	int getRowIndex(const int dataRowIndex) const;

@@ -51,6 +51,7 @@
    <addaction name="actionAddToDeck"/>
    <addaction name="actionRemoveFromDeck"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
    <property name="checkable">
     <bool>false</bool>

@@ -37,6 +37,7 @@ PoolWindow::~PoolWindow()
 void PoolWindow::reload()
 {
 	poolTableModel_.reload();
+	updateStatusBar();
 }
 
 void PoolWindow::loadSettings()
@@ -53,18 +54,41 @@ void PoolWindow::loadSettings()
 	{
 		ui_.poolTbl_->resizeColumnsToContents();
 	}
+	if (settings.contains("poolwindow/filter"))
+	{
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("poolwindow/filter").toByteArray()));
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	updateStatusBar();
 }
 
 void PoolWindow::saveSettings()
 {
 	QSettings settings;
 	settings.setValue("poolwindow/headerstate", ui_.poolTbl_->horizontalHeader()->saveState());
+	if (rootFilterNode_)
+	{
+		settings.setValue("poolwindow/filter", rootFilterNode_->toJson().toJson());
+	}
+	else
+	{
+		settings.remove("poolwindow/filter");
+	}
 }
 
 void PoolWindow::closeEvent(QCloseEvent* event)
 {
 	emit windowClosed(false);
 	event->accept();
+}
+
+bool PoolWindow::event(QEvent* event)
+{
+	if (event->type() == QEvent::WindowActivate || event->type() == QEvent::Enter)
+	{
+		emit selectedCardChanged(currentDataRowIndex());
+	}
+	return QMainWindow::event(event);
 }
 
 int PoolWindow::currentDataRowIndex() const
@@ -87,6 +111,11 @@ QVector<int> PoolWindow::currentDataRowIndices() const
 	return indices;
 }
 
+void PoolWindow::updateStatusBar()
+{
+	ui_.statusBar->showMessage(QString::number(poolTableModel_.rowCount()) + " cards");
+}
+
 void PoolWindow::currentRowChanged(QModelIndex, QModelIndex)
 {
 	emit selectedCardChanged(currentDataRowIndex());
@@ -99,6 +128,7 @@ void PoolWindow::actionAdvancedFilter()
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
 	poolTableModel_.setFilterRootNode(rootFilterNode_);
+	updateStatusBar();
 }
 
 void PoolWindow::actionAddToCollection()

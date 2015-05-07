@@ -38,6 +38,7 @@ CollectionWindow::~CollectionWindow()
 void CollectionWindow::reload()
 {
 	collectionTableModel_.reload();
+	updateStatusBar();
 }
 
 void CollectionWindow::loadSettings()
@@ -54,18 +55,41 @@ void CollectionWindow::loadSettings()
 	{
 		ui_.collectionTbl_->resizeColumnsToContents();
 	}
+	if (settings.contains("collectionwindow/filter"))
+	{
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("collectionwindow/filter").toByteArray()));
+		collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	updateStatusBar();
 }
 
 void CollectionWindow::saveSettings()
 {
 	QSettings settings;
 	settings.setValue("collectionwindow/headerstate", ui_.collectionTbl_->horizontalHeader()->saveState());
+	if (rootFilterNode_)
+	{
+		settings.setValue("collectionwindow/filter", rootFilterNode_->toJson().toJson());
+	}
+	else
+	{
+		settings.remove("collectionwindow/filter");
+	}
 }
 
 void CollectionWindow::closeEvent(QCloseEvent* event)
 {
 	emit windowClosed(false);
 	event->accept();
+}
+
+bool CollectionWindow::event(QEvent* event)
+{
+	if (event->type() == QEvent::WindowActivate || event->type() == QEvent::Enter)
+	{
+		emit selectedCardChanged(currentDataRowIndex());
+	}
+	return QMainWindow::event(event);
 }
 
 int CollectionWindow::currentDataRowIndex() const
@@ -88,6 +112,21 @@ QVector<int> CollectionWindow::currentDataRowIndices() const
 	return indices;
 }
 
+void CollectionWindow::updateStatusBar()
+{
+	QString message;
+	QTextStream stream(&message);
+	stream << " Showing " << collectionTableModel_.rowCount() << " of " << mtg::Collection::instance().getNumRows() << " cards";
+	int numCopies = 0;
+	for (int i = 0; i < collectionTableModel_.rowCount(); ++i)
+	{
+		QModelIndex sourceIndex = collectionTableModel_.mapToSource(collectionTableModel_.index(i, 0));
+		numCopies += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Quantity).toInt();
+	}
+	stream << " (" << numCopies << " copies)";
+	ui_.statusBar->showMessage(message);
+}
+
 void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
 {
 	for (const int dataRowIndex : dataRowIndices)
@@ -107,6 +146,7 @@ void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
 			ui_.collectionTbl_->setCurrentIndex(proxyIndex);
 		}
 	}
+	updateStatusBar();
 }
 
 void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
@@ -140,6 +180,7 @@ void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
 	{
 		mtg::Collection::instance().save();
 	}
+	updateStatusBar();
 }
 
 void CollectionWindow::currentRowChanged(QModelIndex, QModelIndex)
@@ -157,6 +198,7 @@ void CollectionWindow::actionAdvancedFilter()
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
 	collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	updateStatusBar();
 }
 
 void CollectionWindow::actionAddToCollection()

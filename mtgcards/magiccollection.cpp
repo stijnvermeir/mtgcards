@@ -94,6 +94,16 @@ struct Collection::Pimpl
 		return static_cast<int>(data_.size());
 	}
 
+	int getNumCards() const
+	{
+		int numCards = 0;
+		for (const auto& row : data_)
+		{
+			numCards += row.quantity.toInt();
+		}
+		return numCards;
+	}
+
 	const QVariant& get(const int row, const ColumnType& column) const
 	{
 		if (row >= 0 && row < getNumRows())
@@ -198,6 +208,11 @@ void Collection::save()
 int Collection::getNumRows() const
 {
 	return pimpl_->getNumRows();
+}
+
+int Collection::getNumCards() const
+{
+	return pimpl_->getNumCards();
 }
 
 const QVariant& Collection::get(const int row, const ColumnType& column) const

@@ -158,6 +158,7 @@ void MainWindow::optionsActionClicked()
 	if (options.isPoolReloadRequired())
 	{
 		poolWindow_.reload();
+		collectionWindow_.reload();
 	}
 }
 
