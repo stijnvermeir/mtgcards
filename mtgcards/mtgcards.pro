@@ -10,6 +10,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = MTGCards
+ICON = resources/icons/mtgcards.icns
 TEMPLATE = app
 
 
@@ -78,5 +79,3 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     mtgcards.qrc
-
-DISTFILES +=
