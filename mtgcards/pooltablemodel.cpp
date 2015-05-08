@@ -37,10 +37,8 @@ const vector<mtg::ColumnType> POOLTABLE_COLUMNS =
 
 } // namespace
 
-class PoolTableModel::Pimpl : public virtual QAbstractTableModel
+struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 {
-public:
-
 	Pimpl()
 	{
 		loadData();
@@ -107,7 +105,7 @@ public:
 PoolTableModel::PoolTableModel()
 	: pimpl_(new Pimpl())
 {
-	setSourceModel(pimpl_.get());
+	setSourceModel(pimpl_.data());
 }
 
 PoolTableModel::~PoolTableModel()

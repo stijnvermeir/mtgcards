@@ -40,7 +40,9 @@ SOURCES += main.cpp\
     settings.cpp \
     collectiontablemodel.cpp \
     magiccollection.cpp \
-    shortcuttype.cpp
+    shortcuttype.cpp \
+    deck.cpp \
+    decktablemodel.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -67,7 +69,9 @@ HEADERS  += mainwindow.h \
     settings.h \
     collectiontablemodel.h \
     magiccollection.h \
-    shortcuttype.h
+    shortcuttype.h \
+    deck.h \
+    decktablemodel.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

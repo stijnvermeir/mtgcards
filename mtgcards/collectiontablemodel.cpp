@@ -40,9 +40,8 @@ const vector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 
 } // namespace
 
-class CollectionTableModel::Pimpl : public virtual QAbstractTableModel
+struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 {
-public:
 	Pimpl()
 	{
 		loadData();
@@ -67,7 +66,7 @@ public:
 		endResetModel();
 	}
 
-	virtual int rowCount(const QModelIndex& ) const
+	virtual int rowCount(const QModelIndex& = QModelIndex()) const
 	{
 		return mtg::Collection::instance().getNumRows();
 	}
@@ -83,7 +82,7 @@ public:
 		{
 			if (role == Qt::DisplayRole)
 			{
-				if (index.row() < mtg::Collection::instance().getNumRows() && index.column() < columnCount())
+				if (index.row() < rowCount() && index.column() < columnCount())
 				{
 					const QVariant& ret = mtg::Collection::instance().get(index.row(), COLLECTIONTABLE_COLUMNS[index.column()]);
 					if (ret.type() == QVariant::StringList)
@@ -121,7 +120,7 @@ public:
 CollectionTableModel::CollectionTableModel()
 	: pimpl_(new Pimpl())
 {
-	setSourceModel(pimpl_.get());
+	setSourceModel(pimpl_.data());
 }
 
 CollectionTableModel::~CollectionTableModel()

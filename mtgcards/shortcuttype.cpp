@@ -12,6 +12,7 @@ const array<QString, ShortcutType::COUNT> NAMES =
 	 "newfile",
 	 "openfile",
 	 "savefile",
+	 "savefileas",
 	 "advancedfilter",
 	 "addtocollection",
 	 "removefromcollection",
@@ -27,6 +28,7 @@ const array<QString, ShortcutType::COUNT> DESCRIPTIONS =
 	 "New File",
 	 "Open File",
 	 "Save File",
+	 "Save File as",
 	 "Advanced Filter",
 	 "Add To Collection",
 	 "Remove From Collection",
@@ -47,6 +49,7 @@ void initDefaultKeySequences()
 		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::New);
 		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::Open),
 		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::Save);
+		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::SaveAs);
 		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+F");
 		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL++");
 		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+-");

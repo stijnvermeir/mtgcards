@@ -15,5 +15,6 @@
         <file>resources/icons/round56.svg</file>
         <file>resources/icons/rounded54.svg</file>
         <file>resources/icons/rounded56.svg</file>
+        <file>resources/icons/disc36.svg</file>
     </qresource>
 </RCC>

@@ -4,6 +4,10 @@
 #include "ui_deckwindow.h"
 
 #include <QMainWindow>
+#include <QVector>
+#include <QByteArray>
+
+class DeckWidget;
 
 class DeckWindow : public QMainWindow
 {
@@ -11,19 +15,48 @@ class DeckWindow : public QMainWindow
 
 public:
 	explicit DeckWindow(QWidget *parent = 0);
-	~DeckWindow();
+	virtual ~DeckWindow();
 
+	void reload();
 	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();
+	bool hasUnsavedChanges() const;
 
 signals:
 	void windowClosed(bool);
+	void selectedCardChanged(int);
+	void addToCollection(QVector<int>);
+	void removeFromCollection(QVector<int>);
 
 private:
 	Ui::DeckWindow ui_;
+	QByteArray headerState_;
 	FilterNode::Ptr rootFilterNode_;
 
 	void closeEvent(QCloseEvent* event);
+	virtual bool event(QEvent* event);
 	void updateStatusBar();
+	DeckWidget* createDeckWidget(const QString& filename = QString::null);
+	void destroyDeckWidget(DeckWidget* deckWidget);
+	void saveDeck(DeckWidget* deckWidget, bool saveAs);
+
+public slots:
+	void addToDeck(const QVector<int>&);
+	void removeFromDeck(const QVector<int>&);
+
+private slots:
+	void selectedCardChangedSlot();
+	void actionNewDeck();
+	void closeDeck(int);
+	void actionOpenDeck();
+	void actionSaveDeck();
+	void actionSaveDeckAs();
+	void deckEdited();
+	void actionAdvancedFilter();
+	void actionAddToCollection();
+	void actionRemoveFromCollection();
+	void actionAddToDeck();
+	void actionRemoveFromDeck();
+	void headerStateChangedSlot(const QByteArray& headerState);
 };

@@ -12,6 +12,7 @@ public:
 		NewFile,
 		OpenFile,
 		SaveFile,
+		SaveFileAs,
 		AdvancedFilter,
 		AddToCollection,
 		RemoveFromCollection,

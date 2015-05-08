@@ -14,10 +14,12 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
 	, collectionTableModel_()
+	, itemDelegate_(new MagicItemDelegate())
 	, rootFilterNode_()
 {
+	setWindowFlags(Qt::NoDropShadowWindowHint);
 	ui_.setupUi(this);
-	ui_.collectionTbl_->setItemDelegate(new MagicItemDelegate());
+	ui_.collectionTbl_->setItemDelegate(itemDelegate_.data());
 	ui_.collectionTbl_->setModel(&collectionTableModel_);
 	ui_.collectionTbl_->setSortingEnabled(true);
 	ui_.collectionTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -96,7 +98,7 @@ void CollectionWindow::closeEvent(QCloseEvent* event)
 
 bool CollectionWindow::event(QEvent* event)
 {
-	if (event->type() == QEvent::WindowActivate || event->type() == QEvent::Enter)
+	if (event->type() == QEvent::WindowActivate /*|| event->type() == QEvent::Enter*/)
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}

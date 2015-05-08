@@ -43,10 +43,17 @@ MainWindow::MainWindow(QWidget *parent)
 	// card preview
 	connect(&poolWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
 	connect(&collectionWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
+	connect(&deckWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
 
 	// add / remove
 	connect(&poolWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
 	connect(&poolWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
+	connect(&poolWindow_, SIGNAL(addToDeck(QVector<int>)), &deckWindow_, SLOT(addToDeck(QVector<int>)));
+	connect(&poolWindow_, SIGNAL(removeFromDeck(QVector<int>)), &deckWindow_, SLOT(removeFromDeck(QVector<int>)));
+	connect(&collectionWindow_, SIGNAL(addToDeck(QVector<int>)), &deckWindow_, SLOT(addToDeck(QVector<int>)));
+	connect(&collectionWindow_, SIGNAL(removeFromDeck(QVector<int>)), &deckWindow_, SLOT(removeFromDeck(QVector<int>)));
+	connect(&deckWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
+	connect(&deckWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
 }
 
 MainWindow::~MainWindow()
@@ -117,8 +124,14 @@ void MainWindow::saveSettings()
 bool MainWindow::toQuitOrNotToQuit(QEvent* event)
 {
 	int ret = QMessageBox::Yes;
-	// TODO: check for unsaved stuff before asking for confirmation at exit
-	// ret = QMessageBox::question(this, tr("Quit?"), tr("Are you sure you want to quit?"));
+	if (deckWindow_.hasUnsavedChanges())
+	{
+		ret = QMessageBox::question(this,
+									"Are you sure?",
+									"There are unsaved changes. Are you sure you want to quit?",
+									QMessageBox::Yes | QMessageBox::No,
+									QMessageBox::No);
+	}
 	if (ret == QMessageBox::Yes)
 	{
 		event->accept();

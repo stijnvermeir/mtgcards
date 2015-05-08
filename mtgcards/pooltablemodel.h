@@ -2,7 +2,7 @@
 
 #include "magicsortfilterproxymodel.h"
 
-#include <memory>
+#include <QScopedPointer>
 
 class PoolTableModel : public MagicSortFilterProxyModel
 {
@@ -16,6 +16,6 @@ public:
 private:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
 
-	class Pimpl;
-	std::unique_ptr<Pimpl> pimpl_;
+	struct Pimpl;
+	QScopedPointer<Pimpl> pimpl_;
 };

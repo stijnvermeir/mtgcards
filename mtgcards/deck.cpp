@@ -1,7 +1,6 @@
-#include "magiccollection.h"
+#include "deck.h"
 
 #include "magiccarddata.h"
-#include "settings.h"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -14,36 +13,48 @@
 using namespace std;
 using namespace mtg;
 
-struct Collection::Pimpl
+struct Deck::Pimpl
 {
 	struct Row
 	{
 		int rowIndexInData;
 		QVariant quantity;
-		QVariant used;
+		QVariant sideboard;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
-			, used(0) {}
+			, sideboard(0) {}
 	};
 	vector<Row> data_;
+	bool active_;
+	QString filename_;
 
 	Pimpl()
 		: data_()
+		, active_(true)
+		, filename_()
 	{
-		load();
 	}
 
-	void load()
+	void reload()
+	{
+		if (!filename_.isEmpty())
+		{
+			load(filename_);
+		}
+	}
+
+	void load(const QString& filename)
 	{
 		data_.clear();
 
-		QFile file(Settings::instance().getCollectionFile());
+		QFile file(filename);
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
 			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
 			QJsonObject obj = d.object();
+			active_ = obj["active"].toBool();
 			QJsonArray cards = obj["cards"].toArray();
 			data_.reserve(cards.size());
 			for (const auto& c : cards)
@@ -57,13 +68,15 @@ struct Collection::Pimpl
 				Row r;
 				r.rowIndexInData = mtg::CardData::instance().findRow(criteria);
 				r.quantity = card["Quantity"].toInt();
-				r.used = 0; // TODO
+				r.sideboard = card["Sideboard"].toInt();
 				data_.push_back(r);
 			}
 		}
+
+		filename_ = filename;
 	}
 
-	void save()
+	void save(const QString& filename)
 	{
 		QJsonArray cards;
 		for (const Row& r : data_)
@@ -72,12 +85,14 @@ struct Collection::Pimpl
 			cardObj["Set"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::SetCode).toString();
 			cardObj["Name"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
+			cardObj["Sideboard"] = r.sideboard.toInt();
 			cards.append(cardObj);
 		}
 		QJsonObject obj;
 		obj["cards"] = cards;
+		obj["active"] = active_;
 		QJsonDocument doc(obj);
-		QFile file(Settings::instance().getCollectionFile());
+		QFile file(filename);
 		if (!file.open(QIODevice::WriteOnly))
 		{
 			qWarning() << "Failed to save to file " << file.fileName();
@@ -86,6 +101,7 @@ struct Collection::Pimpl
 		{
 			file.write(doc.toJson());
 		}
+		filename_ = filename;
 	}
 
 	int getNumRows() const
@@ -112,9 +128,9 @@ struct Collection::Pimpl
 			{
 				return entry.quantity;
 			}
-			if (column == ColumnType::Used)
+			if (column == ColumnType::Sideboard)
 			{
-				return entry.used;
+				return entry.sideboard;
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -156,7 +172,7 @@ struct Collection::Pimpl
 		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
 		if (it != data_.end())
 		{
-			if (newQuantity > 0)
+			if (newQuantity >= 0)
 			{
 				it->quantity = newQuantity;
 			}
@@ -167,74 +183,127 @@ struct Collection::Pimpl
 		}
 		else
 		{
-			if (newQuantity > 0)
+			if (newQuantity >= 0)
 			{
 				Row row;
 				row.rowIndexInData = dataRowIndex;
 				row.quantity = newQuantity;
-				row.used = 0; // TODO
+				row.sideboard = 0;
+				data_.push_back(row);
+			}
+		}
+	}
+
+	int getSideboard(const int dataRowIndex) const
+	{
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
+		if (it != data_.end())
+		{
+			return it->sideboard.toInt();
+		}
+		return 0;
+	}
+
+	void setSideboard(const int dataRowIndex, const int newSideboard)
+	{
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
+		if (it != data_.end())
+		{
+			if (newSideboard >= 0)
+			{
+				it->sideboard = newSideboard;
+			}
+		}
+		else
+		{
+			if (newSideboard >= 0)
+			{
+				Row row;
+				row.rowIndexInData = dataRowIndex;
+				row.quantity = 0;
+				row.sideboard = newSideboard;
 				data_.push_back(row);
 			}
 		}
 	}
 };
 
-Collection& Collection::instance()
-{
-	static Collection inst;
-	return inst;
-}
-
-Collection::Collection()
+Deck::Deck()
 	: pimpl_(new Pimpl())
 {
 }
 
-Collection::~Collection()
+Deck::Deck(const QString& file)
+	: Deck()
+{
+	load(file);
+}
+
+Deck::~Deck()
 {
 }
 
-void Collection::load()
+void Deck::reload()
 {
-	pimpl_->load();
+	pimpl_->reload();
 }
 
-void Collection::save()
+void Deck::load(const QString& filename)
 {
-	pimpl_->save();
+	pimpl_->load(filename);
 }
 
-int Collection::getNumRows() const
+void Deck::save(const QString& filename)
+{
+	pimpl_->save(filename);
+}
+
+const QString& Deck::getFilename() const
+{
+	return pimpl_->filename_;
+}
+
+int Deck::getNumRows() const
 {
 	return pimpl_->getNumRows();
 }
 
-int Collection::getNumCards() const
+int Deck::getNumCards() const
 {
 	return pimpl_->getNumCards();
 }
 
-const QVariant& Collection::get(const int row, const ColumnType& column) const
+const QVariant& Deck::get(const int row, const ColumnType& column) const
 {
 	return pimpl_->get(row, column);
 }
 
-int Collection::getDataRowIndex(const int row) const
+int Deck::getDataRowIndex(const int row) const
 {
 	return pimpl_->getDataRowIndex(row);
 }
 
-int Collection::getRowIndex(const int dataRowIndex) const
+int Deck::getRowIndex(const int dataRowIndex) const
 {
 	return pimpl_->getRowIndex(dataRowIndex);
 }
 
-int Collection::getQuantity(const int dataRowIndex) const
+int Deck::getQuantity(const int dataRowIndex) const
 {
 	return pimpl_->getQuantity(dataRowIndex);
 }
 
-void Collection::setQuantity(const int dataRowIndex, const int newQuantity)
+void Deck::setQuantity(const int dataRowIndex, const int newQuantity)
 {
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
+}
+
+int Deck::getSideboard(const int dataRowIndex) const
+{
+	return pimpl_->getSideboard(dataRowIndex);
+}
+
+void Deck::setSideboard(const int dataRowIndex, const int newSideboard)
+{
+	pimpl_->setSideboard(dataRowIndex, newSideboard);
 }

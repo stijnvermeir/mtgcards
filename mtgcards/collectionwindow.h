@@ -6,6 +6,9 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <QScopedPointer>
+
+class QAbstractItemDelegate;
 
 class CollectionWindow : public QMainWindow
 {
@@ -29,6 +32,7 @@ signals:
 private:
 	Ui::CollectionWindow ui_;
 	CollectionTableModel collectionTableModel_;
+	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
 
 	virtual void closeEvent(QCloseEvent* event);

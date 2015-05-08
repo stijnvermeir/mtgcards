@@ -14,6 +14,7 @@ CardWindow::CardWindow(QWidget *parent)
 	, imageFiles_()
 	, secondViewActive_(false)
 {
+	setWindowFlags(Qt::NoDropShadowWindowHint);
 	ui_.setupUi(this);
 	ui_.cardView_->setScene(&scene_);
 	connect(ui_.cardView_, SIGNAL(clicked()), this, SLOT(switchPicture()));
