@@ -36,14 +36,109 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionAdvancedFilter"/>
+   <addaction name="actionAddToCollection"/>
+   <addaction name="actionRemoveFromCollection"/>
+   <addaction name="actionAddToDeck"/>
+   <addaction name="actionRemoveFromDeck"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionAdvancedFilter">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/funnel2.svg</normaloff>:/resources/icons/funnel2.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Advanced Filter</string>
+   </property>
+   <property name="toolTip">
+    <string>Advanced Filter</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionAddToCollection">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/add182.svg</normaloff>:/resources/icons/add182.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add to collection</string>
+   </property>
+   <property name="toolTip">
+    <string>Add to collection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionRemoveFromCollection">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/rounded56.svg</normaloff>:/resources/icons/rounded56.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove from collection</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove from collection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionAddToDeck">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/rounded54.svg</normaloff>:/resources/icons/rounded54.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add to deck</string>
+   </property>
+   <property name="toolTip">
+    <string>Add to deck</string>
+   </property>
+   <property name="shortcut">
+    <string>+</string>
+   </property>
+  </action>
+  <action name="actionRemoveFromDeck">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/round56.svg</normaloff>:/resources/icons/round56.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove from deck</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove from deck</string>
+   </property>
+   <property name="shortcut">
+    <string>-</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="mtgcards.qrc"/>
+ </resources>
  <connections/>
 </ui>
