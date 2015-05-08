@@ -49,9 +49,6 @@
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/blank33.svg</normaloff>:/resources/icons/blank33.svg</iconset>
        </property>
-       <property name="shortcut">
-        <string>Ctrl+N</string>
-       </property>
       </widget>
      </item>
      <item>
@@ -66,9 +63,6 @@
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/folder215.svg</normaloff>:/resources/icons/folder215.svg</iconset>
        </property>
-       <property name="shortcut">
-        <string>Ctrl+O</string>
-       </property>
       </widget>
      </item>
      <item>
@@ -82,9 +76,6 @@
        <property name="icon">
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/save20.svg</normaloff>:/resources/icons/save20.svg</iconset>
-       </property>
-       <property name="shortcut">
-        <string>Ctrl+S</string>
        </property>
       </widget>
      </item>
@@ -116,9 +107,6 @@
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/squares40.svg</normaloff>:/resources/icons/squares40.svg</iconset>
        </property>
-       <property name="shortcut">
-        <string>G</string>
-       </property>
       </widget>
      </item>
      <item>
@@ -133,9 +121,6 @@
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/add186.svg</normaloff>:/resources/icons/add186.svg</iconset>
        </property>
-       <property name="shortcut">
-        <string>F</string>
-       </property>
       </widget>
      </item>
      <item>
@@ -149,9 +134,6 @@
        <property name="icon">
         <iconset resource="mtgcards.qrc">
          <normaloff>:/resources/icons/clear5.svg</normaloff>:/resources/icons/clear5.svg</iconset>
-       </property>
-       <property name="shortcut">
-        <string>D</string>
        </property>
       </widget>
      </item>

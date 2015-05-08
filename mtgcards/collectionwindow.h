@@ -16,6 +16,7 @@ public:
 	virtual ~CollectionWindow();
 
 	void reload();
+	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();
 

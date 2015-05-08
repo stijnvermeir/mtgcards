@@ -15,6 +15,7 @@ struct Settings::Pimpl
 	QString decksDir_;
 	QString poolDataFile_;
 	QString cardImageDir_;
+	map<ShortcutType, QKeySequence> shortcuts_;
 
 	Pimpl()
 	{
@@ -22,6 +23,20 @@ struct Settings::Pimpl
 		setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::DataLocation)).toString());
 		poolDataFile_ = settings.value("options/datasources/allsetsjson").toString();
 		cardImageDir_ = settings.value("options/datasources/cardpicturedir").toString();
+
+		for (const ShortcutType& shortcut : ShortcutType::list())
+		{
+			QString key = "shortcuts/";
+			key += QString(shortcut);
+			if (settings.contains(key))
+			{
+				shortcuts_[shortcut] = QKeySequence(settings.value(key).toString());
+			}
+			else
+			{
+				shortcuts_[shortcut] = shortcut.getDefaultKeySequence();
+			}
+		}
 	}
 
 	void setAppDataDir(const QString& appDataDir)
@@ -49,6 +64,19 @@ struct Settings::Pimpl
 		cardImageDir_ = cardImageDir;
 		QSettings settings;
 		settings.setValue("options/datasources/cardpicturedir", cardImageDir_);
+	}
+
+	void setShortcuts(const map<ShortcutType, QKeySequence>& shortcuts)
+	{
+		shortcuts_ = shortcuts;
+
+		QSettings settings;
+		for (const auto& entry : shortcuts_)
+		{
+			QString key = "shortcuts/";
+			key += QString(entry.first);
+			settings.setValue(key, entry.second.toString(QKeySequence::NativeText));
+		}
 	}
 };
 
@@ -110,4 +138,14 @@ const QString& Settings::getCardImageDir() const
 void Settings::setCardImageDir(const QString& cardImageDir)
 {
 	pimpl_->setCardImageDir(cardImageDir);
+}
+
+const map<ShortcutType, QKeySequence>& Settings::getShortcuts() const
+{
+	return pimpl_->shortcuts_;
+}
+
+void Settings::setShortcuts(const map<ShortcutType, QKeySequence>& shortcuts)
+{
+	pimpl_->setShortcuts(shortcuts);
 }

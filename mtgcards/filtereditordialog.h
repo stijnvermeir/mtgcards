@@ -4,6 +4,9 @@
 #include "filtermodel.h"
 
 #include <QDialog>
+#include <QScopedPointer>
+
+class QAbstractItemDelegate;
 
 class FilterEditorDialog : public QDialog
 {
@@ -19,6 +22,7 @@ public:
 private:
 	Ui::FilterEditorDialog ui_;
 	FilterModel model_;
+	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 
 private slots:
 	void newBtnClicked();

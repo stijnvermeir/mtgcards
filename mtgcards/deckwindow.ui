@@ -72,9 +72,6 @@
    <property name="toolTip">
     <string>Advanced Filter</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+F</string>
-   </property>
   </action>
   <action name="actionAddToCollection">
    <property name="icon">
@@ -86,9 +83,6 @@
    </property>
    <property name="toolTip">
     <string>Add to collection</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl++</string>
    </property>
   </action>
   <action name="actionRemoveFromCollection">
@@ -102,9 +96,6 @@
    <property name="toolTip">
     <string>Remove from collection</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+-</string>
-   </property>
   </action>
   <action name="actionAddToDeck">
    <property name="icon">
@@ -117,9 +108,6 @@
    <property name="toolTip">
     <string>Add to deck</string>
    </property>
-   <property name="shortcut">
-    <string>+</string>
-   </property>
   </action>
   <action name="actionRemoveFromDeck">
    <property name="icon">
@@ -131,9 +119,6 @@
    </property>
    <property name="toolTip">
     <string>Remove from deck</string>
-   </property>
-   <property name="shortcut">
-    <string>-</string>
    </property>
   </action>
  </widget>

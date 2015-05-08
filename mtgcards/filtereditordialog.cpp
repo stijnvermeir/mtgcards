@@ -126,10 +126,11 @@ FilterEditorDialog::FilterEditorDialog(QWidget *parent)
 	: QDialog(parent)
 	, ui_()
 	, model_()
+	, itemDelegate_(new FilterItemDelegate())
 {
 	ui_.setupUi(this);
 	ui_.treeView->setModel(&model_);
-	ui_.treeView->setItemDelegate(new FilterItemDelegate());
+	ui_.treeView->setItemDelegate(itemDelegate_.data());
 
 	connect(ui_.newBtn, SIGNAL(released()), this, SLOT(newBtnClicked()));
 	connect(ui_.openBtn, SIGNAL(released()), this, SLOT(openBtnClicked()));
@@ -137,6 +138,13 @@ FilterEditorDialog::FilterEditorDialog(QWidget *parent)
 	connect(ui_.addGroupBtn, SIGNAL(released()), this, SLOT(addGroupBtnClicked()));
 	connect(ui_.addFilterBtn, SIGNAL(released()), this, SLOT(addFilterBtnClicked()));
 	connect(ui_.deleteNodeBtn, SIGNAL(released()), this, SLOT(deleteNodeBtnClicked()));
+
+	ui_.newBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::NewFile));
+	ui_.openBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::OpenFile));
+	ui_.saveBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFile));
+	ui_.addGroupBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddFilterGroup));
+	ui_.addFilterBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddFilterNode));
+	ui_.deleteNodeBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFilterNode));
 }
 
 FilterEditorDialog::~FilterEditorDialog()

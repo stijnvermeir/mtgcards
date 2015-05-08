@@ -3,6 +3,7 @@
 #include "magicitemdelegate.h"
 #include "filtereditordialog.h"
 #include "magiccollection.h"
+#include "settings.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -41,6 +42,15 @@ void CollectionWindow::reload()
 	updateStatusBar();
 }
 
+void CollectionWindow::updateShortcuts()
+{
+	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AdvancedFilter));
+	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToCollection));
+	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromCollection));
+	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToDeck));
+	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromDeck));
+}
+
 void CollectionWindow::loadSettings()
 {
 	QSettings settings;
@@ -61,6 +71,7 @@ void CollectionWindow::loadSettings()
 		collectionTableModel_.setFilterRootNode(rootFilterNode_);
 	}
 	updateStatusBar();
+	updateShortcuts();
 }
 
 void CollectionWindow::saveSettings()

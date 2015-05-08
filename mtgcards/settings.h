@@ -1,6 +1,11 @@
 #pragma once
 
+#include "shortcuttype.h"
+
 #include <QString>
+#include <QKeySequence>
+
+#include <map>
 #include <memory>
 
 class Settings
@@ -23,6 +28,9 @@ public:
 
 	const QString& getCardImageDir() const;
 	void setCardImageDir(const QString& cardImageDir);
+
+	const std::map<ShortcutType, QKeySequence>& getShortcuts() const;
+	void setShortcuts(const std::map<ShortcutType, QKeySequence>& shortcuts);
 private:
 
 	struct Pimpl;

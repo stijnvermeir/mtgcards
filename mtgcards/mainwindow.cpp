@@ -60,25 +60,31 @@ void MainWindow::loadSettings()
 	#ifdef __APPLE__
 		mainWindowVisibleDefault = false;
 	#endif
+
 	QSettings settings;
 	resize(settings.value("mainwindow/size", QSize(480, 48)).toSize());
 	move(settings.value("mainwindow/pos", QPoint(0, 0)).toPoint());
 	setVisible(true);
 	setVisible(settings.value("mainwindow/visible", mainWindowVisibleDefault).toBool());
+
 	poolWindow_.resize(settings.value("poolwindow/size", QSize(1428, 361)).toSize());
 	poolWindow_.move(settings.value("poolwindow/pos", QPoint(486, 0)).toPoint());
 	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
 	poolWindow_.loadSettings();
+
 	cardWindow_.resize(settings.value("cardwindow/size", QSize(480, 680)).toSize());
 	cardWindow_.move(settings.value("cardwindow/pos", QPoint(0, 77)).toPoint());
 	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
+
 	collectionWindow_.resize(settings.value("collectionwindow/size", QSize(1428, 367)).toSize());
 	collectionWindow_.move(settings.value("collectionwindow/pos", QPoint(486, 390)).toPoint());
 	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
 	collectionWindow_.loadSettings();
+
 	deckWindow_.resize(settings.value("deckwindow/size", QSize(1914, 360)).toSize());
 	deckWindow_.move(settings.value("deckwindow/pos", QPoint(0, 786)).toPoint());
 	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
+	deckWindow_.loadSettings();
 }
 
 void MainWindow::saveSettings()
@@ -87,17 +93,22 @@ void MainWindow::saveSettings()
 	settings.setValue("mainwindow/visible", isVisible());
 	settings.setValue("mainwindow/size", size());
 	settings.setValue("mainwindow/pos", pos());
+
 	poolWindow_.saveSettings();
 	settings.setValue("poolwindow/visible", poolWindow_.isVisible());
 	settings.setValue("poolwindow/size", poolWindow_.size());
 	settings.setValue("poolwindow/pos", poolWindow_.pos());
+
 	settings.setValue("cardwindow/visible", cardWindow_.isVisible());
 	settings.setValue("cardwindow/size", cardWindow_.size());
 	settings.setValue("cardwindow/pos", cardWindow_.pos());
+
 	collectionWindow_.saveSettings();
 	settings.setValue("collectionwindow/visible", collectionWindow_.isVisible());
 	settings.setValue("collectionwindow/size", collectionWindow_.size());
 	settings.setValue("collectionwindow/pos", collectionWindow_.pos());
+
+	deckWindow_.saveSettings();
 	settings.setValue("deckwindow/visible", deckWindow_.isVisible());
 	settings.setValue("deckwindow/size", deckWindow_.size());
 	settings.setValue("deckwindow/pos", deckWindow_.pos());
@@ -160,6 +171,9 @@ void MainWindow::optionsActionClicked()
 		poolWindow_.reload();
 		collectionWindow_.reload();
 	}
+	poolWindow_.updateShortcuts();
+	collectionWindow_.updateShortcuts();
+	deckWindow_.updateShortcuts();
 }
 
 void MainWindow::aboutActionClicked()

@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     filters/datefilterfunction.cpp \
     settings.cpp \
     collectiontablemodel.cpp \
-    magiccollection.cpp
+    magiccollection.cpp \
+    shortcuttype.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -65,7 +66,8 @@ HEADERS  += mainwindow.h \
     filters/datefilterfunction.h \
     settings.h \
     collectiontablemodel.h \
-    magiccollection.h
+    magiccollection.h \
+    shortcuttype.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

@@ -16,6 +16,7 @@ public:
 	virtual ~PoolWindow();
 
 	void reload();
+	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();
 
