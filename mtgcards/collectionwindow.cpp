@@ -10,11 +10,31 @@
 #include <QMenu>
 #include <QDebug>
 
+namespace {
+
+class CollectionItemDelegate : public MagicItemDelegate
+{
+public:
+	CollectionItemDelegate(const CollectionTableModel& model)
+		: model_(model)
+	{
+	}
+
+	virtual mtg::ColumnType columnIndexToType(const int columnIndex) const
+	{
+		return model_.columnIndexToType(columnIndex);
+	}
+private:
+	const CollectionTableModel& model_;
+};
+
+} // namespace
+
 CollectionWindow::CollectionWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
 	, collectionTableModel_()
-	, itemDelegate_(new MagicItemDelegate())
+	, itemDelegate_(new CollectionItemDelegate(collectionTableModel_))
 	, rootFilterNode_()
 {
 	setWindowFlags(Qt::NoDropShadowWindowHint);
@@ -32,6 +52,7 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 }
 
 CollectionWindow::~CollectionWindow()
@@ -202,6 +223,11 @@ void CollectionWindow::currentRowChanged(QModelIndex, QModelIndex)
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}
+}
+
+void CollectionWindow::dataChanged(QModelIndex, QModelIndex)
+{
+	updateStatusBar();
 }
 
 void CollectionWindow::actionAdvancedFilter()

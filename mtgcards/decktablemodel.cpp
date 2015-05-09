@@ -120,6 +120,39 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 		return QVariant();
 	}
 
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role)
+	{
+		if (index.isValid())
+		{
+			if (role == Qt::EditRole)
+			{
+				if (index.row() < rowCount() && index.column() < columnCount())
+				{
+					int dataRowIndex = deck_.getDataRowIndex(index.row());
+					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Sideboard)
+					{
+						if (deck_.getSideboard(dataRowIndex) != value.toInt())
+						{
+							deck_.setSideboard(dataRowIndex, value.toInt());
+							emit dataChanged(index, index);
+							return true;
+						}
+					}
+					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+					{
+						if (deck_.getQuantity(dataRowIndex) != value.toInt())
+						{
+							deck_.setQuantity(dataRowIndex, value.toInt());
+							emit dataChanged(index, index);
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const
 	{
 		if (orientation == Qt::Horizontal)
@@ -137,6 +170,14 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const
 	{
+		if (index.column() < columnCount())
+		{
+			if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity ||
+				DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Sideboard)
+			{
+				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
+			}
+		}
 		return QAbstractTableModel::flags(index);
 	}
 };
@@ -210,4 +251,13 @@ int DeckTableModel::columnToIndex(const mtg::ColumnType& column) const
 		return (it - DECKTABLE_COLUMNS.begin());
 	}
 	return -1;
+}
+
+mtg::ColumnType DeckTableModel::columnIndexToType(const int columnIndex) const
+{
+	if (columnIndex >= 0 && columnIndex < sourceModel()->columnCount())
+	{
+		return DECKTABLE_COLUMNS[columnIndex];
+	}
+	return mtg::ColumnType::UNKNOWN;
 }

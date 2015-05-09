@@ -6,11 +6,31 @@
 #include <QMenu>
 #include <QDebug>
 
+namespace {
+
+class DeckItemDelegate : public MagicItemDelegate
+{
+public:
+	DeckItemDelegate(const DeckTableModel& model)
+		: model_(model)
+	{
+	}
+
+	virtual mtg::ColumnType columnIndexToType(const int columnIndex) const
+	{
+		return model_.columnIndexToType(columnIndex);
+	}
+private:
+	const DeckTableModel& model_;
+};
+
+} // namespace
+
 DeckWidget::DeckWidget(QWidget *parent)
 	: QWidget(parent)
 	, ui_()
 	, deckTableModel_()
-	, itemDelegate_(new MagicItemDelegate())
+	, itemDelegate_(new DeckItemDelegate(deckTableModel_))
 	, hasUnsavedChanges_(false)
 {
 	ui_.setupUi(this);
@@ -25,6 +45,7 @@ DeckWidget::DeckWidget(QWidget *parent)
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
+	connect(&deckTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 }
 
 DeckWidget::~DeckWidget()
@@ -101,8 +122,6 @@ void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)
 	}
 	if (!dataRowIndices.empty())
 	{
-		hasUnsavedChanges_ = true;
-		emit deckEdited();
 		int rowIndex = deckTableModel_.getRowIndex(dataRowIndices.back());
 		if (rowIndex >= 0)
 		{
@@ -111,6 +130,8 @@ void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)
 			QModelIndex proxyIndex = deckTableModel_.mapFromSource(sourceIndex);
 			ui_.tableView->setCurrentIndex(proxyIndex);
 		}
+		hasUnsavedChanges_ = true;
+		emit deckEdited();
 	}
 }
 
@@ -154,6 +175,12 @@ void DeckWidget::currentRowChanged(QModelIndex, QModelIndex)
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}
+}
+
+void DeckWidget::dataChanged(QModelIndex, QModelIndex)
+{
+	hasUnsavedChanges_ = true;
+	emit deckEdited();
 }
 
 void DeckWidget::hideColumnsContextMenuRequested(const QPoint& pos)

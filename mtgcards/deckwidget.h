@@ -49,6 +49,7 @@ public slots:
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
+	void dataChanged(QModelIndex, QModelIndex);
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 	void headerStateChangedSlot();
 };

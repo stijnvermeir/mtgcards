@@ -27,6 +27,7 @@ public:
 	int getRowIndex(const int dataRowIndex) const;
 
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
+	mtg::ColumnType columnIndexToType(const int columnIndex) const;
 
 private:
 	struct Pimpl;

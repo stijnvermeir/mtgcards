@@ -4,11 +4,11 @@
 
 #include <QPaintEngine>
 #include <QLabel>
+#include <QSpinBox>
 
 MagicItemDelegate::MagicItemDelegate(QWidget* parent)
 	: QStyledItemDelegate(parent)
 {
-
 }
 
 void MagicItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -47,3 +47,43 @@ void MagicItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 	}
 }
 
+QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+{
+	mtg::ColumnType columnType = columnIndexToType(index.column());
+	if (columnType == mtg::ColumnType::Quantity || columnType == mtg::ColumnType::Sideboard)
+	{
+		return new QSpinBox(parent);
+	}
+	return nullptr;
+}
+
+void MagicItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+	mtg::ColumnType columnType = columnIndexToType(index.column());
+	if (columnType == mtg::ColumnType::Quantity || columnType == mtg::ColumnType::Sideboard)
+	{
+		QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
+		if (spinBox)
+		{
+			spinBox->setValue(index.data().toInt());
+		}
+	}
+}
+
+void MagicItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+	mtg::ColumnType columnType = columnIndexToType(index.column());
+	if (columnType == mtg::ColumnType::Quantity || columnType == mtg::ColumnType::Sideboard)
+	{
+		QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
+		if (spinBox && model)
+		{
+			model->setData(index, spinBox->value());
+		}
+	}
+}
+
+mtg::ColumnType MagicItemDelegate::columnIndexToType(const int) const
+{
+	return mtg::ColumnType::UNKNOWN;
+}

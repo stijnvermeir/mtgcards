@@ -96,6 +96,31 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 		return QVariant();
 	}
 
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role)
+	{
+		if (index.isValid())
+		{
+			if (role == Qt::EditRole)
+			{
+				if (index.row() < rowCount() && index.column() < columnCount())
+				{
+					int dataRowIndex = mtg::Collection::instance().getDataRowIndex(index.row());
+					if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+					{
+						if (mtg::Collection::instance().getQuantity(dataRowIndex) != value.toInt() && value.toInt() > 0)
+						{
+							mtg::Collection::instance().setQuantity(dataRowIndex, value.toInt());
+							mtg::Collection::instance().save();
+							emit dataChanged(index, index);
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const
 	{
 		if (orientation == Qt::Horizontal)
@@ -113,6 +138,13 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const
 	{
+		if (index.column() < columnCount())
+		{
+			if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+			{
+				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
+			}
+		}
 		return QAbstractTableModel::flags(index);
 	}
 };
@@ -150,4 +182,13 @@ int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const
 		return (it - COLLECTIONTABLE_COLUMNS.begin());
 	}
 	return -1;
+}
+
+mtg::ColumnType CollectionTableModel::columnIndexToType(const int columnIndex) const
+{
+	if (columnIndex >= 0 && columnIndex < sourceModel()->columnCount())
+	{
+		return COLLECTIONTABLE_COLUMNS[columnIndex];
+	}
+	return mtg::ColumnType::UNKNOWN;
 }

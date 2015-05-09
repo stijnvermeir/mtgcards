@@ -47,6 +47,7 @@ public slots:
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
+	void dataChanged(QModelIndex, QModelIndex);
 	void actionAdvancedFilter();
 	void actionAddToCollection();
 	void actionRemoveFromCollection();
