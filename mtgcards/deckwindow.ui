@@ -88,6 +88,8 @@
    <addaction name="actionRemoveFromDeck"/>
    <addaction name="separator"/>
    <addaction name="actionToggleDeckActive"/>
+   <addaction name="separator"/>
+   <addaction name="actionCreateProxies"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
@@ -212,6 +214,14 @@
    </property>
    <property name="toolTip">
     <string>Toggle deck active</string>
+   </property>
+  </action>
+  <action name="actionCreateProxies">
+   <property name="text">
+    <string>Create proxies</string>
+   </property>
+   <property name="toolTip">
+    <string>Create proxies from selection</string>
    </property>
   </action>
  </widget>

@@ -191,39 +191,19 @@ void DeckTableModel::save(const QString& filename)
 	pimpl_->save(filename);
 }
 
-const QString& DeckTableModel::getFilename() const
-{
-	return pimpl_->deck_->getFilename();
-}
-
-QString DeckTableModel::getDisplayName() const
-{
-	return pimpl_->deck_->getDisplayName();
-}
-
-bool DeckTableModel::isDeckActive() const
-{
-	return pimpl_->deck_->isActive();
-}
-
 void DeckTableModel::setDeckActive(const bool active)
 {
 	pimpl_->deck_->setActive(active);
 }
 
-bool DeckTableModel::hasUnsavedChanges() const
-{
-	return pimpl_->deck_->hasUnsavedChanges();
-}
-
-int DeckTableModel::getQuantity(const int dataRowIndex) const
-{
-	return pimpl_->getQuantity(dataRowIndex);
-}
-
 void DeckTableModel::setQuantity(const int dataRowIndex, const int newQuantity)
 {
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
+}
+
+const Deck& DeckTableModel::deck() const
+{
+	return *pimpl_->deck_.data();
 }
 
 int DeckTableModel::getDataRowIndex(const QModelIndex& proxyIndex) const

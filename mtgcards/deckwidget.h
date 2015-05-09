@@ -11,6 +11,7 @@
 #include <QScopedPointer>
 
 class QAbstractItemDelegate;
+class Deck;
 
 class DeckWidget : public QWidget
 {
@@ -22,17 +23,14 @@ public:
 
 	void reload();
 	void save(const QString& filename);
-	const QString& getFilename() const;
-	QString getDisplayName() const;
-	bool hasUnsavedChanges() const;
-	bool isDeckActive() const;
 	void setDeckActive(const bool active);
+	const Deck& deck() const;
 
 	void setHeaderState(const QByteArray& headerState);
 	void setFilterRootNode(const FilterNode::Ptr& node);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
-	const DeckTableModel& getModel() const;
+	const DeckTableModel& model() const;
 
 signals:
 	void selectedCardChanged(int);

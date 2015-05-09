@@ -61,4 +61,5 @@ private slots:
 	void actionRemoveFromDeck();
 	void actionToggleDeckActive(bool);
 	void headerStateChangedSlot(const QByteArray& headerState);
+	void createProxies();
 };

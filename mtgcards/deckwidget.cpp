@@ -1,6 +1,7 @@
 #include "deckwidget.h"
 
 #include "magicitemdelegate.h"
+#include "deck.h"
 #include "settings.h"
 
 #include <QMenu>
@@ -61,30 +62,15 @@ void DeckWidget::save(const QString& filename)
 	deckTableModel_.save(filename);
 }
 
-const QString& DeckWidget::getFilename() const
-{
-	return deckTableModel_.getFilename();
-}
-
-QString DeckWidget::getDisplayName() const
-{
-	return deckTableModel_.getDisplayName();
-}
-
-bool DeckWidget::hasUnsavedChanges() const
-{
-	return deckTableModel_.hasUnsavedChanges();
-}
-
-bool DeckWidget::isDeckActive() const
-{
-	return deckTableModel_.isDeckActive();
-}
-
 void DeckWidget::setDeckActive(const bool active)
 {
 	deckTableModel_.setDeckActive(active);
 	emit deckEdited();
+}
+
+const Deck& DeckWidget::deck() const
+{
+	return deckTableModel_.deck();
 }
 
 void DeckWidget::setHeaderState(const QByteArray& headerState)
@@ -117,7 +103,7 @@ QVector<int> DeckWidget::currentDataRowIndices() const
 	return indices;
 }
 
-const DeckTableModel& DeckWidget::getModel() const
+const DeckTableModel& DeckWidget::model() const
 {
 	return deckTableModel_;
 }
@@ -126,7 +112,7 @@ void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)
 {
 	for (const int dataRowIndex : dataRowIndices)
 	{
-		auto currentQuantity = deckTableModel_.getQuantity(dataRowIndex);
+		auto currentQuantity = deckTableModel_.deck().getQuantity(dataRowIndex);
 		deckTableModel_.setQuantity(dataRowIndex, currentQuantity + 1);
 	}
 	if (!dataRowIndices.empty())
@@ -148,7 +134,7 @@ void DeckWidget::removeFromDeck(const QVector<int>& dataRowIndices)
 	for (const int dataRowIndex : dataRowIndices)
 	{
 		int rowIndex = ui_.tableView->currentIndex().row();
-		auto currentQuantity = deckTableModel_.getQuantity(dataRowIndex);
+		auto currentQuantity = deckTableModel_.deck().getQuantity(dataRowIndex);
 		if (currentQuantity >= 0)
 		{
 			deckTableModel_.setQuantity(dataRowIndex, currentQuantity - 1);

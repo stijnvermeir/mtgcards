@@ -5,6 +5,8 @@
 #include <QScopedPointer>
 #include <QString>
 
+class Deck;
+
 class DeckTableModel : public MagicSortFilterProxyModel
 {
 public:
@@ -14,14 +16,9 @@ public:
 
 	void reload();
 	void save(const QString& filename);
-	const QString& getFilename() const;
-	QString getDisplayName() const;
-	bool isDeckActive() const;
 	void setDeckActive(const bool active);
-	bool hasUnsavedChanges() const;
-
-	int getQuantity(const int dataRowIndex) const;
 	void setQuantity(const int dataRowIndex, const int newQuantity);
+	const Deck& deck() const;
 
 	int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	int getRowIndex(const int dataRowIndex) const;

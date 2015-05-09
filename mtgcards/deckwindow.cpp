@@ -1,6 +1,9 @@
 #include "deckwindow.h"
-#include "deckwidget.h"
 
+#include "deckwidget.h"
+#include "deck.h"
+#include "magiccarddata.h"
+#include "magiccollection.h"
 #include "filtereditordialog.h"
 #include "settings.h"
 
@@ -10,6 +13,8 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QTextStream>
+#include <QPdfWriter>
+#include <QPainter>
 #include <QDebug>
 
 DeckWindow::DeckWindow(QWidget *parent)
@@ -33,6 +38,7 @@ DeckWindow::DeckWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
+	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 }
 
 DeckWindow::~DeckWindow()
@@ -106,9 +112,9 @@ void DeckWindow::saveSettings()
 	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
 	{
 		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
-		if (deckWidget && !deckWidget->getFilename().isEmpty())
+		if (deckWidget && !deckWidget->deck().getFilename().isEmpty())
 		{
-			openFiles.append(deckWidget->getFilename());
+			openFiles.append(deckWidget->deck().getFilename());
 		}
 	}
 	settings.setValue("deckwindow/openfiles", openFiles);
@@ -121,7 +127,7 @@ bool DeckWindow::hasUnsavedChanges() const
 		QWidget* widget = ui_.tabWidget->widget(tabIndex);
 		if (widget)
 		{
-			if (static_cast<DeckWidget*>(widget)->hasUnsavedChanges())
+			if (static_cast<DeckWidget*>(widget)->deck().hasUnsavedChanges())
 			{
 				return true;
 			}
@@ -150,7 +156,7 @@ void DeckWindow::updateStatusBar()
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)
 	{
-		const auto& model = deckWidget->getModel();
+		const auto& model = deckWidget->model();
 		auto getValue = [&model](int row, mtg::ColumnType columnType)
 		{
 			int column = model.columnToIndex(columnType);
@@ -178,7 +184,7 @@ void DeckWindow::updateStatusBar()
 		QTextStream str(&message);
 		str << cardCount << " cards (" << landCount << " lands, " << creatureCount << " creatures, " << cardCount - creatureCount - landCount << " others)";
 		ui_.statusBar->showMessage(message);
-		ui_.actionToggleDeckActive->setChecked(deckWidget->isDeckActive());
+		ui_.actionToggleDeckActive->setChecked(deckWidget->deck().isActive());
 	}
 	else
 	{
@@ -200,7 +206,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
-	ui_.tabWidget->addTab(deckWidget, deckWidget->getDisplayName());
+	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
 	return deckWidget;
 }
@@ -212,7 +218,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 		int index = ui_.tabWidget->indexOf(deckWidget);
 		if (index != -1)
 		{
-			if (deckWidget->hasUnsavedChanges())
+			if (deckWidget->deck().hasUnsavedChanges())
 			{
 				int ret = QMessageBox::question(this,
 												"Save before close?",
@@ -242,7 +248,7 @@ void DeckWindow::saveDeck(DeckWidget* deckWidget, bool saveAs)
 {
 	if (deckWidget)
 	{
-		QString filename = deckWidget->getFilename();
+		QString filename = deckWidget->deck().getFilename();
 		if (filename.isEmpty() || saveAs)
 		{
 			filename = QFileDialog::getSaveFileName(this, "Save Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
@@ -250,7 +256,7 @@ void DeckWindow::saveDeck(DeckWidget* deckWidget, bool saveAs)
 		if (!filename.isEmpty())
 		{
 			deckWidget->save(filename);
-			ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), QFileInfo(filename).baseName());
+			ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), deckWidget->deck().getDisplayName());
 		}
 	}
 }
@@ -318,9 +324,9 @@ void DeckWindow::actionSaveDeckAs()
 void DeckWindow::deckEdited()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
-	if (deckWidget && deckWidget->hasUnsavedChanges())
+	if (deckWidget && deckWidget->deck().hasUnsavedChanges())
 	{
-		QString tabText = deckWidget->getDisplayName() + "*";
+		QString tabText = deckWidget->deck().getDisplayName() + "*";
 		ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
 	}
 	updateStatusBar();
@@ -402,5 +408,59 @@ void DeckWindow::headerStateChangedSlot(const QByteArray& headerState)
 			deckWidget->setHeaderState(headerState_);
 			connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
 		}
+	}
+}
+
+void DeckWindow::createProxies()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		auto indices = deckWidget->currentDataRowIndices();
+		if (indices.isEmpty())
+		{
+			QMessageBox::information(this, "No selection", "No cards were selected. Please select the cards you want to make proxies for.");
+			return;
+		}
+
+		auto pdfFile = QFileDialog::getSaveFileName(this, "Save to Pdf", QDir::homePath(), "Pdf (*.pdf)");
+		if (pdfFile.isNull())
+			return;
+
+		QPdfWriter pdf(pdfFile);
+		pdf.setPageSize(QPdfWriter::A4);
+		QPainter painter(&pdf);
+
+		int printIndex = 0;
+		auto printCardLambda = [&printIndex, &painter, &pdf](const QString& filename)
+		{
+			const QSizeF CARD_SIZE(pdf.logicalDpiX() * 2.49, pdf.logicalDpiY() * 3.48);
+			QPointF topLeft((printIndex % 3) * CARD_SIZE.width(), (printIndex / 3) * CARD_SIZE.height());
+			painter.drawImage(QRectF(topLeft, CARD_SIZE), QImage(filename));
+			++printIndex;
+			if (printIndex >= 9)
+			{
+				pdf.newPage();
+				printIndex = 0;
+			}
+		};
+
+		for (int index : indices)
+		{
+			auto quantity = deckWidget->deck().getQuantity(index);
+			auto pictureData = mtg::CardData::instance().getPictureFilenames(index);
+			for (int i = 0; i < quantity; ++i)
+			{
+				printCardLambda(pictureData.second.first());
+				if (pictureData.first == mtg::LayoutType::DoubleFaced)
+				{
+					printCardLambda(pictureData.second.last());
+				}
+			}
+		}
+
+		painter.end();
+
+		QMessageBox::information(this, "Success", "Proxy generation successful.");
 	}
 }
