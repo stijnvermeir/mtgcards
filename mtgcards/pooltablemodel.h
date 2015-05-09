@@ -13,9 +13,9 @@ public:
 
 	void reload();
 
-private:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
 
+private:
 	struct Pimpl;
 	QScopedPointer<Pimpl> pimpl_;
 };

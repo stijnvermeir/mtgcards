@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QTextStream>
 #include <QDebug>
 
 DeckWindow::DeckWindow(QWidget *parent)
@@ -30,7 +31,7 @@ DeckWindow::DeckWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
-	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(selectedCardChangedSlot()));
+	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
 }
 
 DeckWindow::~DeckWindow()
@@ -54,6 +55,7 @@ void DeckWindow::updateShortcuts()
 	ui_.actionNewDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::NewFile));
 	ui_.actionOpenDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::OpenFile));
 	ui_.actionSaveDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFile));
+	ui_.actionSaveDeckAs->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFileAs));
 	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AdvancedFilter));
 	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToCollection));
 	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromCollection));
@@ -71,6 +73,14 @@ void DeckWindow::loadSettings()
 	if (settings.contains("deckwindow/headerstate"))
 	{
 		headerState_ = settings.value("deckwindow/headerstate").toByteArray();
+	}
+	if (settings.contains("deckwindow/openfiles"))
+	{
+		QStringList openFiles = settings.value("deckwindow/openfiles").toStringList();
+		for (const auto& openFile : openFiles)
+		{
+			createDeckWidget(openFile);
+		}
 	}
 	updateStatusBar();
 	updateShortcuts();
@@ -91,6 +101,16 @@ void DeckWindow::saveSettings()
 	{
 		settings.setValue("deckwindow/headerstate", headerState_);
 	}
+	QStringList openFiles;
+	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
+	{
+		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
+		if (deckWidget && !deckWidget->getFilename().isEmpty())
+		{
+			openFiles.append(deckWidget->getFilename());
+		}
+	}
+	settings.setValue("deckwindow/openfiles", openFiles);
 }
 
 bool DeckWindow::hasUnsavedChanges() const
@@ -126,16 +146,56 @@ bool DeckWindow::event(QEvent* event)
 
 void DeckWindow::updateStatusBar()
 {
-
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		const auto& model = deckWidget->getModel();
+		auto getValue = [&model](int row, mtg::ColumnType columnType)
+		{
+			int column = model.columnToIndex(columnType);
+			QModelIndex index = model.sourceModel()->index(row, column);
+			return model.sourceModel()->data(index);
+		};
+		int landCount = 0;
+		int creatureCount = 0;
+		int cardCount = 0;
+		for (int row = 0; row < model.sourceModel()->rowCount(); ++row)
+		{
+			int quantity = getValue(row, mtg::ColumnType::Quantity).toInt();
+			QString type = getValue(row, mtg::ColumnType::Type).toString();
+			if (type.contains("Creature"))
+			{
+				creatureCount += quantity;
+			}
+			if (type.contains("Land"))
+			{
+				landCount += quantity;
+			}
+			cardCount += quantity;
+		}
+		QString message;
+		QTextStream str(&message);
+		str << cardCount << " cards (" << landCount << " lands, " << creatureCount << " creatures, " << cardCount - creatureCount - landCount << " others)";
+		ui_.statusBar->showMessage(message);
+	}
+	else
+	{
+		ui_.statusBar->clearMessage();
+	}
 }
 
 DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 {
+	if (!filename.isEmpty() && !QFileInfo(filename).exists())
+	{
+		return nullptr;
+	}
+
 	DeckWidget* deckWidget = new DeckWidget();
 	deckWidget->setHeaderState(headerState_);
 	deckWidget->setFilterRootNode(rootFilterNode_);
 	QString tabName = "New deck";
-	if (!filename.isNull())
+	if (!filename.isEmpty())
 	{
 		deckWidget->load(filename);
 		tabName = QFileInfo(filename).baseName();
@@ -223,6 +283,12 @@ void DeckWindow::selectedCardChangedSlot()
 	}
 }
 
+void DeckWindow::currentTabChangedSlot(int)
+{
+	selectedCardChangedSlot();
+	updateStatusBar();
+}
+
 void DeckWindow::actionNewDeck()
 {
 	createDeckWidget();
@@ -264,6 +330,7 @@ void DeckWindow::deckEdited()
 			ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
 		}
 	}
+	updateStatusBar();
 }
 
 void DeckWindow::actionAdvancedFilter()
@@ -326,10 +393,12 @@ void DeckWindow::headerStateChangedSlot(const QByteArray& headerState)
 	headerState_ = headerState;
 	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
 	{
-		QWidget* widget = ui_.tabWidget->widget(tabIndex);
-		if (widget)
+		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
+		if (deckWidget)
 		{
-			static_cast<DeckWidget*>(widget)->setHeaderState(headerState_);
+			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
+			deckWidget->setHeaderState(headerState_);
+			connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
 		}
 	}
 }

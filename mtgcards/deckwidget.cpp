@@ -23,6 +23,7 @@ DeckWidget::DeckWidget(QWidget *parent)
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(headerStateChangedSlot()));
+	connect(ui_.tableView->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 }
 
@@ -84,6 +85,11 @@ QVector<int> DeckWidget::currentDataRowIndices() const
 		indices.push_back(deckTableModel_.getDataRowIndex(proxyIndex));
 	}
 	return indices;
+}
+
+const DeckTableModel& DeckWidget::getModel() const
+{
+	return deckTableModel_;
 }
 
 void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)

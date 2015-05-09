@@ -47,6 +47,7 @@ public slots:
 
 private slots:
 	void selectedCardChangedSlot();
+	void currentTabChangedSlot(int);
 	void actionNewDeck();
 	void closeDeck(int);
 	void actionOpenDeck();

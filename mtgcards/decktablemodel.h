@@ -26,9 +26,9 @@ public:
 	int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	int getRowIndex(const int dataRowIndex) const;
 
-private:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
 
+private:
 	struct Pimpl;
 	QScopedPointer<Pimpl> pimpl_;
 };

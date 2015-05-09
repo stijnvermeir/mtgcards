@@ -30,6 +30,7 @@ public:
 	void setFilterRootNode(const FilterNode::Ptr& node);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
+	const DeckTableModel& getModel() const;
 
 signals:
 	void selectedCardChanged(int);
