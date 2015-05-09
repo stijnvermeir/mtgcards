@@ -21,6 +21,7 @@ void CardGraphicsView::resizeEvent(QResizeEvent* event)
 	if (!items().empty())
 	{
 		fitInView(items().first(), Qt::KeepAspectRatio);
+		centerOn(items().first());
 	}
 	event->accept();
 }

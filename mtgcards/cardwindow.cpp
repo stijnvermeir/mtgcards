@@ -35,9 +35,11 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 	scene_.clear();
 	auto item = new QGraphicsPixmapItem(QPixmap(imageFile));
 	item->setTransformationMode(Qt::SmoothTransformation);
+	item->setTransformOriginPoint(item->boundingRect().center());
 	item->setRotation(rotation);
 	scene_.addItem(item);
 	ui_.cardView_->fitInView(item, Qt::KeepAspectRatio);
+	ui_.cardView_->centerOn(item);
 }
 
 void CardWindow::changeCardPicture(int row)
