@@ -17,14 +17,16 @@ class DeckWidget : public QWidget
 	Q_OBJECT
 
 public:
-	explicit DeckWidget(QWidget *parent = 0);
+	explicit DeckWidget(const QString& filename, QWidget *parent = 0);
 	~DeckWidget();
 
 	void reload();
-	void load(const QString& filename);
 	void save(const QString& filename);
-	const QString& getFilename();
+	const QString& getFilename() const;
+	QString getDisplayName() const;
 	bool hasUnsavedChanges() const;
+	bool isDeckActive() const;
+	void setDeckActive(const bool active);
 
 	void setHeaderState(const QByteArray& headerState);
 	void setFilterRootNode(const FilterNode::Ptr& node);
@@ -41,7 +43,6 @@ private:
 	Ui::DeckWidget ui_;
 	DeckTableModel deckTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
-	bool hasUnsavedChanges_;
 
 public slots:
 	void addToDeck(const QVector<int>&);

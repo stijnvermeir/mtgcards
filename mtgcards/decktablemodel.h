@@ -9,19 +9,19 @@ class DeckTableModel : public MagicSortFilterProxyModel
 {
 public:
 
-	DeckTableModel();
+	DeckTableModel(const QString& filename);
 	~DeckTableModel();
 
 	void reload();
-	void load(const QString& filename);
 	void save(const QString& filename);
 	const QString& getFilename() const;
+	QString getDisplayName() const;
+	bool isDeckActive() const;
+	void setDeckActive(const bool active);
+	bool hasUnsavedChanges() const;
 
 	int getQuantity(const int dataRowIndex) const;
 	void setQuantity(const int dataRowIndex, const int newQuantity);
-
-	int getSideboard(const int dataRowIndex) const;
-	void setSideboard(const int dataRowIndex, const int newSideboard);
 
 	int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	int getRowIndex(const int dataRowIndex) const;

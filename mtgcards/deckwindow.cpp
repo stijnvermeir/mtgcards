@@ -32,6 +32,7 @@ DeckWindow::DeckWindow(QWidget *parent)
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
+	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 }
 
 DeckWindow::~DeckWindow()
@@ -177,9 +178,11 @@ void DeckWindow::updateStatusBar()
 		QTextStream str(&message);
 		str << cardCount << " cards (" << landCount << " lands, " << creatureCount << " creatures, " << cardCount - creatureCount - landCount << " others)";
 		ui_.statusBar->showMessage(message);
+		ui_.actionToggleDeckActive->setChecked(deckWidget->isDeckActive());
 	}
 	else
 	{
+		ui_.actionToggleDeckActive->setChecked(false);
 		ui_.statusBar->clearMessage();
 	}
 }
@@ -191,19 +194,13 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		return nullptr;
 	}
 
-	DeckWidget* deckWidget = new DeckWidget();
+	DeckWidget* deckWidget = new DeckWidget(filename);
 	deckWidget->setHeaderState(headerState_);
 	deckWidget->setFilterRootNode(rootFilterNode_);
-	QString tabName = "New deck";
-	if (!filename.isEmpty())
-	{
-		deckWidget->load(filename);
-		tabName = QFileInfo(filename).baseName();
-	}
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
-	ui_.tabWidget->addTab(deckWidget, tabName);
+	ui_.tabWidget->addTab(deckWidget, deckWidget->getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
 	return deckWidget;
 }
@@ -323,12 +320,8 @@ void DeckWindow::deckEdited()
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget && deckWidget->hasUnsavedChanges())
 	{
-		QString filename = deckWidget->getFilename();
-		if (!filename.isEmpty())
-		{
-			QString tabText = QFileInfo(filename).baseName() + "*";
-			ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
-		}
+		QString tabText = deckWidget->getDisplayName() + "*";
+		ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
 	}
 	updateStatusBar();
 }
@@ -385,6 +378,15 @@ void DeckWindow::actionRemoveFromDeck()
 	{
 		DeckWidget* deckWidget = static_cast<DeckWidget*>(widget);
 		deckWidget->removeFromDeck(deckWidget->currentDataRowIndices());
+	}
+}
+
+void DeckWindow::actionToggleDeckActive(bool active)
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		deckWidget->setDeckActive(active);
 	}
 }
 

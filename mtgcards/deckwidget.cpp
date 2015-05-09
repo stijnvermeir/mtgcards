@@ -26,12 +26,11 @@ private:
 
 } // namespace
 
-DeckWidget::DeckWidget(QWidget *parent)
+DeckWidget::DeckWidget(const QString& filename, QWidget *parent)
 	: QWidget(parent)
 	, ui_()
-	, deckTableModel_()
+	, deckTableModel_(filename)
 	, itemDelegate_(new DeckItemDelegate(deckTableModel_))
-	, hasUnsavedChanges_(false)
 {
 	ui_.setupUi(this);
 	ui_.tableView->setItemDelegate(itemDelegate_.data());
@@ -57,25 +56,35 @@ void DeckWidget::reload()
 	deckTableModel_.reload();
 }
 
-void DeckWidget::load(const QString& filename)
-{
-	deckTableModel_.load(filename);
-}
-
 void DeckWidget::save(const QString& filename)
 {
 	deckTableModel_.save(filename);
-	hasUnsavedChanges_ = false;
 }
 
-const QString& DeckWidget::getFilename()
+const QString& DeckWidget::getFilename() const
 {
 	return deckTableModel_.getFilename();
 }
 
+QString DeckWidget::getDisplayName() const
+{
+	return deckTableModel_.getDisplayName();
+}
+
 bool DeckWidget::hasUnsavedChanges() const
 {
-	return hasUnsavedChanges_;
+	return deckTableModel_.hasUnsavedChanges();
+}
+
+bool DeckWidget::isDeckActive() const
+{
+	return deckTableModel_.isDeckActive();
+}
+
+void DeckWidget::setDeckActive(const bool active)
+{
+	deckTableModel_.setDeckActive(active);
+	emit deckEdited();
 }
 
 void DeckWidget::setHeaderState(const QByteArray& headerState)
@@ -130,7 +139,6 @@ void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)
 			QModelIndex proxyIndex = deckTableModel_.mapFromSource(sourceIndex);
 			ui_.tableView->setCurrentIndex(proxyIndex);
 		}
-		hasUnsavedChanges_ = true;
 		emit deckEdited();
 	}
 }
@@ -164,7 +172,6 @@ void DeckWidget::removeFromDeck(const QVector<int>& dataRowIndices)
 	}
 	if (!dataRowIndices.empty())
 	{
-		hasUnsavedChanges_ = true;
 		emit deckEdited();
 	}
 }
@@ -179,7 +186,6 @@ void DeckWidget::currentRowChanged(QModelIndex, QModelIndex)
 
 void DeckWidget::dataChanged(QModelIndex, QModelIndex)
 {
-	hasUnsavedChanges_ = true;
 	emit deckEdited();
 }
 

@@ -315,7 +315,7 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 				}
 				else
 				{
-					qWarning() << imageFile << " not found! (" << imageName << ")";
+					// qWarning() << imageFile << " not found! (" << imageName << ")";
 					list.push_back(notFoundImageFile);
 				}
 			}

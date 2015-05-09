@@ -4,6 +4,7 @@
 #include "filtereditordialog.h"
 #include "magiccollection.h"
 #include "settings.h"
+#include "deckmanager.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -53,6 +54,7 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
 }
 
 CollectionWindow::~CollectionWindow()
@@ -276,5 +278,16 @@ void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 	if (a)
 	{
 		ui_.collectionTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+	}
+}
+
+void CollectionWindow::updateUsedCount()
+{
+	for (int row = 0; row < mtg::Collection::instance().getNumRows(); ++row)
+	{
+		int usedCount = DeckManager::instance().getUsedCount(mtg::Collection::instance().getDataRowIndex(row));
+		int usedColumnIndex = collectionTableModel_.columnToIndex(mtg::ColumnType::Used);
+		QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(row, usedColumnIndex);
+		collectionTableModel_.sourceModel()->setData(sourceIndex, usedCount);
 	}
 }

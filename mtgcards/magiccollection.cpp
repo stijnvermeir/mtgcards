@@ -1,6 +1,7 @@
 #include "magiccollection.h"
 
 #include "magiccarddata.h"
+#include "deckmanager.h"
 #include "settings.h"
 
 #include <QFile>
@@ -57,7 +58,7 @@ struct Collection::Pimpl
 				Row r;
 				r.rowIndexInData = mtg::CardData::instance().findRow(criteria);
 				r.quantity = card["Quantity"].toInt();
-				r.used = 0; // TODO
+				r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
 				data_.push_back(r);
 			}
 		}
@@ -172,9 +173,18 @@ struct Collection::Pimpl
 				Row row;
 				row.rowIndexInData = dataRowIndex;
 				row.quantity = newQuantity;
-				row.used = 0; // TODO
+				row.used = DeckManager::instance().getUsedCount(row.rowIndexInData);
 				data_.push_back(row);
 			}
+		}
+	}
+
+	void setUsedCount(const int dataRowIndex, const int usedCount)
+	{
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
+		if (it != data_.end())
+		{
+			it->used = usedCount;
 		}
 	}
 };
@@ -237,4 +247,9 @@ int Collection::getQuantity(const int dataRowIndex) const
 void Collection::setQuantity(const int dataRowIndex, const int newQuantity)
 {
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
+}
+
+void Collection::setUsedCount(const int dataRowIndex, const int usedCount)
+{
+	pimpl_->setUsedCount(dataRowIndex, usedCount);
 }

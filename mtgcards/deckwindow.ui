@@ -86,6 +86,8 @@
    <addaction name="actionRemoveFromCollection"/>
    <addaction name="actionAddToDeck"/>
    <addaction name="actionRemoveFromDeck"/>
+   <addaction name="separator"/>
+   <addaction name="actionToggleDeckActive"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
@@ -194,6 +196,22 @@
    </property>
    <property name="toolTip">
     <string>Save deck as ...</string>
+   </property>
+  </action>
+  <action name="actionToggleDeckActive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/switches3.svg</normaloff>
+     <normalon>:/resources/icons/switch14.svg</normalon>:/resources/icons/switches3.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle deck active</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle deck active</string>
    </property>
   </action>
  </widget>

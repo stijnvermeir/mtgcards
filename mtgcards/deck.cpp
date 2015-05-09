@@ -3,6 +3,7 @@
 #include "magiccarddata.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -29,11 +30,15 @@ struct Deck::Pimpl
 	vector<Row> data_;
 	bool active_;
 	QString filename_;
+	QString id_;
+	bool hasUnsavedChanges_;
 
 	Pimpl()
 		: data_()
 		, active_(true)
 		, filename_()
+		, id_()
+		, hasUnsavedChanges_(false)
 	{
 	}
 
@@ -74,6 +79,7 @@ struct Deck::Pimpl
 		}
 
 		filename_ = filename;
+		hasUnsavedChanges_ = false;
 	}
 
 	void save(const QString& filename)
@@ -102,6 +108,7 @@ struct Deck::Pimpl
 			file.write(doc.toJson());
 		}
 		filename_ = filename;
+		hasUnsavedChanges_ = false;
 	}
 
 	int getNumRows() const
@@ -192,6 +199,7 @@ struct Deck::Pimpl
 				data_.push_back(row);
 			}
 		}
+		hasUnsavedChanges_ = true;
 	}
 
 	int getSideboard(const int dataRowIndex) const
@@ -225,16 +233,20 @@ struct Deck::Pimpl
 				data_.push_back(row);
 			}
 		}
+		hasUnsavedChanges_ = true;
 	}
 };
 
 Deck::Deck()
 	: pimpl_(new Pimpl())
 {
+	static int counter = 1;
+	pimpl_->id_ = QString("New deck ") + QString::number(counter);
+	++counter;
 }
 
 Deck::Deck(const QString& file)
-	: Deck()
+	: pimpl_(new Pimpl())
 {
 	load(file);
 }
@@ -246,11 +258,13 @@ Deck::~Deck()
 void Deck::reload()
 {
 	pimpl_->reload();
+	emit changed();
 }
 
 void Deck::load(const QString& filename)
 {
 	pimpl_->load(filename);
+	emit changed();
 }
 
 void Deck::save(const QString& filename)
@@ -261,6 +275,32 @@ void Deck::save(const QString& filename)
 const QString& Deck::getFilename() const
 {
 	return pimpl_->filename_;
+}
+
+const QString& Deck::getId() const
+{
+	if (!pimpl_->filename_.isEmpty())
+	{
+		return pimpl_->filename_;
+	}
+	return pimpl_->id_;
+}
+
+QString Deck::getDisplayName() const
+{
+	if (pimpl_->filename_.isEmpty())
+	{
+		return pimpl_->id_;
+	}
+	else
+	{
+		return QFileInfo(pimpl_->filename_).baseName();
+	}
+}
+
+bool Deck::hasUnsavedChanges() const
+{
+	return pimpl_->hasUnsavedChanges_;
 }
 
 int Deck::getNumRows() const
@@ -296,6 +336,7 @@ int Deck::getQuantity(const int dataRowIndex) const
 void Deck::setQuantity(const int dataRowIndex, const int newQuantity)
 {
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
+	emit changed();
 }
 
 int Deck::getSideboard(const int dataRowIndex) const
@@ -306,4 +347,16 @@ int Deck::getSideboard(const int dataRowIndex) const
 void Deck::setSideboard(const int dataRowIndex, const int newSideboard)
 {
 	pimpl_->setSideboard(dataRowIndex, newSideboard);
+}
+
+bool Deck::isActive() const
+{
+	return pimpl_->active_;
+}
+
+void Deck::setActive(bool active)
+{
+	pimpl_->active_ = active;
+	pimpl_->hasUnsavedChanges_ = true;
+	emit changed();
 }

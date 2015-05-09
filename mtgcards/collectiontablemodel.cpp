@@ -115,6 +115,13 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 							return true;
 						}
 					}
+					else
+					if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Used)
+					{
+						mtg::Collection::instance().setUsedCount(dataRowIndex, value.toInt());
+						emit dataChanged(index, index);
+						return true;
+					}
 				}
 			}
 		}

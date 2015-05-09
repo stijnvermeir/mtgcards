@@ -3,7 +3,7 @@
 #include "magiccolumntype.h"
 
 #include <QVariant>
-#include <memory>
+#include <QScopedPointer>
 
 namespace mtg {
 
@@ -24,12 +24,14 @@ public:
 	int getQuantity(const int dataRowIndex) const;
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 
+	void setUsedCount(const int dataRowIndex, const int usedCount);
+
 private:
 	Collection();
 	~Collection();
 
 	struct Pimpl;
-	std::unique_ptr<Pimpl> pimpl_;
+	QScopedPointer<Pimpl> pimpl_;
 };
 
 } // namespace mtg

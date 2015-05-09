@@ -5,9 +5,12 @@
 #include <QVariant>
 #include <QString>
 #include <QScopedPointer>
+#include <QObject>
 
-class Deck
+class Deck : public QObject
 {
+	Q_OBJECT
+
 public:
 	Deck();
 	Deck(const QString& file);
@@ -17,6 +20,9 @@ public:
 	void load(const QString& filename);
 	void save(const QString& filename);
 	const QString& getFilename() const;
+	const QString& getId() const;
+	QString getDisplayName() const;
+	bool hasUnsavedChanges() const;
 
 	int getNumRows() const;
 	int getNumCards() const;
@@ -29,6 +35,12 @@ public:
 
 	int getSideboard(const int dataRowIndex) const;
 	void setSideboard(const int dataRowIndex, const int newSideboard);
+
+	bool isActive() const;
+	void setActive(bool active);
+
+signals:
+	void changed();
 
 private:
 	struct Pimpl;

@@ -59,5 +59,6 @@ private slots:
 	void actionRemoveFromCollection();
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
+	void actionToggleDeckActive(bool);
 	void headerStateChangedSlot(const QByteArray& headerState);
 };

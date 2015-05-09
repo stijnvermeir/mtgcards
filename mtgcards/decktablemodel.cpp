@@ -1,5 +1,5 @@
 #include "decktablemodel.h"
-#include "deck.h"
+#include "deckmanager.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
@@ -41,58 +41,46 @@ const vector<mtg::ColumnType> DECKTABLE_COLUMNS =
 
 struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 {
-	Deck deck_;
+	QSharedPointer<Deck> deck_;
 
-	Pimpl()
+	Pimpl(const QString& filename)
+		: deck_(DeckManager::instance().getDeck(filename))
 	{
 	}
 
 	void reload()
 	{
 		beginResetModel();
-		deck_.reload();
-		endResetModel();
-	}
-
-	void load(const QString& filename)
-	{
-		beginResetModel();
-		deck_.load(filename);
+		deck_->reload();
 		endResetModel();
 	}
 
 	void save(const QString& filename)
 	{
-		deck_.save(filename);
+		QString previousFilename = deck_->getFilename();
+		deck_->save(filename);
+		// in case of Save As, load the copied from deck back into memory
+		if (previousFilename != filename && !previousFilename.isEmpty())
+		{
+			DeckManager::instance().getDeck(previousFilename);
+		}
 	}
 
 	int getQuantity(const int dataRowIndex) const
 	{
-		return deck_.getQuantity(dataRowIndex);
+		return deck_->getQuantity(dataRowIndex);
 	}
 
 	void setQuantity(const int dataRowIndex, const int newQuantity)
 	{
 		beginResetModel();
-		deck_.setQuantity(dataRowIndex, newQuantity);
-		endResetModel();
-	}
-
-	int getSideboard(const int dataRowIndex) const
-	{
-		return deck_.getSideboard(dataRowIndex);
-	}
-
-	void setSideboard(const int dataRowIndex, const int newSideboard)
-	{
-		beginResetModel();
-		deck_.setSideboard(dataRowIndex, newSideboard);
+		deck_->setQuantity(dataRowIndex, newQuantity);
 		endResetModel();
 	}
 
 	virtual int rowCount(const QModelIndex& = QModelIndex()) const
 	{
-		return deck_.getNumRows();
+		return deck_->getNumRows();
 	}
 
 	virtual int columnCount(const QModelIndex& = QModelIndex()) const
@@ -108,7 +96,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
-					const QVariant& ret = deck_.get(index.row(), DECKTABLE_COLUMNS[index.column()]);
+					const QVariant& ret = deck_->get(index.row(), DECKTABLE_COLUMNS[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
 						return ret.toStringList().join("/");
@@ -128,21 +116,21 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
-					int dataRowIndex = deck_.getDataRowIndex(index.row());
+					int dataRowIndex = deck_->getDataRowIndex(index.row());
 					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Sideboard)
 					{
-						if (deck_.getSideboard(dataRowIndex) != value.toInt())
+						if (deck_->getSideboard(dataRowIndex) != value.toInt())
 						{
-							deck_.setSideboard(dataRowIndex, value.toInt());
+							deck_->setSideboard(dataRowIndex, value.toInt());
 							emit dataChanged(index, index);
 							return true;
 						}
 					}
 					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
 					{
-						if (deck_.getQuantity(dataRowIndex) != value.toInt())
+						if (deck_->getQuantity(dataRowIndex) != value.toInt())
 						{
-							deck_.setQuantity(dataRowIndex, value.toInt());
+							deck_->setQuantity(dataRowIndex, value.toInt());
 							emit dataChanged(index, index);
 							return true;
 						}
@@ -182,24 +170,20 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 	}
 };
 
-DeckTableModel::DeckTableModel()
-	: pimpl_(new Pimpl())
+DeckTableModel::DeckTableModel(const QString& filename)
+	: pimpl_(new Pimpl(filename))
 {
 	setSourceModel(pimpl_.data());
 }
 
 DeckTableModel::~DeckTableModel()
 {
+	DeckManager::instance().closeDeck(pimpl_->deck_);
 }
 
 void DeckTableModel::reload()
 {
 	pimpl_->reload();
-}
-
-void DeckTableModel::load(const QString& filename)
-{
-	pimpl_->load(filename);
 }
 
 void DeckTableModel::save(const QString& filename)
@@ -209,7 +193,27 @@ void DeckTableModel::save(const QString& filename)
 
 const QString& DeckTableModel::getFilename() const
 {
-	return pimpl_->deck_.getFilename();
+	return pimpl_->deck_->getFilename();
+}
+
+QString DeckTableModel::getDisplayName() const
+{
+	return pimpl_->deck_->getDisplayName();
+}
+
+bool DeckTableModel::isDeckActive() const
+{
+	return pimpl_->deck_->isActive();
+}
+
+void DeckTableModel::setDeckActive(const bool active)
+{
+	pimpl_->deck_->setActive(active);
+}
+
+bool DeckTableModel::hasUnsavedChanges() const
+{
+	return pimpl_->deck_->hasUnsavedChanges();
 }
 
 int DeckTableModel::getQuantity(const int dataRowIndex) const
@@ -222,25 +226,15 @@ void DeckTableModel::setQuantity(const int dataRowIndex, const int newQuantity)
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
 }
 
-int DeckTableModel::getSideboard(const int dataRowIndex) const
-{
-	return pimpl_->getSideboard(dataRowIndex);
-}
-
-void DeckTableModel::setSideboard(const int dataRowIndex, const int newSideboard)
-{
-	pimpl_->setSideboard(dataRowIndex, newSideboard);
-}
-
 int DeckTableModel::getDataRowIndex(const QModelIndex& proxyIndex) const
 {
 	QModelIndex sourceIndex = mapToSource(proxyIndex);
-	return pimpl_->deck_.getDataRowIndex(sourceIndex.row());
+	return pimpl_->deck_->getDataRowIndex(sourceIndex.row());
 }
 
 int DeckTableModel::getRowIndex(const int dataRowIndex) const
 {
-	return pimpl_->deck_.getRowIndex(dataRowIndex);
+	return pimpl_->deck_->getRowIndex(dataRowIndex);
 }
 
 int DeckTableModel::columnToIndex(const mtg::ColumnType& column) const
