@@ -228,7 +228,7 @@ struct CardData::Pimpl
 		{
 			if (isMatch(data[rowIndex]))
 			{
-				return rowIndex;
+				return static_cast<int>(rowIndex);
 			}
 		}
 		return -1;
@@ -289,7 +289,6 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
-			imageFile.replace(":", "");
 			imageFile.replace("?", "");
 			imageFile.replace("\"", "");
 			imageFile = removeAccents(imageFile);
@@ -320,21 +319,21 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 				}
 			}
 		};
-		prefix += QDir::separator() + get(row, mtg::ColumnType::Set).toString() + QDir::separator();
+		prefix += QDir::separator() + get(row, mtg::ColumnType::Set).toString().replace(":", "") + QDir::separator();
 		layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
 		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
-			QString imageFile = prefix + names.join("_") + ".jpg";
+			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
 			addToListLambda(imageFile);
 		}
 		else
 		if (layout == mtg::LayoutType::DoubleFaced)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
-			for (const auto& n : names)
+			for (auto& n : names)
 			{
-				QString imageFile = prefix + n + ".jpg";
+				QString imageFile = prefix + n.replace(":", "") + ".jpg";
 				addToListLambda(imageFile);
 			}
 		}
@@ -344,12 +343,12 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 			prefix += QString("token") + QDir::separator();
 			QString tokenName = get(row, mtg::ColumnType::ImageName).toString();
 			tokenName[0] = tokenName[0].toUpper();
-			QString imageFile = prefix + tokenName + ".jpg";
+			QString imageFile = prefix + tokenName.replace(":", "") + ".jpg";
 			addToListLambda(imageFile);
 		}
 		else
 		{
-			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString() + ".jpg";
+			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
 			addToListLambda(imageFile);
 		}
 	}

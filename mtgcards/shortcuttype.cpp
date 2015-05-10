@@ -102,6 +102,11 @@ ShortcutType::operator type_t () const
 	return value_;
 }
 
+bool ShortcutType::operator <(const ShortcutType& other) const
+{
+	return value_ < other.value_;
+}
+
 const QString& ShortcutType::getDescription() const
 {
 	if (value_ >= 0 && value_ < COUNT)

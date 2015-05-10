@@ -265,5 +265,6 @@ Filter& FilterNode::getFilter()
 
 void FilterNode::setFilter(Filter filter)
 {
-	filter_ = move(filter);
+	filter_.column = filter.column;
+	filter_.function = std::move(filter.function);
 }

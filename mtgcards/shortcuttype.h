@@ -32,6 +32,7 @@ public:
 
 	operator QString () const;
 	operator type_t () const;
+	bool operator <(const ShortcutType& other) const;
 
 	const QString& getDescription() const;
 	const QKeySequence& getDefaultKeySequence() const;

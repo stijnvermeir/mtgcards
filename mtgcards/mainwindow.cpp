@@ -7,6 +7,17 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QDesktopWidget>
+
+namespace {
+
+void moveToCenterOfScreen(QDialog* dialog)
+{
+	const QRect screen = QApplication::desktop()->screenGeometry();
+	dialog->move(screen.center() - dialog->rect().center());
+}
+
+} // namespace
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -126,7 +137,7 @@ bool MainWindow::toQuitOrNotToQuit(QEvent* event)
 	int ret = QMessageBox::Yes;
 	if (deckWindow_.hasUnsavedChanges())
 	{
-		ret = QMessageBox::question(this,
+		ret = QMessageBox::question(0,
 									"Are you sure?",
 									"There are unsaved changes. Are you sure you want to quit?",
 									QMessageBox::Yes | QMessageBox::No,
@@ -178,6 +189,7 @@ void MainWindow::deckWindowActionToggled(bool show)
 void MainWindow::optionsActionClicked()
 {
 	OptionsDialog options(this);
+	moveToCenterOfScreen(&options);
 	options.exec();
 	if (options.isPoolReloadRequired())
 	{
@@ -192,5 +204,6 @@ void MainWindow::optionsActionClicked()
 void MainWindow::aboutActionClicked()
 {
 	AboutDialog about(this);
+	moveToCenterOfScreen(&about);
 	about.exec();
 }
