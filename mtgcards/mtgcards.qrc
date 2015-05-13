@@ -18,5 +18,6 @@
         <file>resources/icons/disc36.svg</file>
         <file>resources/icons/switch14.svg</file>
         <file>resources/icons/switches3.svg</file>
+        <file>resources/icons/mtgcards.svg</file>
     </qresource>
 </RCC>

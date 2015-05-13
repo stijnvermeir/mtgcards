@@ -5,7 +5,7 @@
 
 #include <QMainWindow>
 #include <QVector>
-#include <QByteArray>
+#include <QString>
 
 class DeckWidget;
 
@@ -31,7 +31,7 @@ signals:
 
 private:
 	Ui::DeckWindow ui_;
-	QByteArray headerState_;
+	QString headerState_;
 	FilterNode::Ptr rootFilterNode_;
 
 	void closeEvent(QCloseEvent* event);
@@ -60,6 +60,6 @@ private slots:
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
 	void actionToggleDeckActive(bool);
-	void headerStateChangedSlot(const QByteArray& headerState);
+	void headerStateChangedSlot(const QString& headerState);
 	void createProxies();
 };

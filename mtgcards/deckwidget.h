@@ -5,7 +5,6 @@
 #include "ui_deckwidget.h"
 
 #include <QWidget>
-#include <QByteArray>
 #include <QVector>
 #include <QString>
 #include <QScopedPointer>
@@ -26,7 +25,7 @@ public:
 	void setDeckActive(const bool active);
 	const Deck& deck() const;
 
-	void setHeaderState(const QByteArray& headerState);
+	void setHeaderState(const QString& headerState);
 	void setFilterRootNode(const FilterNode::Ptr& node);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
@@ -35,12 +34,13 @@ public:
 signals:
 	void selectedCardChanged(int);
 	void deckEdited();
-	void headerStateChangedSignal(QByteArray);
+	void headerStateChangedSignal(QString);
 
 private:
 	Ui::DeckWidget ui_;
 	DeckTableModel deckTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
+	bool headerStateChangedSlotDisabled_;
 
 public slots:
 	void addToDeck(const QVector<int>&);

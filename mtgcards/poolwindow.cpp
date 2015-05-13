@@ -3,6 +3,7 @@
 #include "magicitemdelegate.h"
 #include "filtereditordialog.h"
 #include "settings.h"
+#include "util.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -56,10 +57,7 @@ void PoolWindow::loadSettings()
 	QSettings settings;
 	if (settings.contains("poolwindow/headerstate"))
 	{
-		if (!ui_.poolTbl_->horizontalHeader()->restoreState(settings.value("poolwindow/headerstate").toByteArray()))
-		{
-			qWarning() << "Failed to restore header state";
-		}
+		Util::loadHeaderViewState(*ui_.poolTbl_->horizontalHeader(), settings.value("poolwindow/headerstate").toString());
 	}
 	else
 	{
@@ -67,7 +65,7 @@ void PoolWindow::loadSettings()
 	}
 	if (settings.contains("poolwindow/filter"))
 	{
-		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("poolwindow/filter").toByteArray()));
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("poolwindow/filter").toString().toUtf8()));
 		poolTableModel_.setFilterRootNode(rootFilterNode_);
 	}
 	updateStatusBar();
@@ -77,10 +75,10 @@ void PoolWindow::loadSettings()
 void PoolWindow::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("poolwindow/headerstate", ui_.poolTbl_->horizontalHeader()->saveState());
+	settings.setValue("poolwindow/headerstate", Util::saveHeaderViewState(*ui_.poolTbl_->horizontalHeader()));
 	if (rootFilterNode_)
 	{
-		settings.setValue("poolwindow/filter", rootFilterNode_->toJson().toJson());
+		settings.setValue("poolwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
 	}
 	else
 	{

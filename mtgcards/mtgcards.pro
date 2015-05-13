@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = MTGCards
 ICON = resources/icons/mtgcards.icns
+RC_ICONS = resources/icons/mtgcards.ico
 TEMPLATE = app
 
 
@@ -43,7 +44,9 @@ SOURCES += main.cpp\
     shortcuttype.cpp \
     deck.cpp \
     decktablemodel.cpp \
-    deckmanager.cpp
+    deckmanager.cpp \
+    tableview.cpp \
+    util.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -73,7 +76,9 @@ HEADERS  += mainwindow.h \
     shortcuttype.h \
     deck.h \
     decktablemodel.h \
-    deckmanager.h
+    deckmanager.h \
+    tableview.h \
+    util.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

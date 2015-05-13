@@ -3,6 +3,7 @@
 #include "magicitemdelegate.h"
 #include "deck.h"
 #include "settings.h"
+#include "util.h"
 
 #include <QMenu>
 #include <QDebug>
@@ -32,6 +33,7 @@ DeckWidget::DeckWidget(const QString& filename, QWidget *parent)
 	, ui_()
 	, deckTableModel_(filename)
 	, itemDelegate_(new DeckItemDelegate(deckTableModel_))
+	, headerStateChangedSlotDisabled_(false)
 {
 	ui_.setupUi(this);
 	ui_.tableView->setItemDelegate(itemDelegate_.data());
@@ -73,11 +75,13 @@ const Deck& DeckWidget::deck() const
 	return deckTableModel_.deck();
 }
 
-void DeckWidget::setHeaderState(const QByteArray& headerState)
+void DeckWidget::setHeaderState(const QString& headerState)
 {
 	if (!headerState.isEmpty())
 	{
-		ui_.tableView->horizontalHeader()->restoreState(headerState);
+		headerStateChangedSlotDisabled_ = true;
+		Util::loadHeaderViewState(*ui_.tableView->horizontalHeader(), headerState);
+		headerStateChangedSlotDisabled_ = false;
 	}
 }
 
@@ -190,12 +194,20 @@ void DeckWidget::hideColumnsContextMenuRequested(const QPoint& pos)
 	QAction* a = contextMenu.exec(ui_.tableView->horizontalHeader()->mapToGlobal(pos));
 	if (a)
 	{
+		headerStateChangedSlotDisabled_ = true;
 		ui_.tableView->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+		headerStateChangedSlotDisabled_ = false;
 		headerStateChangedSlot();
 	}
 }
 
 void DeckWidget::headerStateChangedSlot()
 {
-	emit headerStateChangedSignal(ui_.tableView->horizontalHeader()->saveState());
+	if (headerStateChangedSlotDisabled_)
+	{
+		return;
+	}
+	headerStateChangedSlotDisabled_ = true;
+	emit headerStateChangedSignal(Util::saveHeaderViewState(*ui_.tableView->horizontalHeader()));
+	headerStateChangedSlotDisabled_ = false;
 }

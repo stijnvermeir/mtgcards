@@ -6,6 +6,7 @@
 #include "magiccollection.h"
 #include "filtereditordialog.h"
 #include "settings.h"
+#include "util.h"
 
 #include <QCloseEvent>
 #include <QSettings>
@@ -75,11 +76,11 @@ void DeckWindow::loadSettings()
 	QSettings settings;
 	if (settings.contains("deckwindow/filter"))
 	{
-		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("deckwindow/filter").toByteArray()));
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("deckwindow/filter").toString().toUtf8()));
 	}
 	if (settings.contains("deckwindow/headerstate"))
 	{
-		headerState_ = settings.value("deckwindow/headerstate").toByteArray();
+		headerState_ = settings.value("deckwindow/headerstate").toString();
 	}
 	if (settings.contains("deckwindow/openfiles"))
 	{
@@ -98,7 +99,7 @@ void DeckWindow::saveSettings()
 	QSettings settings;
 	if (rootFilterNode_)
 	{
-		settings.setValue("deckwindow/filter", rootFilterNode_->toJson().toJson());
+		settings.setValue("deckwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
 	}
 	else
 	{
@@ -204,7 +205,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	deckWidget->setHeaderState(headerState_);
 	deckWidget->setFilterRootNode(rootFilterNode_);
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
-	connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
+	connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
@@ -235,7 +236,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 				}
 			}
 			disconnect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
-			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
+			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 			disconnect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
 			deckWidget->close();
 			ui_.tabWidget->removeTab(index);
@@ -396,17 +397,17 @@ void DeckWindow::actionToggleDeckActive(bool active)
 	}
 }
 
-void DeckWindow::headerStateChangedSlot(const QByteArray& headerState)
+void DeckWindow::headerStateChangedSlot(const QString& headerState)
 {
 	headerState_ = headerState;
 	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
 	{
 		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
-		if (deckWidget)
+		if (deckWidget && deckWidget != ui_.tabWidget->currentWidget())
 		{
-			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
+			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 			deckWidget->setHeaderState(headerState_);
-			connect(deckWidget, SIGNAL(headerStateChangedSignal(QByteArray)), this, SLOT(headerStateChangedSlot(QByteArray)));
+			connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 		}
 	}
 }

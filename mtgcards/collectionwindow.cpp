@@ -5,6 +5,7 @@
 #include "magiccollection.h"
 #include "settings.h"
 #include "deckmanager.h"
+#include "util.h"
 
 #include <QSettings>
 #include <QCloseEvent>
@@ -81,10 +82,7 @@ void CollectionWindow::loadSettings()
 	QSettings settings;
 	if (settings.contains("collectionwindow/headerstate"))
 	{
-		if (!ui_.collectionTbl_->horizontalHeader()->restoreState(settings.value("collectionwindow/headerstate").toByteArray()))
-		{
-			qWarning() << "Failed to restore header state";
-		}
+		Util::loadHeaderViewState(*ui_.collectionTbl_->horizontalHeader(), settings.value("collectionwindow/headerstate").toString());
 	}
 	else
 	{
@@ -92,7 +90,7 @@ void CollectionWindow::loadSettings()
 	}
 	if (settings.contains("collectionwindow/filter"))
 	{
-		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("collectionwindow/filter").toByteArray()));
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("collectionwindow/filter").toString().toUtf8()));
 		collectionTableModel_.setFilterRootNode(rootFilterNode_);
 	}
 	updateStatusBar();
@@ -102,10 +100,10 @@ void CollectionWindow::loadSettings()
 void CollectionWindow::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("collectionwindow/headerstate", ui_.collectionTbl_->horizontalHeader()->saveState());
+	settings.setValue("collectionwindow/headerstate", Util::saveHeaderViewState(*ui_.collectionTbl_->horizontalHeader()));
 	if (rootFilterNode_)
 	{
-		settings.setValue("collectionwindow/filter", rootFilterNode_->toJson().toJson());
+		settings.setValue("collectionwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
 	}
 	else
 	{

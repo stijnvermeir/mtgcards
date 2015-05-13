@@ -20,7 +20,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 		case QtCriticalMsg:	cout << "(ERR)"; break;
 		case QtFatalMsg:	cout << "(FAT)"; break;
 	}
-	cout << " " << msg.toStdString() << " [" << context.file << ":" << context.function << ":" << context.line << "]" << endl;
+	// cout << " " << msg.toStdString() << " [" << context.file << ":" << context.function << ":" << context.line << "]" << endl;
+	cout << " " << msg.toStdString() << endl;
+	cout << flush;
 }
 
 class MyApplication : public QApplication
