@@ -56,6 +56,12 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
+
+	QVector<UserColumn> userColumns;
+	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Some bool"));
+	userColumns.append(UserColumn(UserColumn::DataType::Number, "Some number"));
+	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Another bool"));
+	Settings::instance().setUserColumns(userColumns);
 }
 
 CollectionWindow::~CollectionWindow()
@@ -70,11 +76,11 @@ void CollectionWindow::reload()
 
 void CollectionWindow::updateShortcuts()
 {
-	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AdvancedFilter));
-	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToCollection));
-	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromCollection));
-	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToDeck));
-	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromDeck));
+	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
+	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
+	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
+	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
+	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
 }
 
 void CollectionWindow::loadSettings()

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "shortcuttype.h"
+#include "usercolumn.h"
 
 #include <QString>
 #include <QKeySequence>
-
-#include <map>
-#include <memory>
+#include <QVector>
+#include <QScopedPointer>
+#include <QMap>
 
 class Settings
 {
@@ -29,10 +30,13 @@ public:
 	const QString& getCardImageDir() const;
 	void setCardImageDir(const QString& cardImageDir);
 
-	const std::map<ShortcutType, QKeySequence>& getShortcuts() const;
-	void setShortcuts(const std::map<ShortcutType, QKeySequence>& shortcuts);
+	const QMap<ShortcutType, QKeySequence>& getShortcuts() const;
+	void setShortcuts(const QMap<ShortcutType, QKeySequence>& shortcuts);
+
+	const QVector<UserColumn>& getUserColumns() const;
+	void setUserColumns(const QVector<UserColumn>& userColumns);
 private:
 
 	struct Pimpl;
-	std::unique_ptr<Pimpl> pimpl_;
+	QScopedPointer<Pimpl> pimpl_;
 };

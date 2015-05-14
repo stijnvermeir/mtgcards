@@ -117,7 +117,7 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 		{
 			if (node->getType() == FilterNode::Type::LEAF)
 			{
-				return static_cast<QString>(node->getFilter().column);
+				return node->getFilter().column.getDisplayName();
 			}
 		}
 		else

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <QString>
-#include <vector>
+#include <QVector>
+#include <QMetaType>
+
+struct UserColumn;
 
 namespace mtg {
 
@@ -36,6 +39,7 @@ public:
 		Quantity,
 		Used,
 		Sideboard,
+		UserDefined,
 
 		COUNT,
 		UNKNOWN = -1
@@ -48,10 +52,18 @@ public:
 	operator QString () const;
 	operator type_t () const;
 
-	static const std::vector<ColumnType>& list();
+	const QString& getDisplayName() const;
+
+	const UserColumn& userColumn() const;
+	void setUserColumnIndex(int userColumnIndex);
+
+	static const QVector<ColumnType>& list();
 
 private:
 	type_t value_;
+	int userColumnIndex_;
 };
 
 } // namespace mtg
+
+Q_DECLARE_METATYPE(mtg::ColumnType)

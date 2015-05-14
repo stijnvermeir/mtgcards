@@ -13,7 +13,7 @@ namespace {
 class ShortcutsTableModel : public QAbstractTableModel
 {
 public:
-	map<ShortcutType, QKeySequence> data_;
+	QMap<ShortcutType, QKeySequence> data_;
 
 	struct Column
 	{
@@ -32,7 +32,7 @@ public:
 
 	virtual int rowCount(const QModelIndex& = QModelIndex()) const
 	{
-		return static_cast<int>(data_.size());
+		return data_.size();
 	}
 
 	virtual int columnCount(const QModelIndex& = QModelIndex()) const
@@ -54,7 +54,7 @@ public:
 					}
 					if (index.column() == Column::Shortcut)
 					{
-						return data_.at(ShortcutType(index.row())).toString(QKeySequence::NativeText);
+						return data_[ShortcutType(index.row())].toString(QKeySequence::NativeText);
 					}
 				}
 			}

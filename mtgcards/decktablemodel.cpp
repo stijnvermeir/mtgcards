@@ -8,7 +8,7 @@ using namespace std;
 
 namespace {
 
-const vector<mtg::ColumnType> DECKTABLE_COLUMNS =
+const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 {
 	mtg::ColumnType::Set,
 	mtg::ColumnType::SetCode,
@@ -149,7 +149,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (section >= 0 && section < columnCount())
 				{
-					return static_cast<QString>(DECKTABLE_COLUMNS[section]);
+					return DECKTABLE_COLUMNS[section].getDisplayName();
 				}
 			}
 		}

@@ -128,9 +128,9 @@ const QKeySequence& ShortcutType::getDefaultKeySequence() const
 	return EMPTY;
 }
 
-const vector<ShortcutType>& ShortcutType::list()
+const QVector<ShortcutType>& ShortcutType::list()
 {
-	static vector<ShortcutType> l;
+	static QVector<ShortcutType> l;
 	static bool ready = false;
 	if (!ready)
 	{

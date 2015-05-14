@@ -1,5 +1,8 @@
 #include "filter.h"
 
+#include "usercolumn.h"
+#include "settings.h"
+
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -182,8 +185,13 @@ void FilterNode::loadFromJson(const QJsonDocument& doc)
 		}
 		if (obj.contains("filter"))
 		{
-			node.filter_.column = mtg::ColumnType(obj["filter"].toObject()["column"].toString());
-			QJsonObject filterFunction = obj["filter"].toObject()["function"].toObject();
+			QJsonObject filterObj = obj["filter"].toObject();
+			node.filter_.column = mtg::ColumnType(filterObj["column"].toString());
+			if (node.filter_.column == mtg::ColumnType::UserDefined)
+			{
+				node.filter_.column.setUserColumnIndex(UserColumn::findIndexOfUserColumnWithName(filterObj["userColumn"].toString()));
+			}
+			QJsonObject filterFunction = filterObj["function"].toObject();
 			node.filter_.function = FilterFunctionManager::instance().createFromId(filterFunction["type"].toString());
 			if (node.filter_.function)
 			{
@@ -210,6 +218,10 @@ QJsonDocument FilterNode::toJson() const
 		{
 			QJsonObject filterObject;
 			filterObject["column"] = static_cast<QString>(node.getFilter().column);
+			if (node.getFilter().column == mtg::ColumnType::UserDefined)
+			{
+				filterObject["userColumn"] = node.getFilter().column.userColumn().name_;
+			}
 			filterObject["function"] = node.getFilter().function->toJson();
 			o["filter"] = filterObject;
 		}

@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDateTime>
 #include <QDebug>
 
 #include <vector>
@@ -22,11 +23,13 @@ struct Collection::Pimpl
 		int rowIndexInData;
 		QVariant quantity;
 		QVariant used;
+		QVariantMap userData;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
-			, used(0) {}
+			, used(0)
+			, userData() {}
 	};
 	vector<Row> data_;
 
@@ -59,6 +62,7 @@ struct Collection::Pimpl
 				r.rowIndexInData = mtg::CardData::instance().findRow(criteria);
 				r.quantity = card["Quantity"].toInt();
 				r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
+				r.userData = UserColumn::loadFromJson(card);
 				data_.push_back(r);
 			}
 		}
@@ -73,6 +77,7 @@ struct Collection::Pimpl
 			cardObj["Set"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::SetCode).toString();
 			cardObj["Name"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
+			UserColumn::saveToJson(cardObj, r.userData);
 			cards.append(cardObj);
 		}
 		QJsonObject obj;
@@ -116,6 +121,15 @@ struct Collection::Pimpl
 			if (column == ColumnType::Used)
 			{
 				return entry.used;
+			}
+			if (column == ColumnType::UserDefined)
+			{
+				auto it = entry.userData.find(column.userColumn().name_);
+				if (it != entry.userData.cend())
+				{
+					return it.value();
+				}
+				return column.userColumn().dataType_.getEmptyVariant();
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -187,6 +201,18 @@ struct Collection::Pimpl
 			it->used = usedCount;
 		}
 	}
+
+	void set(const int row, const ColumnType& column, const QVariant& data)
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			Row& entry = data_[row];
+			if (column == ColumnType::UserDefined)
+			{
+				entry.userData[column.userColumn().name_] = data;
+			}
+		}
+	}
 };
 
 Collection& Collection::instance()
@@ -252,4 +278,9 @@ void Collection::setQuantity(const int dataRowIndex, const int newQuantity)
 void Collection::setUsedCount(const int dataRowIndex, const int usedCount)
 {
 	pimpl_->setUsedCount(dataRowIndex, usedCount);
+}
+
+void Collection::set(const int row, const ColumnType& column, const QVariant& data)
+{
+	pimpl_->set(row, column, data);
 }

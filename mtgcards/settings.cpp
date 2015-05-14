@@ -4,6 +4,9 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QFileInfo>
+#include <QVariantMap>
+#include <QVariantList>
+#include <QJsonDocument>
 
 using namespace std;
 
@@ -15,7 +18,8 @@ struct Settings::Pimpl
 	QString decksDir_;
 	QString poolDataFile_;
 	QString cardImageDir_;
-	map<ShortcutType, QKeySequence> shortcuts_;
+	QMap<ShortcutType, QKeySequence> shortcuts_;
+	QVector<UserColumn> userColumns_;
 
 	Pimpl()
 	{
@@ -35,6 +39,19 @@ struct Settings::Pimpl
 			else
 			{
 				shortcuts_[shortcut] = shortcut.getDefaultKeySequence();
+			}
+		}
+
+		if (settings.contains("options/usercolumns"))
+		{
+			QVariantList userColumnList = QJsonDocument::fromJson(settings.value("options/usercolumns").toString().toUtf8()).toVariant().toList();
+			for (int i = 0; i < userColumnList.size(); ++i)
+			{
+				QVariantMap userColumnMap = userColumnList[i].toMap();
+				UserColumn userColumn;
+				userColumn.dataType_ = UserColumn::DataType(userColumnMap["dataType"].toString());
+				userColumn.name_ = userColumnMap["name"].toString();
+				userColumns_.push_back(userColumn);
 			}
 		}
 	}
@@ -66,17 +83,38 @@ struct Settings::Pimpl
 		settings.setValue("options/datasources/cardpicturedir", cardImageDir_);
 	}
 
-	void setShortcuts(const map<ShortcutType, QKeySequence>& shortcuts)
+	void setShortcuts(const QMap<ShortcutType, QKeySequence>& shortcuts)
 	{
 		shortcuts_ = shortcuts;
 
 		QSettings settings;
-		for (const auto& entry : shortcuts_)
+		for (auto it = shortcuts_.cbegin(); it != shortcuts_.cend(); ++it)
 		{
 			QString key = "shortcuts/";
-			key += QString(entry.first);
-			settings.setValue(key, entry.second.toString(QKeySequence::NativeText));
+			key += QString(it.key());
+			settings.setValue(key, it.value().toString(QKeySequence::NativeText));
 		}
+	}
+
+	void setUserColumns(const QVector<UserColumn>& userColumns)
+	{
+		userColumns_ = userColumns;
+
+		QSettings settings;
+		if (userColumns_.empty())
+		{
+			settings.remove("options/usercolumns");
+			return;
+		}
+		QVariantList userColumnList;
+		for (const UserColumn& entry : userColumns_)
+		{
+			QVariantMap userColumnMap;
+			userColumnMap["dataType"] = static_cast<QString>(entry.dataType_);
+			userColumnMap["name"] = entry.name_;
+			userColumnList.push_back(userColumnMap);
+		}
+		settings.setValue("options/usercolumns", QString(QJsonDocument::fromVariant(userColumnList).toJson()));
 	}
 };
 
@@ -140,12 +178,22 @@ void Settings::setCardImageDir(const QString& cardImageDir)
 	pimpl_->setCardImageDir(cardImageDir);
 }
 
-const map<ShortcutType, QKeySequence>& Settings::getShortcuts() const
+const QMap<ShortcutType, QKeySequence>& Settings::getShortcuts() const
 {
 	return pimpl_->shortcuts_;
 }
 
-void Settings::setShortcuts(const map<ShortcutType, QKeySequence>& shortcuts)
+void Settings::setShortcuts(const QMap<ShortcutType, QKeySequence>& shortcuts)
 {
 	pimpl_->setShortcuts(shortcuts);
+}
+
+const QVector<UserColumn>& Settings::getUserColumns() const
+{
+	return pimpl_->userColumns_;
+}
+
+void Settings::setUserColumns(const QVector<UserColumn>& userColumns)
+{
+	pimpl_->setUserColumns(userColumns);
 }

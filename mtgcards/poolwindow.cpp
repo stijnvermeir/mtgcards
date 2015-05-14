@@ -45,11 +45,11 @@ void PoolWindow::reload()
 
 void PoolWindow::updateShortcuts()
 {
-	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AdvancedFilter));
-	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToCollection));
-	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromCollection));
-	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToDeck));
-	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromDeck));
+	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
+	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
+	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
+	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
+	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
 }
 
 void PoolWindow::loadSettings()

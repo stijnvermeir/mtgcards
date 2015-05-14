@@ -8,7 +8,7 @@ using namespace std;
 
 namespace {
 
-const vector<mtg::ColumnType> POOLTABLE_COLUMNS =
+const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
 {
 	mtg::ColumnType::Set,
 	mtg::ColumnType::SetCode,
@@ -89,7 +89,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (section >= 0 && section < columnCount())
 				{
-					return static_cast<QString>(POOLTABLE_COLUMNS[section]);
+					return POOLTABLE_COLUMNS[section].getDisplayName();
 				}
 			}
 		}

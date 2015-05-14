@@ -60,15 +60,15 @@ void DeckWindow::reload()
 
 void DeckWindow::updateShortcuts()
 {
-	ui_.actionNewDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::NewFile));
-	ui_.actionOpenDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::OpenFile));
-	ui_.actionSaveDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFile));
-	ui_.actionSaveDeckAs->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFileAs));
-	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AdvancedFilter));
-	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToCollection));
-	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromCollection));
-	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddToDeck));
-	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFromDeck));
+	ui_.actionNewDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
+	ui_.actionOpenDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::OpenFile]);
+	ui_.actionSaveDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
+	ui_.actionSaveDeckAs->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFileAs]);
+	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
+	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
+	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
+	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
+	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
 }
 
 void DeckWindow::loadSettings()

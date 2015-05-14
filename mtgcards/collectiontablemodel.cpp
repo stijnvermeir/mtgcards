@@ -1,6 +1,7 @@
 #include "collectiontablemodel.h"
 
 #include "magiccollection.h"
+#include "settings.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
@@ -9,7 +10,7 @@ using namespace std;
 
 namespace {
 
-const vector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
+const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 {
 	mtg::ColumnType::Set,
 	mtg::ColumnType::SetCode,
@@ -37,6 +38,29 @@ const vector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 	mtg::ColumnType::Layout,
 	mtg::ColumnType::ImageName
 };
+
+const QVector<mtg::ColumnType>& GetColumns()
+{
+	static QVector<mtg::ColumnType> columns;
+	static bool ready = false;
+	if (!ready)
+	{
+		const auto& userColumns = Settings::instance().getUserColumns();
+		columns.reserve(COLLECTIONTABLE_COLUMNS.size() + userColumns.size());
+		for (const mtg::ColumnType& column : COLLECTIONTABLE_COLUMNS)
+		{
+			columns.push_back(column);
+		}
+		for (int i = 0; i < userColumns.size(); ++i)
+		{
+			mtg::ColumnType userColumn(mtg::ColumnType::UserDefined);
+			userColumn.setUserColumnIndex(i);
+			columns.push_back(userColumn);
+		}
+		ready = true;
+	}
+	return columns;
+}
 
 } // namespace
 
@@ -73,18 +97,18 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 
 	virtual int columnCount(const QModelIndex& = QModelIndex()) const
 	{
-		return static_cast<int>(COLLECTIONTABLE_COLUMNS.size());
+		return GetColumns().size();
 	}
 
 	virtual QVariant data(const QModelIndex& index, int role) const
 	{
 		if (index.isValid())
 		{
-			if (role == Qt::DisplayRole)
+			if (role == Qt::DisplayRole || role == Qt::EditRole)
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
-					const QVariant& ret = mtg::Collection::instance().get(index.row(), COLLECTIONTABLE_COLUMNS[index.column()]);
+					const QVariant& ret = mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
 						return ret.toStringList().join("/");
@@ -105,7 +129,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
 					int dataRowIndex = mtg::Collection::instance().getDataRowIndex(index.row());
-					if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+					if (GetColumns()[index.column()] == mtg::ColumnType::Quantity)
 					{
 						if (mtg::Collection::instance().getQuantity(dataRowIndex) != value.toInt() && value.toInt() > 0)
 						{
@@ -116,9 +140,17 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						}
 					}
 					else
-					if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Used)
+					if (GetColumns()[index.column()] == mtg::ColumnType::Used)
 					{
 						mtg::Collection::instance().setUsedCount(dataRowIndex, value.toInt());
+						emit dataChanged(index, index);
+						return true;
+					}
+					else
+					if (GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
+					{
+						mtg::Collection::instance().set(index.row(), GetColumns()[index.column()], value);
+						mtg::Collection::instance().save();
 						emit dataChanged(index, index);
 						return true;
 					}
@@ -136,7 +168,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (section >= 0 && section < columnCount())
 				{
-					return static_cast<QString>(COLLECTIONTABLE_COLUMNS[section]);
+					return GetColumns()[section].getDisplayName();
 				}
 			}
 		}
@@ -147,7 +179,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.column() < columnCount())
 		{
-			if (COLLECTIONTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity || GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}
@@ -183,19 +215,14 @@ void CollectionTableModel::setQuantity(const int dataRowIndex, const int newQuan
 
 int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	auto it = find(COLLECTIONTABLE_COLUMNS.begin(), COLLECTIONTABLE_COLUMNS.end(), column);
-	if (it != COLLECTIONTABLE_COLUMNS.end())
-	{
-		return (it - COLLECTIONTABLE_COLUMNS.begin());
-	}
-	return -1;
+	return GetColumns().indexOf(column);
 }
 
 mtg::ColumnType CollectionTableModel::columnIndexToType(const int columnIndex) const
 {
 	if (columnIndex >= 0 && columnIndex < sourceModel()->columnCount())
 	{
-		return COLLECTIONTABLE_COLUMNS[columnIndex];
+		return GetColumns()[columnIndex];
 	}
 	return mtg::ColumnType::UNKNOWN;
 }

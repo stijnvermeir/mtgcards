@@ -2,7 +2,7 @@
 
 #include <QString>
 #include <QKeySequence>
-#include <vector>
+#include <QVector>
 
 class ShortcutType
 {
@@ -37,7 +37,7 @@ public:
 	const QString& getDescription() const;
 	const QKeySequence& getDefaultKeySequence() const;
 
-	static const std::vector<ShortcutType>& list();
+	static const QVector<ShortcutType>& list();
 
 private:
 	type_t value_;

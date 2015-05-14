@@ -47,14 +47,14 @@ void MagicItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 	}
 }
 
-QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	mtg::ColumnType columnType = columnIndexToType(index.column());
 	if (columnType == mtg::ColumnType::Quantity || columnType == mtg::ColumnType::Sideboard)
 	{
 		return new QSpinBox(parent);
 	}
-	return nullptr;
+	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void MagicItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
@@ -68,6 +68,10 @@ void MagicItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index)
 			spinBox->setValue(index.data().toInt());
 		}
 	}
+	else
+	{
+		QStyledItemDelegate::setEditorData(editor, index);
+	}
 }
 
 void MagicItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
@@ -80,6 +84,10 @@ void MagicItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 		{
 			model->setData(index, spinBox->value());
 		}
+	}
+	else
+	{
+		QStyledItemDelegate::setModelData(editor, model, index);
 	}
 }
 

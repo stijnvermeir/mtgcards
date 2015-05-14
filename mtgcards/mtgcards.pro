@@ -46,7 +46,8 @@ SOURCES += main.cpp\
     decktablemodel.cpp \
     deckmanager.cpp \
     tableview.cpp \
-    util.cpp
+    util.cpp \
+    usercolumn.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -78,7 +79,8 @@ HEADERS  += mainwindow.h \
     decktablemodel.h \
     deckmanager.h \
     tableview.h \
-    util.h
+    util.h \
+    usercolumn.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

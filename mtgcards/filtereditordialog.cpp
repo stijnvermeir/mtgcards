@@ -38,9 +38,9 @@ public:
 					QComboBox* columnCbx = new QComboBox(parent);
 					for (const auto& col : mtg::ColumnType::list())
 					{
-						columnCbx->addItem(col);
+						columnCbx->addItem(col.getDisplayName(), QVariant::fromValue(col));
 					}
-					columnCbx->setCurrentText(filterNode->getFilter().column);
+					columnCbx->setCurrentText(filterNode->getFilter().column.getDisplayName());
 					return columnCbx;
 				}
 				else
@@ -90,7 +90,7 @@ public:
 					if (index.column() == FilterModel::Column::Field)
 					{
 						QComboBox* columnCbx = static_cast<QComboBox*>(editor);
-						filterNode->getFilter().column = mtg::ColumnType(columnCbx->currentText());
+						filterNode->getFilter().column = qvariant_cast<mtg::ColumnType>(columnCbx->currentData());
 					}
 					else
 					if (index.column() == FilterModel::Column::Filter)
@@ -139,12 +139,12 @@ FilterEditorDialog::FilterEditorDialog(QWidget *parent)
 	connect(ui_.addFilterBtn, SIGNAL(released()), this, SLOT(addFilterBtnClicked()));
 	connect(ui_.deleteNodeBtn, SIGNAL(released()), this, SLOT(deleteNodeBtnClicked()));
 
-	ui_.newBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::NewFile));
-	ui_.openBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::OpenFile));
-	ui_.saveBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::SaveFile));
-	ui_.addGroupBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddFilterGroup));
-	ui_.addFilterBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::AddFilterNode));
-	ui_.deleteNodeBtn->setShortcut(Settings::instance().getShortcuts().at(ShortcutType::RemoveFilterNode));
+	ui_.newBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
+	ui_.openBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::OpenFile]);
+	ui_.saveBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
+	ui_.addGroupBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddFilterGroup]);
+	ui_.addFilterBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddFilterNode]);
+	ui_.deleteNodeBtn->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFilterNode]);
 }
 
 FilterEditorDialog::~FilterEditorDialog()
