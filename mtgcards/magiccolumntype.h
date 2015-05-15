@@ -15,9 +15,13 @@ public:
 	{
 		Set,
 		SetCode,
+		SetGathererCode,
+		SetOldCode,
 		SetReleaseDate,
 		SetType,
 		Block,
+		OnlineOnly,
+		Border,
 		Name,
 		Names,
 		ManaCost,

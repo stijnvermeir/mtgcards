@@ -60,9 +60,9 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
 
 	QVector<UserColumn> userColumns;
-	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Some bool"));
-	userColumns.append(UserColumn(UserColumn::DataType::Number, "Some number"));
-	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Another bool"));
+//	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Some bool"));
+//	userColumns.append(UserColumn(UserColumn::DataType::Number, "Some number"));
+//	userColumns.append(UserColumn(UserColumn::DataType::Bool, "Another bool"));
 	Settings::instance().setUserColumns(userColumns);
 }
 

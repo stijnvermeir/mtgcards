@@ -12,9 +12,13 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
 {
 	mtg::ColumnType::Set,
 	mtg::ColumnType::SetCode,
+	mtg::ColumnType::SetGathererCode,
+	mtg::ColumnType::SetOldCode,
 	mtg::ColumnType::SetReleaseDate,
 	mtg::ColumnType::SetType,
 	mtg::ColumnType::Block,
+	mtg::ColumnType::OnlineOnly,
+	mtg::ColumnType::Border,
 	mtg::ColumnType::Name,
 	mtg::ColumnType::Names,
 	mtg::ColumnType::ManaCost,

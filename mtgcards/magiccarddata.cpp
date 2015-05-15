@@ -20,14 +20,18 @@ using namespace mtg;
 
 namespace {
 
-const size_t COLUMNS_SIZE = 23;
+const size_t COLUMNS_SIZE = 27;
 const array<ColumnType, COLUMNS_SIZE> COLUMNS =
 {{
 	ColumnType::Set,
 	ColumnType::SetCode,
+	ColumnType::SetGathererCode,
+	ColumnType::SetOldCode,
 	ColumnType::SetReleaseDate,
 	ColumnType::SetType,
 	ColumnType::Block,
+	ColumnType::OnlineOnly,
+	ColumnType::Border,
 	ColumnType::Name,
 	ColumnType::Names,
 	ColumnType::ManaCost,
@@ -141,23 +145,44 @@ struct CardData::Pimpl
 
 			data.reserve(numCards);
 
-			for (const auto& set : obj)
+			for (const auto& s : obj)
 			{
-				auto setName = set.toObject()["name"].toString();
-				auto setCode = set.toObject()["code"].toString();
-				auto setReleaseDate = QDate::fromString(set.toObject()["releaseDate"].toString(), "yyyy-MM-dd");
-				auto setType = set.toObject()["type"].toString();
-				auto block = set.toObject()["block"].toString();
-				for (const auto& c : set.toObject()["cards"].toArray())
+				auto set = s.toObject();
+				auto setName = set["name"].toString();
+				auto setCode = set["code"].toString();
+				auto setGathererCode = setCode;
+				if (set.contains("gathererCode"))
+				{
+					setGathererCode = set["gathererCode"].toString();
+				}
+				auto setOldCode = setCode;
+				if (set.contains("oldCode"))
+				{
+					setOldCode = set["oldCode"].toString();
+				}
+				auto setReleaseDate = QDate::fromString(set["releaseDate"].toString(), "yyyy-MM-dd");
+				auto setType = set["type"].toString();
+				auto block = set["block"].toString();
+				bool onlineOnly = false;
+				if (set.contains("onlineOnly"))
+				{
+					onlineOnly = set["onlineOnly"].toBool();
+				}
+				auto border = set["border"].toString();
+				for (const auto& c : set["cards"].toArray())
 				{
 					auto card = c.toObject();
 					Row r;
 					// set
 					r[columnToIndex(ColumnType::Set)] = setName;
 					r[columnToIndex(ColumnType::SetCode)] = setCode;
+					r[columnToIndex(ColumnType::SetGathererCode)] = setGathererCode;
+					r[columnToIndex(ColumnType::SetOldCode)] = setOldCode;
 					r[columnToIndex(ColumnType::SetReleaseDate)] = setReleaseDate;
 					r[columnToIndex(ColumnType::SetType)] = setType;
 					r[columnToIndex(ColumnType::Block)] = block;
+					r[columnToIndex(ColumnType::OnlineOnly)] = onlineOnly;
+					r[columnToIndex(ColumnType::Border)] = border;
 
 					// card
 					r[columnToIndex(ColumnType::Name)] = card["name"].toString();
