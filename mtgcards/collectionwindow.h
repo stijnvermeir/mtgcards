@@ -28,6 +28,7 @@ signals:
 	void selectedCardChanged(int);
 	void addToDeck(QVector<int>);
 	void removeFromDeck(QVector<int>);
+	void requestOpenDeck(QString);
 
 private:
 	Ui::CollectionWindow ui_;
@@ -54,5 +55,6 @@ private slots:
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
+	void rowContextMenuRequested(const QPoint& pos);
 	void updateUsedCount();
 };

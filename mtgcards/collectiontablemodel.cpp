@@ -1,6 +1,7 @@
 #include "collectiontablemodel.h"
 
 #include "magiccollection.h"
+#include "deckmanager.h"
 #include "settings.h"
 
 #include <QAbstractTableModel>
@@ -108,6 +109,21 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
+					if (role == Qt::ToolTipRole && GetColumns()[index.column()] == mtg::ColumnType::Used)
+					{
+						int dataRowIndex = mtg::Collection::instance().getDataRowIndex(index.row());
+						QStringList tooltip;
+						auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
+						for (const auto& deck : decks)
+						{
+							QString tooltipLine;
+							QTextStream str(&tooltipLine);
+							str << deck->getQuantity(dataRowIndex) << "x in " << deck->getDisplayName();
+							tooltip << tooltipLine;
+						}
+						return tooltip.join("\n");
+					}
+
 					const QVariant& ret = mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{

@@ -201,6 +201,17 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		return nullptr;
 	}
 
+	// prevent opening deck twice
+	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
+	{
+		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
+		if (deckWidget->deck().getFilename() == filename)
+		{
+			ui_.tabWidget->setCurrentWidget(deckWidget);
+			return nullptr;
+		}
+	}
+
 	DeckWidget* deckWidget = new DeckWidget(filename);
 	deckWidget->setHeaderState(headerState_);
 	deckWidget->setFilterRootNode(rootFilterNode_);
@@ -464,4 +475,9 @@ void DeckWindow::createProxies()
 
 		QMessageBox::information(this, "Success", "Proxy generation successful.");
 	}
+}
+
+void DeckWindow::handleOpenDeckRequest(const QString& deckId)
+{
+	createDeckWidget(deckId);
 }

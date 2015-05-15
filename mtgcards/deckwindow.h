@@ -62,4 +62,5 @@ private slots:
 	void actionToggleDeckActive(bool);
 	void headerStateChangedSlot(const QString& headerState);
 	void createProxies();
+	void handleOpenDeckRequest(const QString& deckId);
 };

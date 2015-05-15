@@ -47,7 +47,9 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	ui_.collectionTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui_.collectionTbl_->horizontalHeader()->setSectionsMovable(true);
 	ui_.collectionTbl_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui_.collectionTbl_->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui_.collectionTbl_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
+	connect(ui_.collectionTbl_, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(rowContextMenuRequested(QPoint)));
 	connect(ui_.collectionTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
 	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
@@ -282,6 +284,26 @@ void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 	if (a)
 	{
 		ui_.collectionTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+	}
+}
+
+void CollectionWindow::rowContextMenuRequested(const QPoint& pos)
+{
+	if (ui_.collectionTbl_->currentIndex().isValid())
+	{
+		QMenu contextMenu(this);
+		contextMenu.addAction("Open decks where this card is used");
+		QAction* a = contextMenu.exec(ui_.collectionTbl_->mapToGlobal(pos));
+		if (a)
+		{
+			QModelIndex sourceIndex = collectionTableModel_.mapToSource(ui_.collectionTbl_->currentIndex());
+			int dataRowIndex = mtg::Collection::instance().getDataRowIndex(sourceIndex.row());
+			auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
+			for (const auto& deck : decks)
+			{
+				emit requestOpenDeck(deck->getId());
+			}
+		}
 	}
 }
 

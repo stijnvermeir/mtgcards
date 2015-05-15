@@ -6,6 +6,7 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QObject>
+#include <QVector>
 
 class DeckManager : public QObject
 {
@@ -18,6 +19,7 @@ public:
 	void closeDeck(const QSharedPointer<Deck>& deck);
 
 	int getUsedCount(const int dataRowIndex) const;
+	QVector<QSharedPointer<Deck>> getDecksUsedIn(const int dataRowIndex) const;
 
 signals:
 	void deckChanged();

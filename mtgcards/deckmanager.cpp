@@ -86,6 +86,22 @@ struct DeckManager::Pimpl
 		}
 		return usedCount;
 	}
+
+	QVector<QSharedPointer<Deck>> getDecksUsedIn(const int dataRowIndex) const
+	{
+		QVector<QSharedPointer<Deck>> decks;
+		for (const QSharedPointer<Deck>& deck : decks_)
+		{
+			if (deck->isActive())
+			{
+				if (deck->getQuantity(dataRowIndex) > 0)
+				{
+					decks.push_back(deck);
+				}
+			}
+		}
+		return decks;
+	}
 };
 
 DeckManager& DeckManager::instance()
@@ -107,6 +123,11 @@ void DeckManager::closeDeck(const QSharedPointer<Deck>& deck)
 int DeckManager::getUsedCount(const int dataRowIndex) const
 {
 	return pimpl_->getUsedCount(dataRowIndex);
+}
+
+QVector<QSharedPointer<Deck>> DeckManager::getDecksUsedIn(const int dataRowIndex) const
+{
+	return pimpl_->getDecksUsedIn(dataRowIndex);
 }
 
 DeckManager::DeckManager()
