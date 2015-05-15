@@ -1,5 +1,6 @@
 #include "decktablemodel.h"
 #include "deckmanager.h"
+#include "settings.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
@@ -36,6 +37,29 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::Layout,
 	mtg::ColumnType::ImageName
 };
+
+const QVector<mtg::ColumnType>& GetColumns()
+{
+	static QVector<mtg::ColumnType> columns;
+	static bool ready = false;
+	if (!ready)
+	{
+		const auto& userColumns = Settings::instance().getUserColumns();
+		columns.reserve(DECKTABLE_COLUMNS.size() + userColumns.size());
+		for (const mtg::ColumnType& column : DECKTABLE_COLUMNS)
+		{
+			columns.push_back(column);
+		}
+		for (int i = 0; i < userColumns.size(); ++i)
+		{
+			mtg::ColumnType userColumn(mtg::ColumnType::UserDefined);
+			userColumn.setUserColumnIndex(i);
+			columns.push_back(userColumn);
+		}
+		ready = true;
+	}
+	return columns;
+}
 
 } // namespace
 
@@ -85,18 +109,18 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 
 	virtual int columnCount(const QModelIndex& = QModelIndex()) const
 	{
-		return static_cast<int>(DECKTABLE_COLUMNS.size());
+		return GetColumns().size();
 	}
 
 	virtual QVariant data(const QModelIndex& index, int role) const
 	{
 		if (index.isValid())
 		{
-			if (role == Qt::DisplayRole)
+			if (role == Qt::DisplayRole || role == Qt::EditRole)
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
-					const QVariant& ret = deck_->get(index.row(), DECKTABLE_COLUMNS[index.column()]);
+					const QVariant& ret = deck_->get(index.row(), GetColumns()[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
 						return ret.toStringList().join("/");
@@ -117,7 +141,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
 					int dataRowIndex = deck_->getDataRowIndex(index.row());
-					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Sideboard)
+					if (GetColumns()[index.column()] == mtg::ColumnType::Sideboard)
 					{
 						if (deck_->getSideboard(dataRowIndex) != value.toInt())
 						{
@@ -126,7 +150,8 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 							return true;
 						}
 					}
-					if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity)
+					else
+					if (GetColumns()[index.column()] == mtg::ColumnType::Quantity)
 					{
 						if (deck_->getQuantity(dataRowIndex) != value.toInt())
 						{
@@ -134,6 +159,13 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 							emit dataChanged(index, index);
 							return true;
 						}
+					}
+					else
+					if (GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
+					{
+						deck_->set(index.row(), GetColumns()[index.column()], value);
+						emit dataChanged(index, index);
+						return true;
 					}
 				}
 			}
@@ -149,7 +181,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (section >= 0 && section < columnCount())
 				{
-					return DECKTABLE_COLUMNS[section].getDisplayName();
+					return GetColumns()[section].getDisplayName();
 				}
 			}
 		}
@@ -160,8 +192,9 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.column() < columnCount())
 		{
-			if (DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Quantity ||
-				DECKTABLE_COLUMNS[index.column()] == mtg::ColumnType::Sideboard)
+			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity ||
+				GetColumns()[index.column()] == mtg::ColumnType::Sideboard ||
+				GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}
@@ -219,19 +252,14 @@ int DeckTableModel::getRowIndex(const int dataRowIndex) const
 
 int DeckTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	auto it = find(DECKTABLE_COLUMNS.begin(), DECKTABLE_COLUMNS.end(), column);
-	if (it != DECKTABLE_COLUMNS.end())
-	{
-		return (it - DECKTABLE_COLUMNS.begin());
-	}
-	return -1;
+	return GetColumns().indexOf(column);
 }
 
 mtg::ColumnType DeckTableModel::columnIndexToType(const int columnIndex) const
 {
 	if (columnIndex >= 0 && columnIndex < sourceModel()->columnCount())
 	{
-		return DECKTABLE_COLUMNS[columnIndex];
+		return GetColumns()[columnIndex];
 	}
 	return mtg::ColumnType::UNKNOWN;
 }
