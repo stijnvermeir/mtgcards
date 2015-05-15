@@ -65,7 +65,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.isValid())
 		{
-			if (role == Qt::DisplayRole)
+			if (role == Qt::DisplayRole || role == Qt::ToolTipRole)
 			{
 				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{

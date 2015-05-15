@@ -104,7 +104,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.isValid())
 		{
-			if (role == Qt::DisplayRole || role == Qt::EditRole)
+			if (role == Qt::DisplayRole || role == Qt::EditRole || role == Qt::ToolTipRole)
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{

@@ -79,3 +79,13 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 
 	return applyFilter(filterRootNode_);
 }
+
+QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) const
+{
+	QVariant d = QSortFilterProxyModel::data(index, role);
+	if (d.canConvert<ManaCost>() && role == Qt::ToolTipRole)
+	{
+		return qvariant_cast<ManaCost>(d).getText();
+	}
+	return d;
+}
