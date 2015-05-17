@@ -22,6 +22,8 @@ private:
 	bool poolReloadRequired_;
 	QScopedPointer<QAbstractItemModel> shortcutsModel_;
 	QScopedPointer<QAbstractItemDelegate> shortcutsItemDelegate_;
+	QScopedPointer<QAbstractItemModel> userColumnsModel_;
+	QScopedPointer<QAbstractItemDelegate> userColumnsItemDelegate_;
 
 private slots:
 	// data bindings tab
@@ -31,6 +33,12 @@ private slots:
 	// shortcuts tab
 	void shortcutsChanged(QModelIndex, QModelIndex);
 	void saveShortcutsClicked();
+
+	// user columns tab
+	void addUserColumnClicked();
+	void delUserColumnClicked();
+	void userColumnEdited();
+	void saveUserColumnsClicked();
 
 	// misc tab
 	void browseAppDataDirBtnClicked();
