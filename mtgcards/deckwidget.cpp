@@ -48,6 +48,8 @@ DeckWidget::DeckWidget(const QString& filename, QWidget *parent)
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(&deckTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+
+	connect(ui_.tableView, SIGNAL(searchStringChanged(QString)), this, SIGNAL(searchStringChanged(QString)));
 }
 
 DeckWidget::~DeckWidget()
@@ -110,6 +112,11 @@ QVector<int> DeckWidget::currentDataRowIndices() const
 const DeckTableModel& DeckWidget::model() const
 {
 	return deckTableModel_;
+}
+
+void DeckWidget::resetSearchString()
+{
+	ui_.tableView->resetKeyboardSearch();
 }
 
 void DeckWidget::addToDeck(const QVector<int>& dataRowIndices)

@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMenu>
+#include <QLabel>
 #include <QDebug>
 
 PoolWindow::PoolWindow(QWidget *parent)
@@ -31,6 +32,11 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+
+	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
+	QLabel* permanentStatusBarLabel = new QLabel();
+	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel);
+	connect(ui_.poolTbl_, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel, SLOT(setText(QString)));
 }
 
 PoolWindow::~PoolWindow()

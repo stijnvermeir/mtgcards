@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMenu>
+#include <QLabel>
 #include <QDebug>
 
 namespace {
@@ -58,6 +59,11 @@ CollectionWindow::CollectionWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
+
+	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
+	QLabel* permanentStatusBarLabel = new QLabel();
+	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel);
+	connect(ui_.collectionTbl_, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel, SLOT(setText(QString)));
 }
 
 CollectionWindow::~CollectionWindow()

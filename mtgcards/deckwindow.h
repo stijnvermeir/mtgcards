@@ -8,6 +8,7 @@
 #include <QString>
 
 class DeckWidget;
+class QLabel;
 
 class DeckWindow : public QMainWindow
 {
@@ -33,6 +34,7 @@ private:
 	Ui::DeckWindow ui_;
 	QString headerState_;
 	FilterNode::Ptr rootFilterNode_;
+	QLabel* permanentStatusBarLabel_;
 
 	void closeEvent(QCloseEvent* event);
 	virtual bool event(QEvent* event);

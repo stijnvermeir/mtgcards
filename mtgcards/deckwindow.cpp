@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QPdfWriter>
 #include <QPainter>
+#include <QLabel>
 #include <QDebug>
 
 DeckWindow::DeckWindow(QWidget *parent)
@@ -23,6 +24,7 @@ DeckWindow::DeckWindow(QWidget *parent)
 	, ui_()
 	, headerState_()
 	, rootFilterNode_()
+	, permanentStatusBarLabel_(new QLabel())
 {
 	setWindowFlags(Qt::NoDropShadowWindowHint);
 	ui_.setupUi(this);
@@ -40,6 +42,9 @@ DeckWindow::DeckWindow(QWidget *parent)
 	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
+
+	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
+	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel_);
 }
 
 DeckWindow::~DeckWindow()
@@ -218,6 +223,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
+	connect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
 	return deckWidget;
@@ -249,6 +255,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 			disconnect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 			disconnect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
+			disconnect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
 			deckWidget->close();
 			ui_.tabWidget->removeTab(index);
 			delete deckWidget;
@@ -302,6 +309,15 @@ void DeckWindow::currentTabChangedSlot(int)
 {
 	selectedCardChangedSlot();
 	updateStatusBar();
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		deckWidget->resetSearchString();
+	}
+	else
+	{
+		permanentStatusBarLabel_->clear();
+	}
 }
 
 void DeckWindow::actionNewDeck()

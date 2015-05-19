@@ -35,6 +35,7 @@ signals:
 	void selectedCardChanged(int);
 	void deckEdited();
 	void headerStateChangedSignal(QString);
+	void searchStringChanged(const QString& searchString);
 
 private:
 	Ui::DeckWidget ui_;
@@ -43,6 +44,7 @@ private:
 	bool headerStateChangedSlotDisabled_;
 
 public slots:
+	void resetSearchString();
 	void addToDeck(const QVector<int>&);
 	void removeFromDeck(const QVector<int>&);
 
