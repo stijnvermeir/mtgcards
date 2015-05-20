@@ -212,7 +212,6 @@ public:
 
 	virtual bool insertRows(int row, int, const QModelIndex& parent)
 	{
-		qDebug() << "Insert row at " << row;
 		beginInsertRows(parent, row + 1, row + 1);
 		data_.insert(row, UserColumn());
 		endInsertRows();
@@ -221,7 +220,6 @@ public:
 
 	virtual bool removeRows(int row, int, const QModelIndex& parent)
 	{
-		qDebug() << "Remove row at " << row;
 		if (row >= 0 && row < data_.size())
 		{
 			beginRemoveRows(parent, row, row);

@@ -1,41 +1,39 @@
-#include "filters/datefilterfunction.h"
+#include "filters/numberfilterfunction.h"
 
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QDateEdit>
+#include <QtWidgets/QDoubleSpinBox>
 
 using namespace std;
 
 namespace {
 
-const QString ID = "Date";
+const QString ID = "Number";
 const bool registered = FilterFunctionManager::instance().registerFilterFunction(ID, []()
 {
-	return FilterFunction::Ptr(new DateFilterFunction());
+	return FilterFunction::Ptr(new NumberFilterFunction());
 });
 
 struct EditorWidget : public QWidget
 {
 	QHBoxLayout* layout;
 	QComboBox* compareTypeCbx;
-	QDateEdit* dateEdt;
+	QDoubleSpinBox* spinBox;
 
 	EditorWidget(QWidget* parent)
 		: QWidget(parent)
 		, layout(new QHBoxLayout(this))
 		, compareTypeCbx(new QComboBox(this))
-		, dateEdt(new QDateEdit(this))
+		, spinBox(new QDoubleSpinBox(this))
 	{
 		for (const auto& item : CompareType::list())
 		{
 			compareTypeCbx->addItem(static_cast<QString>(item));
 		}
 		compareTypeCbx->setMaximumWidth(50);
-		dateEdt->setDisplayFormat("dd.MM.yyyy");
-		dateEdt->setCalendarPopup(true);
 		layout->setContentsMargins(0, 0, 10, 0);
 		layout->addWidget(compareTypeCbx);
-		layout->addWidget(dateEdt);
+		layout->addWidget(spinBox);
 		setLayout(layout);
 		setAutoFillBackground(true);
 	}
@@ -43,57 +41,57 @@ struct EditorWidget : public QWidget
 
 } // namespace
 
-DateFilterFunction::DateFilterFunction()
+NumberFilterFunction::NumberFilterFunction()
 	: compareType_()
-	, date_(2000, 1, 1)
+	, number_(0.0)
 {
 }
 
-const QString& DateFilterFunction::getId() const
+const QString& NumberFilterFunction::getId() const
 {
 	return ID;
 }
 
-bool DateFilterFunction::apply(const QVariant& data) const
+bool NumberFilterFunction::apply(const QVariant& data) const
 {
-	if (data.canConvert<QDate>())
+	if (data.canConvert<double>())
 	{
-		return compareType_.compare(data.toDate(), date_);
+		return compareType_.compare(data.toDouble(), number_);
 	}
 	return true;
 }
 
-QString DateFilterFunction::getDescription() const
+QString NumberFilterFunction::getDescription() const
 {
-	return static_cast<QString>(compareType_) + " " + date_.toString();
+	return static_cast<QString>(compareType_) + " " + QString::number(number_);
 }
 
-QJsonObject DateFilterFunction::toJson() const
+QJsonObject NumberFilterFunction::toJson() const
 {
 	QJsonObject obj;
 	obj["type"] = ID;
 	obj["compareType"] = static_cast<QString>(compareType_);
-	obj["date"] = date_.toString("dd.MM.yyyy");
+	obj["number"] = number_;
 	return obj;
 }
 
-void DateFilterFunction::fromJson(const QJsonObject& obj)
+void NumberFilterFunction::fromJson(const QJsonObject& obj)
 {
 	compareType_ = obj["compareType"].toString();
-	date_ = QDate::fromString(obj["date"].toString(), "dd.MM.yyyy");
+	number_ = obj["number"].toDouble();
 }
 
-QWidget* DateFilterFunction::createEditor(QWidget* parent) const
+QWidget* NumberFilterFunction::createEditor(QWidget* parent) const
 {
 	EditorWidget* editor = new EditorWidget(parent);
 	editor->compareTypeCbx->setCurrentText(static_cast<QString>(compareType_));
-	editor->dateEdt->setDate(date_);
+	editor->spinBox->setValue(number_);
 	return editor;
 }
 
-void DateFilterFunction::updateFromEditor(const QWidget* editor)
+void NumberFilterFunction::updateFromEditor(const QWidget* editor)
 {
 	const EditorWidget* ed = static_cast<const EditorWidget*>(editor);
 	compareType_ = ed->compareTypeCbx->currentText();
-	date_ = ed->dateEdt->date();
+	number_ = ed->spinBox->value();
 }

@@ -113,7 +113,7 @@ public:
 		}
 	}
 
-	virtual QSize sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+	virtual QSize sizeHint(const QStyleOptionViewItem&,  const QModelIndex&) const
 	{
 		const int ROW_HEIGHT = 30;
 		return QSize(0, ROW_HEIGHT);
@@ -131,6 +131,9 @@ FilterEditorDialog::FilterEditorDialog(QWidget *parent)
 	ui_.setupUi(this);
 	ui_.treeView->setModel(&model_);
 	ui_.treeView->setItemDelegate(itemDelegate_.data());
+	ui_.treeView->header()->resizeSection(FilterModel::Column::Type, 150);
+	ui_.treeView->header()->resizeSection(FilterModel::Column::Field, 150);
+	ui_.treeView->header()->resizeSection(FilterModel::Column::Filter, 300);
 
 	connect(ui_.newBtn, SIGNAL(released()), this, SLOT(newBtnClicked()));
 	connect(ui_.openBtn, SIGNAL(released()), this, SLOT(openBtnClicked()));

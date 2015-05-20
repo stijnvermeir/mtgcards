@@ -47,7 +47,10 @@ SOURCES += main.cpp\
     deckmanager.cpp \
     tableview.cpp \
     util.cpp \
-    usercolumn.cpp
+    usercolumn.cpp \
+    filters/timefilterfunction.cpp \
+    filters/comparetype.cpp \
+    filters/numberfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -80,7 +83,10 @@ HEADERS  += mainwindow.h \
     deckmanager.h \
     tableview.h \
     util.h \
-    usercolumn.h
+    usercolumn.h \
+    filters/timefilterfunction.h \
+    filters/comparetype.h \
+    filters/numberfilterfunction.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

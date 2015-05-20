@@ -3,13 +3,12 @@
 #include "filter.h"
 #include "filters/comparetype.h"
 
-#include <QDate>
 #include <QString>
 
-class DateFilterFunction : public FilterFunction
+class NumberFilterFunction : public FilterFunction
 {
 public:
-	DateFilterFunction();
+	NumberFilterFunction();
 
 	virtual const QString& getId() const;
 	virtual bool apply(const QVariant& data) const;
@@ -20,5 +19,5 @@ public:
 	virtual void updateFromEditor(const QWidget* editor);
 private:
 	CompareType compareType_;
-	QDate date_;
+	double number_;
 };
