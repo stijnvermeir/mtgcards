@@ -2,12 +2,18 @@
 
 #include "optionsdialog.h"
 #include "aboutdialog.h"
+#include "magiccarddata.h"
+#include "magiccollection.h"
 
 #include <QDebug>
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <QDesktopWidget>
+#include <QProgressDialog>
+
+using namespace std;
 
 namespace {
 
@@ -50,6 +56,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// about
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
+
+	// import collection
+	connect(ui_.actionImportCollection, SIGNAL(triggered()), this, SLOT(importCollection()));
+
+	// import decks
+	connect(ui_.actionImportDecks, SIGNAL(triggered()), this, SLOT(importDecks()));
 
 	// card preview
 	connect(&poolWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
@@ -198,6 +210,7 @@ void MainWindow::optionsActionClicked()
 	{
 		poolWindow_.reload();
 		collectionWindow_.reload();
+		deckWindow_.reload();
 	}
 	poolWindow_.updateShortcuts();
 	collectionWindow_.updateShortcuts();
@@ -209,4 +222,95 @@ void MainWindow::aboutActionClicked()
 	AboutDialog about(this);
 	moveToCenterOfScreen(&about);
 	about.exec();
+}
+
+void MainWindow::importCollection()
+{
+	QString filename = QFileDialog::getOpenFileName(0, "Import collection from csv", QDir::homePath(), "CSV (*.csv)");
+	if (!filename.isNull())
+	{
+		QFile importFile(filename);
+		if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
+		{
+			QStringList lines;
+			QTextStream in(&importFile);
+			while (!in.atEnd())
+			{
+				lines << in.readLine();
+			}
+			importFile.close();
+
+			QProgressDialog progress("Importing ...", "Cancel", 0, lines.size());
+			progress.setWindowModality(Qt::WindowModal);
+			QStringList errors;
+			for (int i = 0; i < lines.size(); ++i)
+			{
+				QStringList splitLine = lines[i].split(";");
+				if (splitLine.size() >= 3)
+				{
+					QString set = splitLine[0];
+					QString name = splitLine[1];
+					if (name.contains("/"))
+					{
+						name = name.split("/").first();
+					}
+					int qty = splitLine[2].toInt();
+					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
+					if (dataRowIndex != -1)
+					{
+						int current = mtg::Collection::instance().getQuantity(dataRowIndex);
+						mtg::Collection::instance().setQuantity(dataRowIndex, current + qty);
+					}
+					else
+					{
+						QString errorMsg;
+						QTextStream str(&errorMsg);
+						str << set << " " << name;
+						errors.append(errorMsg);
+					}
+				}
+				else
+				{
+					QString errorMsg;
+					QTextStream str(&errorMsg);
+					str << "Line " << i + 1 << " is invalid.";
+					errors.append(errorMsg);
+				}
+				progress.setValue(i);
+				if (progress.wasCanceled())
+				{
+					break;
+				}
+			}
+			progress.setValue(lines.size());
+			if (!progress.wasCanceled())
+			{
+				if (errors.empty())
+				{
+					mtg::Collection::instance().save();
+				}
+				else
+				{
+					QMessageBox msgBox;
+					msgBox.setWindowTitle("Issues");
+					msgBox.setText("Some cards could not be imported. Do you want to continue with the import?");
+					msgBox.setInformativeText("See details to know which cards could not be imported.");
+					msgBox.setDetailedText(errors.join("\n"));
+					msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+					msgBox.setDefaultButton(QMessageBox::Yes);
+					int ret = msgBox.exec();
+					if (ret == QMessageBox::Yes)
+					{
+						mtg::Collection::instance().save();
+					}
+				}
+			}
+			collectionWindow_.reload();
+		}
+	}
+}
+
+void MainWindow::importDecks()
+{
+
 }

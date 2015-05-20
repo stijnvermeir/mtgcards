@@ -70,11 +70,9 @@ struct Deck::Pimpl
 				QJsonObject card = c.toObject();
 				auto set = card["Set"].toString();
 				auto name = card["Name"].toString();
-				vector<pair<ColumnType, QVariant>> criteria;
-				criteria.emplace_back(ColumnType::SetCode, set);
-				criteria.emplace_back(ColumnType::Name, name);
+				auto imageName = card["ImageName"].toString();
 				Row r;
-				r.rowIndexInData = mtg::CardData::instance().findRow(criteria);
+				r.rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
 				r.quantity = card["Quantity"].toInt();
 				r.sideboard = card["Sideboard"].toInt();
 				r.userData = UserColumn::loadFromJson(card);
@@ -94,6 +92,7 @@ struct Deck::Pimpl
 			QJsonObject cardObj;
 			cardObj["Set"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::SetCode).toString();
 			cardObj["Name"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
+			cardObj["ImageName"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::ImageName).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
 			cardObj["Sideboard"] = r.sideboard.toInt();
 			UserColumn::saveToJson(cardObj, r.userData);

@@ -36,4 +36,6 @@ private slots:
 	void deckWindowActionToggled(bool show);
 	void optionsActionClicked();
 	void aboutActionClicked();
+	void importCollection();
+	void importDecks();
 };

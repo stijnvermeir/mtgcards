@@ -10,6 +10,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QHash>
 #include <QDebug>
 
 #include <array>
@@ -121,9 +122,11 @@ struct CardData::Pimpl
 {
 	typedef array<QVariant, COLUMNS_SIZE> Row;
 	vector<Row> data;
+	QHash<QString, QHash<QString, int>> quickLookUpTable;
 
 	Pimpl()
 		: data()
+		, quickLookUpTable()
 	{
 		reload();
 	}
@@ -131,6 +134,7 @@ struct CardData::Pimpl
 	void reload()
 	{
 		data.clear();
+		quickLookUpTable.clear();
 
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -144,6 +148,7 @@ struct CardData::Pimpl
 			}
 
 			data.reserve(numCards);
+			quickLookUpTable.reserve(numCards);
 
 			for (const auto& s : obj)
 			{
@@ -185,7 +190,8 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::Border)] = border;
 
 					// card
-					r[columnToIndex(ColumnType::Name)] = card["name"].toString();
+					QString cardName = card["name"].toString();
+					r[columnToIndex(ColumnType::Name)] = cardName;
 					r[columnToIndex(ColumnType::Names)] = jsonArrayToStringList(card["names"].toArray());
 					r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), card["cmc"].toDouble()));
 					r[columnToIndex(ColumnType::CMC)] = card["cmc"].toDouble();
@@ -204,8 +210,10 @@ struct CardData::Pimpl
 
 					// hidden
 					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();
-					r[columnToIndex(ColumnType::ImageName)] = card["imageName"].toString();
+					QString imageName = card["imageName"].toString();
+					r[columnToIndex(ColumnType::ImageName)] = imageName;
 
+					quickLookUpTable[setCode + cardName][imageName] = data.size();
 					data.push_back(r);
 				}
 			}
@@ -258,6 +266,24 @@ struct CardData::Pimpl
 		}
 		return -1;
 	}
+
+	int findRowFast(const QString& set, const QString& name, const QString& imageName) const
+	{
+		QString key = set + name;
+		if (quickLookUpTable.contains(key))
+		{
+			const QHash<QString, int> secondary = quickLookUpTable[key];
+			if (imageName.isEmpty())
+			{
+				return secondary.begin().value();
+			}
+			else
+			{
+				return secondary.value(imageName, -1);
+			}
+		}
+		return -1;
+	}
 };
 
 CardData& CardData::instance()
@@ -299,6 +325,11 @@ const QVariant& CardData::get(const int row, const ColumnType& column) const
 int CardData::findRow(const vector<pair<ColumnType, QVariant>>& criteria) const
 {
 	return pimpl_->findRow(criteria);
+}
+
+int CardData::findRowFast(const QString& set, const QString& name, const QString& imageName) const
+{
+	return pimpl_->findRowFast(set, name, imageName);
 }
 
 std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)

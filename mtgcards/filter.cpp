@@ -21,13 +21,11 @@ struct FilterFunctionManager::Pimpl
 
 	bool registerFilterFunction(const QString& id, const CreateFunc& createFunc)
 	{
-		qDebug() << "Registering filter function with ID " << id;
 		auto it = createFunctions.find(id);
 		if (it == createFunctions.end())
 		{
 			createFunctions[id] = createFunc;
 			registeredFunctions.push_back(id);
-			qDebug() << "Filter function with ID " << id << " registered.";
 			return true;
 		}
 		qWarning() << "Failed to register filter function with ID " << id;

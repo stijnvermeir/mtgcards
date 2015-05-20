@@ -38,6 +38,9 @@
     </property>
     <addaction name="actionOptions"/>
     <addaction name="actionAbout"/>
+    <addaction name="separator"/>
+    <addaction name="actionImportCollection"/>
+    <addaction name="actionImportDecks"/>
    </widget>
    <addaction name="menuWindow"/>
    <addaction name="menuTools"/>
@@ -94,6 +97,16 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionImportCollection">
+   <property name="text">
+    <string>Import collection ...</string>
+   </property>
+  </action>
+  <action name="actionImportDecks">
+   <property name="text">
+    <string>Import decks ...</string>
    </property>
   </action>
  </widget>
