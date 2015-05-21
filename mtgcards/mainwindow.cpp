@@ -4,6 +4,8 @@
 #include "aboutdialog.h"
 #include "magiccarddata.h"
 #include "magiccollection.h"
+#include "deckmanager.h"
+#include "settings.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -12,6 +14,7 @@
 #include <QFileDialog>
 #include <QDesktopWidget>
 #include <QProgressDialog>
+#include <QXmlStreamReader>
 
 using namespace std;
 
@@ -263,18 +266,12 @@ void MainWindow::importCollection()
 					}
 					else
 					{
-						QString errorMsg;
-						QTextStream str(&errorMsg);
-						str << set << " " << name;
-						errors.append(errorMsg);
+						errors << (set + " " + name + " not found");
 					}
 				}
 				else
 				{
-					QString errorMsg;
-					QTextStream str(&errorMsg);
-					str << "Line " << i + 1 << " is invalid.";
-					errors.append(errorMsg);
+					errors << ("Line " + QString::number(i+1) + " is invalid");
 				}
 				progress.setValue(i);
 				if (progress.wasCanceled())
@@ -298,6 +295,7 @@ void MainWindow::importCollection()
 					msgBox.setDetailedText(errors.join("\n"));
 					msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 					msgBox.setDefaultButton(QMessageBox::Yes);
+					msgBox.setIcon(QMessageBox::Warning);
 					int ret = msgBox.exec();
 					if (ret == QMessageBox::Yes)
 					{
@@ -312,5 +310,113 @@ void MainWindow::importCollection()
 
 void MainWindow::importDecks()
 {
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import decks from xml", QDir::homePath(), "Decks (*.deck)");
+	if (!filenames.empty())
+	{
+		bool yesToAll = false;
+		bool noToAll = false;
+		QStringList decksWithIssues;
+		for (const QString& filename : filenames)
+		{
+			QStringList errors;
+			QFile importFile(filename);
+			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				QFileInfo fileInfo(filename);
+				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
+				if (QFileInfo(newFilename).exists())
+				{
+					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
+				}
+				Deck deck;
+				deck.setActive(false);
+				QXmlStreamReader xml(&importFile);
+				while (!xml.atEnd())
+				{
+					xml.readNext();
+					if (xml.isStartElement() && xml.name().compare("card") == 0)
+					{
+						QString set = xml.attributes().value("edition").toString();
+						int qty = xml.attributes().value("deck").toInt();
+						int sb = xml.attributes().value("sb").toInt();
+						QString name = xml.readElementText();
+						if (name.contains("/"))
+						{
+							name = name.split("/").first();
+						}
+						int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
+						if (dataRowIndex != -1)
+						{
+							deck.setQuantity(dataRowIndex, qty);
+							deck.setSideboard(dataRowIndex, sb);
+						}
+						else
+						{
+							errors << (set + " " + name + " not found");
+						}
+					}
+					if (xml.hasError())
+					{
+						errors << xml.errorString();
+					}
+				}
 
+				bool ok = true;
+				if (!errors.empty())
+				{
+					decksWithIssues << fileInfo.baseName();
+					if (!yesToAll && !noToAll)
+					{
+						QMessageBox msgBox;
+						msgBox.setWindowTitle("Issues");
+						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
+						msgBox.setInformativeText("See details to see the issues.");
+						msgBox.setDetailedText(errors.join("\n"));
+						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
+						msgBox.setDefaultButton(QMessageBox::NoToAll);
+						msgBox.setIcon(QMessageBox::Warning);
+						int ret = msgBox.exec();
+						if (ret == QMessageBox::No)
+						{
+							ok = false;
+						}
+						if (ret == QMessageBox::NoToAll)
+						{
+							noToAll = true;
+						}
+						if (ret == QMessageBox::YesToAll)
+						{
+							yesToAll = true;
+						}
+					}
+					if (noToAll)
+					{
+						ok = false;
+					}
+				}
+
+				if (ok)
+				{
+					deck.save(newFilename);
+					deckWindow_.openDeck(newFilename);
+				}
+			}
+		}
+		if (!decksWithIssues.empty())
+		{
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Decks with issues");
+			msgBox.setText("There were some decks with import issues.");
+			msgBox.setInformativeText("See details to see which decks had issues.");
+			msgBox.setDetailedText(decksWithIssues.join("\n"));
+			msgBox.setStandardButtons(QMessageBox::Ok);
+			msgBox.setDefaultButton(QMessageBox::Ok);
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
+		else
+		{
+			QMessageBox::information(0, "Success", "All decks were imported successfully.");
+		}
+	}
 }

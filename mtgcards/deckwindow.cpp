@@ -142,6 +142,11 @@ bool DeckWindow::hasUnsavedChanges() const
 	return false;
 }
 
+void DeckWindow::openDeck(const QString& deckId)
+{
+	handleOpenDeckRequest(deckId);
+}
+
 void DeckWindow::closeEvent(QCloseEvent* event)
 {
 	emit windowClosed(false);

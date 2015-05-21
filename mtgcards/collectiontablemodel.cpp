@@ -206,6 +206,18 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 		}
 		return QAbstractTableModel::flags(index);
 	}
+
+	void updateUsedCount()
+	{
+		for (int row = 0; row < rowCount(); ++row)
+		{
+			int dataRowIndex = mtg::Collection::instance().getDataRowIndex(row);
+			int usedCount = DeckManager::instance().getUsedCount(dataRowIndex);
+			mtg::Collection::instance().setUsedCount(dataRowIndex, usedCount);
+		}
+		int column = GetColumns().indexOf(mtg::ColumnType::Used);
+		emit dataChanged(index(0, column), index(rowCount() - 1, column));
+	}
 };
 
 CollectionTableModel::CollectionTableModel()
@@ -245,4 +257,9 @@ mtg::ColumnType CollectionTableModel::columnIndexToType(const int columnIndex) c
 		return GetColumns()[columnIndex];
 	}
 	return mtg::ColumnType::UNKNOWN;
+}
+
+void CollectionTableModel::updateUsedCount()
+{
+	pimpl_->updateUsedCount();
 }

@@ -23,6 +23,7 @@ public:
 	void loadSettings();
 	void saveSettings();
 	bool hasUnsavedChanges() const;
+	void openDeck(const QString& deckId);
 
 signals:
 	void windowClosed(bool);

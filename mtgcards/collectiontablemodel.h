@@ -19,6 +19,8 @@ public:
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
 	mtg::ColumnType columnIndexToType(const int columnIndex) const;
 
+	void updateUsedCount();
+
 private:
 	struct Pimpl;
 	QScopedPointer<Pimpl> pimpl_;

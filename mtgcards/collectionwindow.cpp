@@ -309,11 +309,5 @@ void CollectionWindow::rowContextMenuRequested(const QPoint& pos)
 
 void CollectionWindow::updateUsedCount()
 {
-	for (int row = 0; row < mtg::Collection::instance().getNumRows(); ++row)
-	{
-		int usedCount = DeckManager::instance().getUsedCount(mtg::Collection::instance().getDataRowIndex(row));
-		int usedColumnIndex = collectionTableModel_.columnToIndex(mtg::ColumnType::Used);
-		QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(row, usedColumnIndex);
-		collectionTableModel_.sourceModel()->setData(sourceIndex, usedCount);
-	}
+	collectionTableModel_.updateUsedCount();
 }
