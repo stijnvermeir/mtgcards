@@ -146,17 +146,26 @@ Depending on your OS, the configuration files and default application folder hav
 ### Mac OS X
 
 #### Secret configuration file
+	~/Library/Preferences/be.stijn-v.MTGCards.plist
 
 #### Application Folder
+	~/Library/Application Support/stijnvsoftware/MTGCards
 
 ### Windows
 
 #### Secret configuration file
+Open regedit.exe and go to:
+	
+	HKEY_CURRENT_USER\Software\stijnvsoftware\MTGCards
 
 #### Application Folder
+	C:\Users\**user**\AppData\Local\stijnvsoftware\MTGCards
 
 ### Linux
 
 #### Secret configuration file
+	~/.config/stijnvsoftware/MTGCards.conf
 
 #### Application Folder
+	~/.local/share/stijnvsoftware/MTGCards
+	
