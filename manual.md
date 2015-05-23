@@ -66,7 +66,7 @@ In the Collection window you will see the *Used* column. This value is calculate
 
 A deck can be activated or deactivated by toggling the switch in the Deck window.
 
-When you hover over a *Used* cell, you can see how many time the card is used in which deck. You can right click on the row and select *Open decks where this card is used* to open them.
+When you hover over a *Used* cell, you can see how many times the card is used in which deck. You can right click on the row and select *Open decks where this card is used* to open them.
 
 For this feature to work properly, the .deck files should be kept in the *decks* folder inside the MTGCards Application Folder. Where this folder is located, can be found in the Options under Misc. It can also be changed there.
 
@@ -86,9 +86,9 @@ After selecting a cell in Pool, Collection or Card window, you can just start ty
 
 Select a different cell to reset the keyboard search.
 
-Start your search with ^ and it will only match if the name starts with the search string.
+Start your search with ^ and it will only match if the name *starts* with the search string.
 
-Use PgUp and PgDn to go the previous or next match.
+Use PgUp and PgDn to go to the previous or next match.
 
 ### Customization
 MTGCards aims to be very customizable.
@@ -134,3 +134,29 @@ For example:
 	
 ### Multi-platform
 MTGCards is a native desktop application available for Mac OS X, Windows and Linux.
+
+### Open file format
+The file format used to save your collection and decks is extremely easy and straight forward. It's just a text file in JSON format. This makes it unnecessary to add export functionality to MTGCards.
+
+Application Files and Folder
+----------------------------
+
+Depending on your OS, the configuration files and default application folder have different locations. Here's an overview.
+
+### Mac OS X
+
+#### Secret configuration file
+
+#### Application Folder
+
+### Windows
+
+#### Secret configuration file
+
+#### Application Folder
+
+### Linux
+
+#### Secret configuration file
+
+#### Application Folder
