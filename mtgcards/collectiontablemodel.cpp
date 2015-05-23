@@ -213,8 +213,22 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 			int usedCount = DeckManager::instance().getUsedCount(dataRowIndex);
 			mtg::Collection::instance().setUsedCount(dataRowIndex, usedCount);
 		}
-		int column = GetColumns().indexOf(mtg::ColumnType::Used);
+		int column = columnToIndex(mtg::ColumnType::Used);
 		emit dataChanged(index(0, column), index(rowCount() - 1, column));
+	}
+
+	int columnToIndex(const mtg::ColumnType& column) const
+	{
+		const auto& columns = GetColumns();
+		auto it = std::find_if(columns.begin(), columns.end(), [&column](const mtg::ColumnType& c)
+		{
+			return c.value() == column.value() && c.getUserColumnIndex() == column.getUserColumnIndex();
+		});
+		if (it != columns.end())
+		{
+			return it - columns.begin();
+		}
+		return -1;
 	}
 };
 
@@ -245,7 +259,7 @@ void CollectionTableModel::setQuantity(const int dataRowIndex, const int newQuan
 
 int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	return GetColumns().indexOf(column);
+	return pimpl_->columnToIndex(column);
 }
 
 mtg::ColumnType CollectionTableModel::columnIndexToType(const int columnIndex) const

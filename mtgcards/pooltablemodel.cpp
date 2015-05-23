@@ -122,5 +122,13 @@ void PoolTableModel::reload()
 
 int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	return POOLTABLE_COLUMNS.indexOf(column);
+	auto it = std::find_if(POOLTABLE_COLUMNS.begin(), POOLTABLE_COLUMNS.end(), [&column](const mtg::ColumnType& c)
+	{
+		return c.value() == column.value() && c.getUserColumnIndex() == column.getUserColumnIndex();
+	});
+	if (it != POOLTABLE_COLUMNS.end())
+	{
+		return it - POOLTABLE_COLUMNS.begin();
+	}
+	return -1;
 }

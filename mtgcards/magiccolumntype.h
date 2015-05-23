@@ -54,11 +54,13 @@ public:
 
 	operator QString () const;
 	operator type_t () const;
+	ColumnType::type_t value() const;
 
 	const QString& getDisplayName() const;
 
 	const UserColumn& userColumn() const;
 	void setUserColumnIndex(int userColumnIndex);
+	int getUserColumnIndex() const;
 
 	static const QVector<ColumnType>& list();
 

@@ -58,7 +58,7 @@ QVector<int> generateColumnIndices()
 	return indices;
 }
 
-int columnToIndex(const ColumnType column)
+int columnToIndex(const ColumnType::type_t column)
 {
 	static const QVector<int> COLUMN_INDICES = generateColumnIndices();
 	return COLUMN_INDICES[column];

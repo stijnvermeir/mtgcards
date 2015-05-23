@@ -110,6 +110,11 @@ ColumnType::operator type_t () const
 	return value_;
 }
 
+ColumnType::type_t ColumnType::value() const
+{
+	return value_;
+}
+
 const QString& ColumnType::getDisplayName() const
 {
 	if (value_ >= 0 && value_ < UserDefined)
@@ -141,6 +146,11 @@ const UserColumn& ColumnType::userColumn() const
 void ColumnType::setUserColumnIndex(int userColumnIndex)
 {
 	userColumnIndex_ = userColumnIndex;
+}
+
+int ColumnType::getUserColumnIndex() const
+{
+	return userColumnIndex_;
 }
 
 const QVector<ColumnType>& ColumnType::list()

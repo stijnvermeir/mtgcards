@@ -255,7 +255,16 @@ int DeckTableModel::getRowIndex(const int dataRowIndex) const
 
 int DeckTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	return GetColumns().indexOf(column);
+	const auto& columns = GetColumns();
+	auto it = std::find_if(columns.begin(), columns.end(), [&column](const mtg::ColumnType& c)
+	{
+		return c.value() == column.value() && c.getUserColumnIndex() == column.getUserColumnIndex();
+	});
+	if (it != columns.end())
+	{
+		return it - columns.begin();
+	}
+	return -1;
 }
 
 mtg::ColumnType DeckTableModel::columnIndexToType(const int columnIndex) const
