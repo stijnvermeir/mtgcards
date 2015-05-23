@@ -15,7 +15,7 @@ class DeckWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit DeckWindow(QWidget *parent = 0);
+	explicit DeckWindow(QWidget* parent = 0);
 	virtual ~DeckWindow();
 
 	void reload();
@@ -50,20 +50,20 @@ public slots:
 
 private slots:
 	void selectedCardChangedSlot();
+	void closeDeck(int);
 	void currentTabChangedSlot(int);
 	void actionNewDeck();
-	void closeDeck(int);
 	void actionOpenDeck();
 	void actionSaveDeck();
 	void actionSaveDeckAs();
-	void deckEdited();
 	void actionAdvancedFilter();
 	void actionAddToCollection();
 	void actionRemoveFromCollection();
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
 	void actionToggleDeckActive(bool);
-	void headerStateChangedSlot(const QString& headerState);
 	void createProxies();
+	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
+	void headerStateChangedSlot(const QString& headerState);
 };

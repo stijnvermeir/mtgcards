@@ -6,7 +6,7 @@
 #include <QGraphicsPixmapItem>
 #include <QDebug>
 
-CardWindow::CardWindow(QWidget *parent)
+CardWindow::CardWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui_()
 	, scene_()

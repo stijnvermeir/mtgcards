@@ -1,17 +1,14 @@
 #include "magiccolumntype.h"
+
 #include "usercolumn.h"
 #include "settings.h"
 
-#include <array>
-#include <algorithm>
-
-using namespace std;
 using namespace mtg;
 
 namespace {
 
-const array<QString, ColumnType::COUNT> NAMES =
-{{
+const QVector<QString> NAMES =
+{
 	"Set",
 	"SetCode",
 	"SetGathererCode",
@@ -43,10 +40,10 @@ const array<QString, ColumnType::COUNT> NAMES =
 	"Used",
 	"Sideboard",
 	"UserDefined"
-}};
+};
 
-const array<QString, ColumnType::COUNT> DISPLAY_NAMES =
-{{
+const QVector<QString> DISPLAY_NAMES =
+{
 	"Set Name",
 	"Set",
 	"Set Gatherer Code",
@@ -78,15 +75,9 @@ const array<QString, ColumnType::COUNT> DISPLAY_NAMES =
 	"Used",
 	"SB",
 	"User Defined"
-}};
+};
 
 } // namespace
-
-ColumnType::ColumnType()
-	: value_(UNKNOWN)
-	, userColumnIndex_(-1)
-{
-}
 
 ColumnType::ColumnType(const type_t value)
 	: value_(value)
@@ -98,16 +89,16 @@ ColumnType::ColumnType(const QString& stringValue)
 	: value_(UNKNOWN)
 	, userColumnIndex_(-1)
 {
-	auto it = find(NAMES.begin(), NAMES.end(), stringValue);
-	if (it != NAMES.end())
+	int index = NAMES.indexOf(stringValue);
+	if (index != -1)
 	{
-		value_ = static_cast<type_t>(it - NAMES.begin());
+		value_ = static_cast<type_t>(index);
 	}
 }
 
 ColumnType::operator QString () const
 {
-	if (value_ >= 0 && value_ < COUNT)
+	if (value_ >= 0 && value_ < NAMES.size())
 	{
 		return NAMES[value_];
 	}

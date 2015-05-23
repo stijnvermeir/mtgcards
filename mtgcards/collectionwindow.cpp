@@ -33,7 +33,7 @@ private:
 
 } // namespace
 
-CollectionWindow::CollectionWindow(QWidget *parent)
+CollectionWindow::CollectionWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui_()
 	, collectionTableModel_()
@@ -127,7 +127,7 @@ void CollectionWindow::closeEvent(QCloseEvent* event)
 
 bool CollectionWindow::event(QEvent* event)
 {
-	if (event->type() == QEvent::WindowActivate /*|| event->type() == QEvent::Enter*/)
+	if (event->type() == QEvent::WindowActivate)
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}
@@ -197,10 +197,10 @@ void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
 	{
 		int rowIndex = ui_.collectionTbl_->currentIndex().row();
 		auto currentQuantity = collectionTableModel_.getQuantity(dataRowIndex);
-		if (currentQuantity > 0)
+		if (currentQuantity >= 0)
 		{
 			collectionTableModel_.setQuantity(dataRowIndex, currentQuantity - 1);
-			if (currentQuantity == 1) // last one removed --> row removed
+			if (currentQuantity == 0) // last one removed --> row removed
 			{
 				if (rowIndex > 0) // check if it's not the top row
 				{

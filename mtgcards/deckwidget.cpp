@@ -28,7 +28,7 @@ private:
 
 } // namespace
 
-DeckWidget::DeckWidget(const QString& filename, QWidget *parent)
+DeckWidget::DeckWidget(const QString& filename, QWidget* parent)
 	: QWidget(parent)
 	, ui_()
 	, deckTableModel_(filename)

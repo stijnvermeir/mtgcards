@@ -49,8 +49,7 @@ public:
 		UNKNOWN = -1
 	};
 
-	ColumnType();
-	ColumnType(const type_t value);
+	ColumnType(const type_t value = UNKNOWN);
 	ColumnType(const QString& stringValue);
 
 	operator QString () const;

@@ -8,8 +8,6 @@
 #include <QVariantList>
 #include <QJsonDocument>
 
-using namespace std;
-
 struct Settings::Pimpl
 {
 	QString appDataDir_;

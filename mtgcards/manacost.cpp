@@ -6,16 +6,14 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
+#include <QMap>
+#include <QPair>
 #include <QDebug>
-
-#include <map>
-
-using namespace std;
 
 namespace
 {
 
-const map<QString, pair<QChar, QString>> simpleSymbolMap =
+const QMap<QString, QPair<QChar, QString>> simpleSymbolMap =
 {
 	{"W",  {'w', "white"}},
 	{"U",  {'u', "blue"}},
@@ -53,13 +51,13 @@ QString convertSimpleSymbol(const QString& symbol)
 {
 	QString result = "<span class='symbol'>";
 	result += "<span class='border'>O</span>";
-	result += QString("<span class='%1'>o</span>").arg(simpleSymbolMap.at(symbol).second);
-	result += QString("<span class='text'>%1</span>").arg(simpleSymbolMap.at(symbol).first);
+	result += QString("<span class='%1'>o</span>").arg(simpleSymbolMap[symbol].second);
+	result += QString("<span class='text'>%1</span>").arg(simpleSymbolMap[symbol].first);
 	result += "</span>";
 	return result;
 }
 
-const map<QChar, QString> phyrexianSymbolMap =
+const QMap<QChar, QString> phyrexianSymbolMap =
 {
 	{'W', "darkwhite"},
 	{'U', "darkblue"},
@@ -72,7 +70,7 @@ QString convertPhyrexianSymbol(const QChar& symbol)
 {
 	QString result = "<span class='symbol'>";
 	result += "<span class='border'>C</span>";
-	result += "<span class='" + phyrexianSymbolMap.at(symbol) + "'>c</span>";
+	result += "<span class='" + phyrexianSymbolMap[symbol] + "'>c</span>";
 	result += "<span class='text'>P</span>";
 	result += "</span>";
 	return result;
@@ -85,7 +83,7 @@ struct CompositeSymbolInfo
 	QString color;
 };
 
-const map<QChar, CompositeSymbolInfo> compositeSymbolMap =
+const QMap<QChar, CompositeSymbolInfo> compositeSymbolMap =
 {
 	{'W', {"W",     "a", "white"}},
 	{'U', {"U",     "d", "blue"}},
@@ -107,15 +105,15 @@ QString convertCompositeSymbol(const QChar& upper, const QChar& lower)
 {
 	QString result = "<span class='symbol'>";
 	result += "<span class='border'>C</span>";
-	result += QString("<span class='%1'>[</span>").arg(compositeSymbolMap.at(upper).color);
-	result += QString("<span class='text'>%1</span>").arg(compositeSymbolMap.at(upper).upperChar);
-	result += QString("<span class='%1'>/</span>").arg(compositeSymbolMap.at(lower).color);
-	result += QString("<span class='text'>%1</span>").arg(compositeSymbolMap.at(lower).lowerChar);
+	result += QString("<span class='%1'>[</span>").arg(compositeSymbolMap[upper].color);
+	result += QString("<span class='text'>%1</span>").arg(compositeSymbolMap[upper].upperChar);
+	result += QString("<span class='%1'>/</span>").arg(compositeSymbolMap[lower].color);
+	result += QString("<span class='text'>%1</span>").arg(compositeSymbolMap[lower].lowerChar);
 	result += "</span>";
 	return result;
 }
 
-const map<QChar, pair<QChar, QString>> halfSymbolMap =
+const QMap<QChar, QPair<QChar, QString>> halfSymbolMap =
 {
 	{'w', {'\'', "white"}},
 	{'u', {'=', "blue"}},
@@ -128,8 +126,8 @@ QString convertHalfSymbol(const QChar& symbol)
 {
 	QString result = "<span class='symbol'>";
 	result += "<span class='border'>|</span>";
-	result += QString("<span class='%1'>\\</span>").arg(halfSymbolMap.at(symbol).second);
-	result += QString("<span class='text'>%1</span>").arg(halfSymbolMap.at(symbol).first);
+	result += QString("<span class='%1'>\\</span>").arg(halfSymbolMap[symbol].second);
+	result += QString("<span class='text'>%1</span>").arg(halfSymbolMap[symbol].first);
 	result += "</span>";
 	return result;
 }
@@ -144,7 +142,7 @@ QString convertMillionSymbol()
 	return result;
 }
 
-map<QString, QString> tagToRichTextMap;
+QMap<QString, QString> tagToRichTextMap;
 void initializeTagToRichTextMap()
 {
 	// simple symbols
@@ -204,9 +202,9 @@ QString ManaCost::getRichText() const
 	}
 
 	QString copy = text_;
-	for (const auto& mapping : tagToRichTextMap)
+	for (auto it = tagToRichTextMap.begin(); it != tagToRichTextMap.end(); ++it)
 	{
-		copy.replace(mapping.first, mapping.second);
+		copy.replace(it.key(), it.value());
 		if (!copy.contains('{'))
 		{
 			// don't continue trying to replace if it doesn't make sense anymore

@@ -11,8 +11,6 @@
 #include <QProcess>
 #include <QDebug>
 
-using namespace std;
-
 namespace {
 
 class ShortcutsTableModel : public QAbstractTableModel
@@ -310,7 +308,7 @@ public:
 
 } // namespace
 
-OptionsDialog::OptionsDialog(QWidget *parent)
+OptionsDialog::OptionsDialog(QWidget* parent)
 	: QDialog(parent)
 	, ui_()
 	, poolReloadRequired_(false)

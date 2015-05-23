@@ -1,11 +1,10 @@
 #include "decktablemodel.h"
+
 #include "deckmanager.h"
 #include "settings.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
-
-using namespace std;
 
 namespace {
 

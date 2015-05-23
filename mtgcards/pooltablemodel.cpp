@@ -1,10 +1,9 @@
 #include "pooltablemodel.h"
+
 #include "magiccarddata.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
-
-using namespace std;
 
 namespace {
 
@@ -62,7 +61,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 
 	virtual int columnCount(const QModelIndex& = QModelIndex()) const
 	{
-		return static_cast<int>(POOLTABLE_COLUMNS.size());
+		return POOLTABLE_COLUMNS.size();
 	}
 
 	virtual QVariant data(const QModelIndex& index, int role) const
@@ -123,10 +122,5 @@ void PoolTableModel::reload()
 
 int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
-	auto it = find(POOLTABLE_COLUMNS.begin(), POOLTABLE_COLUMNS.end(), column);
-	if (it != POOLTABLE_COLUMNS.end())
-	{
-		return (it - POOLTABLE_COLUMNS.begin());
-	}
-	return -1;
+	return POOLTABLE_COLUMNS.indexOf(column);
 }

@@ -122,7 +122,7 @@ public:
 
 } // namespace
 
-FilterEditorDialog::FilterEditorDialog(QWidget *parent)
+FilterEditorDialog::FilterEditorDialog(QWidget* parent)
 	: QDialog(parent)
 	, ui_()
 	, model_()

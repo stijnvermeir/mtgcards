@@ -7,8 +7,6 @@
 #include <QAbstractTableModel>
 #include <QDebug>
 
-using namespace std;
-
 namespace {
 
 const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
@@ -151,7 +149,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 					int dataRowIndex = mtg::Collection::instance().getDataRowIndex(index.row());
 					if (GetColumns()[index.column()] == mtg::ColumnType::Quantity)
 					{
-						if (mtg::Collection::instance().getQuantity(dataRowIndex) != value.toInt() && value.toInt() > 0)
+						if (mtg::Collection::instance().getQuantity(dataRowIndex) != value.toInt() && value.toInt() >= 0)
 						{
 							mtg::Collection::instance().setQuantity(dataRowIndex, value.toInt());
 							mtg::Collection::instance().save();

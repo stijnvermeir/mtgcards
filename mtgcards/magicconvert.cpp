@@ -2,9 +2,6 @@
 
 #include "manacost.h"
 
-using namespace std;
-using namespace mtg;
-
 namespace mtg {
 
 QString toString(const QVariant& data)

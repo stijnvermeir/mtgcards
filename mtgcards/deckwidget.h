@@ -17,7 +17,7 @@ class DeckWidget : public QWidget
 	Q_OBJECT
 
 public:
-	explicit DeckWidget(const QString& filename, QWidget *parent = 0);
+	explicit DeckWidget(const QString& filename, QWidget* parent = 0);
 	~DeckWidget();
 
 	void reload();

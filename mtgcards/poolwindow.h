@@ -6,6 +6,7 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <QScopedPointer>
 
 class PoolWindow : public QMainWindow
 {
@@ -31,6 +32,7 @@ signals:
 private:
 	Ui::PoolWindow ui_;
 	PoolTableModel poolTableModel_;
+	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
 
 	virtual void closeEvent(QCloseEvent* event);

@@ -16,8 +16,6 @@
 #include <QProgressDialog>
 #include <QXmlStreamReader>
 
-using namespace std;
-
 namespace {
 
 void moveToCenterOfScreen(QDialog* dialog)

@@ -2,7 +2,6 @@
 
 #include"settings.h"
 
-#include <QVector>
 #include <QDir>
 #include <QDebug>
 
@@ -26,7 +25,6 @@ struct DeckManager::Pimpl
 
 	QSharedPointer<Deck> addDeck(const QString& id)
 	{
-		// qDebug() << "Adding " << id;
 		QSharedPointer<Deck> deck;
 		if (id.isEmpty())
 		{
@@ -47,7 +45,6 @@ struct DeckManager::Pimpl
 		{
 			if (deck->getId() == id)
 			{
-				// qDebug() << "Found deck with id " << id;
 				return deck;
 			}
 		}

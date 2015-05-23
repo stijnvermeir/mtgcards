@@ -13,7 +13,7 @@ class FilterEditorDialog : public QDialog
 	Q_OBJECT
 
 public:
-	explicit FilterEditorDialog(QWidget *parent = 0);
+	explicit FilterEditorDialog(QWidget* parent = 0);
 	~FilterEditorDialog();
 
 	void setFilterRootNode(const FilterNode::Ptr& rootNode);

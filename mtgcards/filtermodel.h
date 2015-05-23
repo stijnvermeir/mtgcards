@@ -20,7 +20,7 @@ public:
 	};
 
 	FilterModel(QObject* parent = 0);
-	~FilterModel();
+	virtual ~FilterModel();
 
 	virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
 	virtual QModelIndex parent(const QModelIndex& child) const;

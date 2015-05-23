@@ -9,7 +9,6 @@ TableView::TableView(QWidget* parent)
 	: QTableView(parent)
 	, searchString_()
 {
-
 }
 
 TableView::~TableView()

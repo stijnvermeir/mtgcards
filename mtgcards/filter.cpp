@@ -7,17 +7,15 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QMap>
 #include <QDebug>
-
-#include <array>
-#include <map>
 
 using namespace std;
 
 struct FilterFunctionManager::Pimpl
 {
-	map<QString, CreateFunc> createFunctions;
-	vector<QString> registeredFunctions;
+	QMap<QString, CreateFunc> createFunctions;
+	QVector<QString> registeredFunctions;
 
 	bool registerFilterFunction(const QString& id, const CreateFunc& createFunc)
 	{
@@ -37,7 +35,7 @@ struct FilterFunctionManager::Pimpl
 		auto it = createFunctions.find(id);
 		if (it != createFunctions.end())
 		{
-			return it->second();
+			return it.value()();
 		}
 		return FilterFunction::Ptr();
 	}
@@ -68,7 +66,7 @@ FilterFunction::Ptr FilterFunctionManager::createFromId(const QString& id) const
 	return pimpl_->createFromId(id);
 }
 
-const vector<QString>& FilterFunctionManager::getRegisteredFunctions() const
+const QVector<QString>& FilterFunctionManager::getRegisteredFunctions() const
 {
 	return pimpl_->registeredFunctions;
 }

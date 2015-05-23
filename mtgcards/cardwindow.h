@@ -12,7 +12,7 @@ class CardWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit CardWindow(QWidget *parent = 0);
+	explicit CardWindow(QWidget* parent = 0);
 	~CardWindow();
 
 signals:

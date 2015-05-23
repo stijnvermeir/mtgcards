@@ -19,7 +19,7 @@
 #include <QLabel>
 #include <QDebug>
 
-DeckWindow::DeckWindow(QWidget *parent)
+DeckWindow::DeckWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui_()
 	, headerState_()
@@ -29,8 +29,9 @@ DeckWindow::DeckWindow(QWidget *parent)
 	setWindowFlags(Qt::NoDropShadowWindowHint);
 	ui_.setupUi(this);
 
-	connect(ui_.actionNewDeck, SIGNAL(triggered()), this, SLOT(actionNewDeck()));
 	connect(ui_.tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeDeck(int)));
+	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
+	connect(ui_.actionNewDeck, SIGNAL(triggered()), this, SLOT(actionNewDeck()));
 	connect(ui_.actionOpenDeck, SIGNAL(triggered()), this, SLOT(actionOpenDeck()));
 	connect(ui_.actionSaveDeck, SIGNAL(triggered()), this, SLOT(actionSaveDeck()));
 	connect(ui_.actionSaveDeckAs, SIGNAL(triggered()), this, SLOT(actionSaveDeckAs()));
@@ -39,7 +40,6 @@ DeckWindow::DeckWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
-	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 
@@ -155,7 +155,7 @@ void DeckWindow::closeEvent(QCloseEvent* event)
 
 bool DeckWindow::event(QEvent* event)
 {
-	if (event->type() == QEvent::WindowActivate /*|| event->type() == QEvent::Enter*/)
+	if (event->type() == QEvent::WindowActivate)
 	{
 		selectedCardChangedSlot();
 	}
@@ -199,8 +199,8 @@ void DeckWindow::updateStatusBar()
 	}
 	else
 	{
-		ui_.actionToggleDeckActive->setChecked(false);
 		ui_.statusBar->clearMessage();
+		ui_.actionToggleDeckActive->setChecked(false);
 	}
 }
 
@@ -310,6 +310,11 @@ void DeckWindow::selectedCardChangedSlot()
 	}
 }
 
+void DeckWindow::closeDeck(int index)
+{
+	destroyDeckWidget(static_cast<DeckWidget*>(ui_.tabWidget->widget(index)));
+}
+
 void DeckWindow::currentTabChangedSlot(int)
 {
 	selectedCardChangedSlot();
@@ -330,11 +335,6 @@ void DeckWindow::actionNewDeck()
 	createDeckWidget();
 }
 
-void DeckWindow::closeDeck(int index)
-{
-	destroyDeckWidget(static_cast<DeckWidget*>(ui_.tabWidget->widget(index)));
-}
-
 void DeckWindow::actionOpenDeck()
 {
 	auto filename = QFileDialog::getOpenFileName(this, "Open Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
@@ -352,17 +352,6 @@ void DeckWindow::actionSaveDeck()
 void DeckWindow::actionSaveDeckAs()
 {
 	saveDeck(static_cast<DeckWidget*>(ui_.tabWidget->currentWidget()), true);
-}
-
-void DeckWindow::deckEdited()
-{
-	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
-	if (deckWidget && deckWidget->deck().hasUnsavedChanges())
-	{
-		QString tabText = deckWidget->deck().getDisplayName() + "*";
-		ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
-	}
-	updateStatusBar();
 }
 
 void DeckWindow::actionAdvancedFilter()
@@ -429,21 +418,6 @@ void DeckWindow::actionToggleDeckActive(bool active)
 	}
 }
 
-void DeckWindow::headerStateChangedSlot(const QString& headerState)
-{
-	headerState_ = headerState;
-	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
-	{
-		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
-		if (deckWidget && deckWidget != ui_.tabWidget->currentWidget())
-		{
-			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
-			deckWidget->setHeaderState(headerState_);
-			connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
-		}
-	}
-}
-
 void DeckWindow::createProxies()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
@@ -498,7 +472,33 @@ void DeckWindow::createProxies()
 	}
 }
 
+void DeckWindow::deckEdited()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget && deckWidget->deck().hasUnsavedChanges())
+	{
+		QString tabText = deckWidget->deck().getDisplayName() + "*";
+		ui_.tabWidget->setTabText(ui_.tabWidget->indexOf(deckWidget), tabText);
+	}
+	updateStatusBar();
+}
+
 void DeckWindow::handleOpenDeckRequest(const QString& deckId)
 {
 	createDeckWidget(deckId);
+}
+
+void DeckWindow::headerStateChangedSlot(const QString& headerState)
+{
+	headerState_ = headerState;
+	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
+	{
+		DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->widget(tabIndex));
+		if (deckWidget && deckWidget != ui_.tabWidget->currentWidget())
+		{
+			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
+			deckWidget->setHeaderState(headerState_);
+			connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
+		}
+	}
 }

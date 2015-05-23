@@ -7,8 +7,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QWidget>
+#include <QScopedPointer>
 
-#include <vector>
 #include <memory>
 #include <functional>
 
@@ -40,11 +40,11 @@ public:
 
 	bool registerFilterFunction(const QString& id, const CreateFunc& createFunc);
 	FilterFunction::Ptr createFromId(const QString& id) const;
-	const std::vector<QString>& getRegisteredFunctions() const;
+	const QVector<QString>& getRegisteredFunctions() const;
 
 private:
 	struct Pimpl;
-	std::unique_ptr<Pimpl> pimpl_;
+	QScopedPointer<Pimpl> pimpl_;
 };
 
 struct Filter

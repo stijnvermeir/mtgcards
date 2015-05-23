@@ -1,21 +1,16 @@
 #include "filters/comparetype.h"
 
-#include <array>
-#include <algorithm>
-
-using namespace std;
-
 namespace {
 
-const array<QString, CompareType::COUNT> STRING_VALUES =
-{{
+const QVector<QString> STRING_VALUES =
+{
 	"=",
 	"≠",
 	">",
 	"≥",
 	"<",
 	"≤"
-}};
+};
 
 } // namespace
 
@@ -27,10 +22,10 @@ CompareType::CompareType(const type_t value)
 CompareType::CompareType(const QString& stringValue)
 	: value_(Equals)
 {
-	auto it = find(STRING_VALUES.begin(), STRING_VALUES.end(), stringValue);
-	if (it != STRING_VALUES.end())
+	int index = STRING_VALUES.indexOf(stringValue);
+	if (index != -1)
 	{
-		value_ = static_cast<type_t>(it - STRING_VALUES.begin());
+		value_ = static_cast<type_t>(index);
 	}
 }
 

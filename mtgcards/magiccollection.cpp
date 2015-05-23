@@ -8,9 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVector>
 #include <QDebug>
-
-#include <vector>
 
 using namespace std;
 using namespace mtg;
@@ -30,7 +29,7 @@ struct Collection::Pimpl
 			, used(0)
 			, userData() {}
 	};
-	vector<Row> data_;
+	QVector<Row> data_;
 
 	Pimpl()
 		: data_()
@@ -94,7 +93,7 @@ struct Collection::Pimpl
 
 	int getNumRows() const
 	{
-		return static_cast<int>(data_.size());
+		return data_.size();
 	}
 
 	int getNumCards() const
@@ -144,59 +143,83 @@ struct Collection::Pimpl
 		return -1;
 	}
 
-	int getRowIndex(const int dataRowIndex) const
+	const Row* findRow(const int dataRowIndex) const
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row)
+			{ return row.rowIndexInData == dataRowIndex; });
+
 		if (it != data_.end())
 		{
-			return it - data_.begin();
+			return it;
+		}
+		return nullptr;
+	}
+
+	Row* findRow(const int dataRowIndex)
+	{
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row)
+			{ return row.rowIndexInData == dataRowIndex; });
+
+		if (it != data_.end())
+		{
+			return it;
+		}
+		return nullptr;
+	}
+
+	int getRowIndex(const int dataRowIndex) const
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			return row - data_.begin();
 		}
 		return -1;
 	}
 
 	int getQuantity(const int dataRowIndex) const
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
-			return it->quantity.toInt();
+			return row->quantity.toInt();
 		}
 		return 0;
 	}
 
 	void setQuantity(const int dataRowIndex, const int newQuantity)
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
-			if (newQuantity > 0)
+			if (newQuantity >= 0)
 			{
-				it->quantity = newQuantity;
+				row->quantity = newQuantity;
 			}
 			else
 			{
-				data_.erase(it);
+				data_.erase(row);
 			}
 		}
 		else
 		{
-			if (newQuantity > 0)
+			if (newQuantity >= 0)
 			{
-				Row row;
-				row.rowIndexInData = dataRowIndex;
-				row.quantity = newQuantity;
-				row.used = DeckManager::instance().getUsedCount(row.rowIndexInData);
-				data_.push_back(row);
+				Row newRow;
+				newRow.rowIndexInData = dataRowIndex;
+				newRow.quantity = newQuantity;
+				newRow.used = DeckManager::instance().getUsedCount(newRow.rowIndexInData);
+				data_.push_back(newRow);
 			}
 		}
 	}
 
 	void setUsedCount(const int dataRowIndex, const int usedCount)
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
-			it->used = usedCount;
+			row->used = usedCount;
 		}
 	}
 

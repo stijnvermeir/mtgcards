@@ -15,7 +15,7 @@ class CollectionWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit CollectionWindow(QWidget *parent = 0);
+	explicit CollectionWindow(QWidget* parent = 0);
 	virtual ~CollectionWindow();
 
 	void reload();

@@ -18,8 +18,7 @@ public:
 		COUNT
 	};
 
-	LayoutType();
-	LayoutType(const type_t value);
+	LayoutType(const type_t value = Normal);
 	LayoutType(const QString& stringValue);
 
 	operator QString () const;

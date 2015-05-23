@@ -15,11 +15,12 @@ PoolWindow::PoolWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
 	, poolTableModel_()
+	, itemDelegate_(new MagicItemDelegate())
 	, rootFilterNode_()
 {
 	setWindowFlags(Qt::NoDropShadowWindowHint);
 	ui_.setupUi(this);
-	ui_.poolTbl_->setItemDelegate(new MagicItemDelegate());
+	ui_.poolTbl_->setItemDelegate(itemDelegate_.data());
 	ui_.poolTbl_->setModel(&poolTableModel_);
 	ui_.poolTbl_->setSortingEnabled(true);
 	ui_.poolTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -100,7 +101,7 @@ void PoolWindow::closeEvent(QCloseEvent* event)
 
 bool PoolWindow::event(QEvent* event)
 {
-	if (event->type() == QEvent::WindowActivate /*|| event->type() == QEvent::Enter*/)
+	if (event->type() == QEvent::WindowActivate)
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}

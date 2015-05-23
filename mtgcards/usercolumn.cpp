@@ -4,30 +4,25 @@
 
 #include <QDateTime>
 
-#include <array>
-#include <algorithm>
-
-using namespace std;
-
 namespace {
 
-const array<QString, UserColumn::DataType::COUNT> NAMES =
-{{
+const QVector<QString> NAMES =
+{
 	"String",
 	"Number",
 	"Decimal",
 	"Bool",
 	"Time"
-}};
+};
 
-const array<QVariant, UserColumn::DataType::COUNT> EMPTY_VARIANTS =
-{{
+const QVector<QVariant> EMPTY_VARIANTS =
+{
 	QVariant(QVariant::String),
 	QVariant(QVariant::Int),
 	QVariant(QVariant::Double),
 	QVariant(QVariant::Bool),
 	QVariant(QVariant::DateTime)
-}};
+};
 
 } // namespace
 
@@ -39,10 +34,10 @@ UserColumn::DataType::DataType(const type_t value)
 UserColumn::DataType::DataType(const QString& stringValue)
 	: value_(String)
 {
-	auto it = find(NAMES.begin(), NAMES.end(), stringValue);
-	if (it != NAMES.end())
+	int index = NAMES.indexOf(stringValue);
+	if (index != -1)
 	{
-		value_ = static_cast<type_t>(it - NAMES.begin());
+		value_ = static_cast<type_t>(index);
 	}
 }
 

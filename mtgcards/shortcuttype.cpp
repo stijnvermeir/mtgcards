@@ -1,14 +1,9 @@
 #include "shortcuttype.h"
 
-#include <array>
-#include <algorithm>
-
-using namespace std;
-
 namespace {
 
-const array<QString, ShortcutType::COUNT> NAMES =
-{{
+const QVector<QString> NAMES =
+{
 	 "newfile",
 	 "openfile",
 	 "savefile",
@@ -21,10 +16,10 @@ const array<QString, ShortcutType::COUNT> NAMES =
 	 "addfiltergroup",
 	 "addfilternode",
 	 "removefilternode"
-}};
+};
 
-const array<QString, ShortcutType::COUNT> DESCRIPTIONS =
-{{
+const QVector<QString> DESCRIPTIONS =
+{
 	 "New File",
 	 "Open File",
 	 "Save File",
@@ -37,27 +32,27 @@ const array<QString, ShortcutType::COUNT> DESCRIPTIONS =
 	 "Add Filter Group",
 	 "Add Filter Node",
 	 "Remove Filter Node"
-}};
+};
 
-vector<QKeySequence> DEFAULT_KEY_SEQUENCES;
+QVector<QKeySequence> DEFAULT_KEY_SEQUENCES;
 void initDefaultKeySequences()
 {
 	static bool initialized = false;
 	if (!initialized)
 	{
 		DEFAULT_KEY_SEQUENCES.reserve(ShortcutType::COUNT);
-		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::New);
-		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::Open),
-		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::Save);
-		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::SaveAs);
-		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+F");
-		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL++");
-		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+-");
-		DEFAULT_KEY_SEQUENCES.emplace_back("+");
-		DEFAULT_KEY_SEQUENCES.emplace_back("-");
-		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+G");
-		DEFAULT_KEY_SEQUENCES.emplace_back("CTRL+F");
-		DEFAULT_KEY_SEQUENCES.emplace_back(QKeySequence::Delete);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::New);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Open),
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Save);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::SaveAs);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL++"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+-"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("+"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("-"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+G"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Delete);
 		initialized = true;
 	}
 }
@@ -79,13 +74,8 @@ ShortcutType::ShortcutType(const int value)
 }
 
 ShortcutType::ShortcutType(const QString& stringValue)
-	: value_(UNKNOWN)
+	: ShortcutType(NAMES.indexOf(stringValue))
 {
-	auto it = find(NAMES.begin(), NAMES.end(), stringValue);
-	if (it != NAMES.end())
-	{
-		value_ = static_cast<type_t>(it - NAMES.begin());
-	}
 }
 
 ShortcutType::operator QString () const

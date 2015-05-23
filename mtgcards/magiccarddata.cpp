@@ -13,17 +13,12 @@
 #include <QHash>
 #include <QDebug>
 
-#include <array>
-#include <vector>
-
-using namespace std;
 using namespace mtg;
 
 namespace {
 
-const size_t COLUMNS_SIZE = 27;
-const array<ColumnType, COLUMNS_SIZE> COLUMNS =
-{{
+const QVector<ColumnType> COLUMNS =
+{
 	ColumnType::Set,
 	ColumnType::SetCode,
 	ColumnType::SetGathererCode,
@@ -51,22 +46,21 @@ const array<ColumnType, COLUMNS_SIZE> COLUMNS =
 	ColumnType::Loyalty,
 	ColumnType::Layout,
 	ColumnType::ImageName
-}};
+};
 
-array<size_t, ColumnType::COUNT> generateColumnIndices()
+QVector<int> generateColumnIndices()
 {
-	array<size_t, ColumnType::COUNT> indices;
-	indices.fill(COLUMNS.max_size());
-	for (size_t i = 0; i < COLUMNS.size(); ++i)
+	QVector<int> indices(ColumnType::COUNT, -1);
+	for (int i = 0; i < COLUMNS.size(); ++i)
 	{
 		indices[COLUMNS[i]] = i;
 	}
 	return indices;
 }
 
-size_t columnToIndex(const ColumnType column)
+int columnToIndex(const ColumnType column)
 {
-	static const array<size_t, ColumnType::COUNT> COLUMN_INDICES = generateColumnIndices();
+	static const QVector<int> COLUMN_INDICES = generateColumnIndices();
 	return COLUMN_INDICES[column];
 }
 
@@ -120,21 +114,21 @@ QString removeAccents(QString s)
 
 struct CardData::Pimpl
 {
-	typedef array<QVariant, COLUMNS_SIZE> Row;
-	vector<Row> data;
-	QHash<QString, QHash<QString, int>> quickLookUpTable;
+	typedef QVector<QVariant> Row;
+	QVector<Row> data_;
+	QHash<QString, QHash<QString, int>> quickLookUpTable_;
 
 	Pimpl()
-		: data()
-		, quickLookUpTable()
+		: data_()
+		, quickLookUpTable_()
 	{
 		reload();
 	}
 
 	void reload()
 	{
-		data.clear();
-		quickLookUpTable.clear();
+		data_.clear();
+		quickLookUpTable_.clear();
 
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -147,8 +141,8 @@ struct CardData::Pimpl
 				numCards += set.toObject()["cards"].toArray().size();
 			}
 
-			data.reserve(numCards);
-			quickLookUpTable.reserve(numCards);
+			data_.reserve(numCards);
+			quickLookUpTable_.reserve(numCards);
 
 			for (const auto& s : obj)
 			{
@@ -177,7 +171,7 @@ struct CardData::Pimpl
 				for (const auto& c : set["cards"].toArray())
 				{
 					auto card = c.toObject();
-					Row r;
+					Row r(COLUMNS.size());
 					// set
 					r[columnToIndex(ColumnType::Set)] = setName;
 					r[columnToIndex(ColumnType::SetCode)] = setCode;
@@ -213,8 +207,8 @@ struct CardData::Pimpl
 					QString imageName = card["imageName"].toString();
 					r[columnToIndex(ColumnType::ImageName)] = imageName;
 
-					quickLookUpTable[setCode + cardName][imageName] = data.size();
-					data.push_back(r);
+					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
+					data_.push_back(r);
 				}
 			}
 		}
@@ -222,7 +216,7 @@ struct CardData::Pimpl
 
 	int getNumRows() const
 	{
-		return static_cast<int>(data.size());
+		return data_.size();
 	}
 
 	const QVariant& get(const int row, const ColumnType& column) const
@@ -230,23 +224,23 @@ struct CardData::Pimpl
 		if (row >= 0 && row < getNumRows())
 		{
 			auto index = columnToIndex(column);
-			if (index < COLUMNS.max_size())
+			if (index < COLUMNS.size())
 			{
-				return data.at(row)[index];
+				return data_[row][index];
 			}
 		}
 		static const QVariant EMPTY;
 		return EMPTY;
 	}
 
-	int findRow(const std::vector<std::pair<ColumnType, QVariant>>& criteria) const
+	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const
 	{
 		auto isMatch = [&criteria](const Row& row)
 		{
 			for (const auto& criterium : criteria)
 			{
 				auto columnIndex = columnToIndex(criterium.first);
-				if (columnIndex < COLUMNS.max_size())
+				if (columnIndex < COLUMNS.size())
 				{
 					if (row[columnIndex] != criterium.second)
 					{
@@ -257,11 +251,11 @@ struct CardData::Pimpl
 			return true;
 		};
 
-		for (size_t rowIndex = 0; rowIndex < data.size(); ++rowIndex)
+		for (int rowIndex = 0; rowIndex < data_.size(); ++rowIndex)
 		{
-			if (isMatch(data[rowIndex]))
+			if (isMatch(data_[rowIndex]))
 			{
-				return static_cast<int>(rowIndex);
+				return rowIndex;
 			}
 		}
 		return -1;
@@ -270,9 +264,9 @@ struct CardData::Pimpl
 	int findRowFast(const QString& set, const QString& name, const QString& imageName) const
 	{
 		QString key = set + name;
-		if (quickLookUpTable.contains(key))
+		if (quickLookUpTable_.contains(key))
 		{
-			const QHash<QString, int> secondary = quickLookUpTable[key];
+			const QHash<QString, int> secondary = quickLookUpTable_[key];
 			if (imageName.isEmpty())
 			{
 				return secondary.begin().value();
@@ -322,7 +316,7 @@ const QVariant& CardData::get(const int row, const ColumnType& column) const
 	return pimpl_->get(row, column);
 }
 
-int CardData::findRow(const vector<pair<ColumnType, QVariant>>& criteria) const
+int CardData::findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const
 {
 	return pimpl_->findRow(criteria);
 }
@@ -332,7 +326,7 @@ int CardData::findRowFast(const QString& set, const QString& name, const QString
 	return pimpl_->findRowFast(set, name, imageName);
 }
 
-std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
+QPair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 {
 	QStringList list;
 	mtg::LayoutType layout = mtg::LayoutType::Normal;
@@ -408,5 +402,5 @@ std::pair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 			addToListLambda(imageFile);
 		}
 	}
-	return make_pair(layout, list);
+	return qMakePair(layout, list);
 }

@@ -6,6 +6,8 @@
 #include <QVariant>
 #include <QStringList>
 #include <QScopedPointer>
+#include <QPair>
+#include <QVector>
 
 namespace mtg {
 
@@ -17,9 +19,9 @@ public:
 	void reload();
 	int getNumRows() const;
 	const QVariant& get(const int row, const ColumnType& column) const;
-	int findRow(const std::vector<std::pair<ColumnType, QVariant>>& criteria) const;
+	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
-	std::pair<mtg::LayoutType, QStringList> getPictureFilenames(int row);
+	QPair<mtg::LayoutType, QStringList> getPictureFilenames(int row);
 
 private:
 	CardData();

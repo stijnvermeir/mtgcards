@@ -8,9 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVector>
 #include <QDebug>
-
-#include <vector>
 
 using namespace std;
 using namespace mtg;
@@ -30,7 +29,7 @@ struct Deck::Pimpl
 			, sideboard(0)
 			, userData() {}
 	};
-	vector<Row> data_;
+	QVector<Row> data_;
 	bool active_;
 	QString filename_;
 	QString id_;
@@ -117,7 +116,7 @@ struct Deck::Pimpl
 
 	int getNumRows() const
 	{
-		return static_cast<int>(data_.size());
+		return data_.size();
 	}
 
 	int getNumCards() const
@@ -146,7 +145,7 @@ struct Deck::Pimpl
 			if (column == ColumnType::UserDefined)
 			{
 				auto it = entry.userData.find(column.userColumn().name_);
-				if (it != entry.userData.cend())
+				if (it != entry.userData.end())
 				{
 					return it.value();
 				}
@@ -167,49 +166,73 @@ struct Deck::Pimpl
 		return -1;
 	}
 
-	int getRowIndex(const int dataRowIndex) const
+	const Row* findRow(const int dataRowIndex) const
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row)
+			{ return row.rowIndexInData == dataRowIndex; });
+
 		if (it != data_.end())
 		{
-			return it - data_.begin();
+			return it;
+		}
+		return nullptr;
+	}
+
+	Row* findRow(const int dataRowIndex)
+	{
+		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row)
+			{ return row.rowIndexInData == dataRowIndex; });
+
+		if (it != data_.end())
+		{
+			return it;
+		}
+		return nullptr;
+	}
+
+	int getRowIndex(const int dataRowIndex) const
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			return row - data_.begin();
 		}
 		return -1;
 	}
 
 	int getQuantity(const int dataRowIndex) const
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
-			return it->quantity.toInt();
+			return row->quantity.toInt();
 		}
 		return 0;
 	}
 
 	void setQuantity(const int dataRowIndex, const int newQuantity)
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
 			if (newQuantity >= 0)
 			{
-				it->quantity = newQuantity;
+				row->quantity = newQuantity;
 			}
 			else
 			{
-				data_.erase(it);
+				data_.erase(row);
 			}
 		}
 		else
 		{
 			if (newQuantity >= 0)
 			{
-				Row row;
-				row.rowIndexInData = dataRowIndex;
-				row.quantity = newQuantity;
-				row.sideboard = 0;
-				data_.push_back(row);
+				Row newRow;
+				newRow.rowIndexInData = dataRowIndex;
+				newRow.quantity = newQuantity;
+				newRow.sideboard = 0;
+				data_.push_back(newRow);
 			}
 		}
 		hasUnsavedChanges_ = true;
@@ -217,33 +240,33 @@ struct Deck::Pimpl
 
 	int getSideboard(const int dataRowIndex) const
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
-			return it->sideboard.toInt();
+			return row->sideboard.toInt();
 		}
 		return 0;
 	}
 
 	void setSideboard(const int dataRowIndex, const int newSideboard)
 	{
-		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row) { return row.rowIndexInData == dataRowIndex; });
-		if (it != data_.end())
+		auto row = findRow(dataRowIndex);
+		if (row)
 		{
 			if (newSideboard >= 0)
 			{
-				it->sideboard = newSideboard;
+				row->sideboard = newSideboard;
 			}
 		}
 		else
 		{
 			if (newSideboard >= 0)
 			{
-				Row row;
-				row.rowIndexInData = dataRowIndex;
-				row.quantity = 0;
-				row.sideboard = newSideboard;
-				data_.push_back(row);
+				Row newRow;
+				newRow.rowIndexInData = dataRowIndex;
+				newRow.quantity = 0;
+				newRow.sideboard = newSideboard;
+				data_.push_back(newRow);
 			}
 		}
 		hasUnsavedChanges_ = true;
