@@ -42,8 +42,15 @@
     <addaction name="actionImportCollection"/>
     <addaction name="actionImportDecks"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionOnlineManual"/>
+   </widget>
    <addaction name="menuWindow"/>
    <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionCardWindow">
    <property name="checkable">
@@ -107,6 +114,11 @@
   <action name="actionImportDecks">
    <property name="text">
     <string>Import decks ...</string>
+   </property>
+  </action>
+  <action name="actionOnlineManual">
+   <property name="text">
+    <string>Online Manual</string>
    </property>
   </action>
  </widget>

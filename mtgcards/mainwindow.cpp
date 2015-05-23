@@ -15,6 +15,7 @@
 #include <QDesktopWidget>
 #include <QProgressDialog>
 #include <QXmlStreamReader>
+#include <QDesktopServices>
 
 namespace {
 
@@ -63,6 +64,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// import decks
 	connect(ui_.actionImportDecks, SIGNAL(triggered()), this, SLOT(importDecks()));
+
+	// online manual
+	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
 
 	// card preview
 	connect(&poolWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
@@ -417,4 +421,9 @@ void MainWindow::importDecks()
 			QMessageBox::information(0, "Success", "All decks were imported successfully.");
 		}
 	}
+}
+
+void MainWindow::onlineManual()
+{
+	QDesktopServices::openUrl(QUrl("https://github.com/stijnvermeir/mtgcards/blob/master/manual.md"));
 }
