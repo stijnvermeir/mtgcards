@@ -5,9 +5,11 @@
 #-------------------------------------------------
 
 CONFIG += c++11
-QT       += core gui svg
+QT += core gui widgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+equals(QT_MAJOR_VERSION, 5) {
+greaterThan(QT_MINOR_VERSION, 2): QT += svg
+}
 
 TARGET = MTGCards
 ICON = resources/icons/mtgcards.icns
