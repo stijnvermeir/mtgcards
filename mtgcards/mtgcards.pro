@@ -7,8 +7,8 @@
 CONFIG += c++11
 QT += core gui widgets
 
-equals(QT_MAJOR_VERSION, 5) {
-greaterThan(QT_MINOR_VERSION, 2): QT += svg
+macx {
+	QT += svg
 }
 
 TARGET = MTGCards
