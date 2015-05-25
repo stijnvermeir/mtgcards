@@ -14,6 +14,13 @@ namespace mtg {
 class CardData
 {
 public:
+	struct PictureInfo
+	{
+		mtg::LayoutType layout;
+		QStringList filenames;
+		QStringList missing;
+	};
+
 	static CardData& instance();
 
 	void reload();
@@ -21,7 +28,7 @@ public:
 	const QVariant& get(const int row, const ColumnType& column) const;
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
-	QPair<mtg::LayoutType, QStringList> getPictureFilenames(int row);
+	PictureInfo getPictureInfo(int row);
 
 private:
 	CardData();

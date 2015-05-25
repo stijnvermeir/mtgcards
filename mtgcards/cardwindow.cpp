@@ -44,11 +44,20 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 
 void CardWindow::changeCardPicture(int row)
 {
-	auto rv = mtg::CardData::instance().getPictureFilenames(row);
-	imageFiles_ = rv.second;
-	layoutType_ = rv.first;
+	auto picInfo = mtg::CardData::instance().getPictureInfo(row);
+	imageFiles_ = picInfo.filenames;
+	layoutType_ = picInfo.layout;
 	secondViewActive_ = false;
-	setCardPicture(imageFiles_.front(), 0);
+	if (picInfo.missing.empty())
+	{
+		ui_.stackedWidget->setCurrentIndex(0);
+		setCardPicture(imageFiles_.front(), 0);
+	}
+	else
+	{
+		ui_.stackedWidget->setCurrentIndex(1);
+		ui_.label->setText(QString("Could not find:\n") + picInfo.missing.join("\n"));
+	}
 }
 
 void CardWindow::switchPicture()

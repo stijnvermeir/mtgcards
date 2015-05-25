@@ -292,7 +292,17 @@ CardData::CardData()
 #if 0 // test card picture availability
 	for (int i = 0; i < getNumRows(); ++i)
 	{
-		getPictureFilenames(i);
+		if (!get(i, mtg::ColumnType::OnlineOnly).toBool() && get(i, mtg::ColumnType::SetType).toString() != "promo")
+		{
+			auto picInfo = getPictureInfo(i);
+			if (!picInfo.missing.empty())
+			{
+				for (const auto& missing : picInfo.missing)
+				{
+					qDebug() << missing;
+				}
+			}
+		}
 	}
 #endif
 }
@@ -326,16 +336,16 @@ int CardData::findRowFast(const QString& set, const QString& name, const QString
 	return pimpl_->findRowFast(set, name, imageName);
 }
 
-QPair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
+CardData::PictureInfo CardData::getPictureInfo(int row)
 {
-	QStringList list;
-	mtg::LayoutType layout = mtg::LayoutType::Normal;
+	PictureInfo picInfo;
+	picInfo.layout = mtg::LayoutType::Normal;
 	if (row < getNumRows())
 	{
 		QString prefix = Settings::instance().getCardImageDir();
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
-		auto addToListLambda = [&list, &notFoundImageFile, &imageName](QString imageFile)
+		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName](QString imageFile)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -344,41 +354,41 @@ QPair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 			imageFile = removeAccents(imageFile);
 			if (QFileInfo::exists(imageFile))
 			{
-				list.push_back(imageFile);
+				picInfo.filenames << imageFile;
 			}
 			else
 			{
 				// try with a version tag
 				QFileInfo fileInfo(imageFile);
 				QString imageNameCopy = imageName;
-				imageNameCopy.replace(fileInfo.baseName().toLower(), "");
+				imageNameCopy.replace(fileInfo.completeBaseName().toLower(), "");
 				QString suffix = "";
 				if (!imageNameCopy.isEmpty())
 				{
 					suffix = QString(" [") + imageNameCopy + "]";
 				}
-				imageFile = fileInfo.path() + QDir::separator() + fileInfo.baseName() + suffix + ".jpg";
+				imageFile = fileInfo.path() + QDir::separator() + fileInfo.completeBaseName() + suffix + ".jpg";
 				if (QFileInfo::exists(imageFile))
 				{
-					list.push_back(imageFile);
+					picInfo.filenames << imageFile;
 				}
 				else
 				{
-					// qWarning() << imageFile << " not found! (" << imageName << ")";
-					list.push_back(notFoundImageFile);
+					picInfo.filenames << notFoundImageFile;
+					picInfo.missing << imageFile;
 				}
 			}
 		};
 		prefix += QDir::separator() + get(row, mtg::ColumnType::Set).toString().replace(":", "") + QDir::separator();
-		layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
-		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Flip)
+		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
+		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
 			addToListLambda(imageFile);
 		}
 		else
-		if (layout == mtg::LayoutType::DoubleFaced)
+		if (picInfo.layout == mtg::LayoutType::DoubleFaced)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			for (auto& n : names)
@@ -388,7 +398,7 @@ QPair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 			}
 		}
 		else
-		if (layout == mtg::LayoutType::Token)
+		if (picInfo.layout == mtg::LayoutType::Token)
 		{
 			prefix += QString("token") + QDir::separator();
 			QString tokenName = get(row, mtg::ColumnType::ImageName).toString();
@@ -402,5 +412,5 @@ QPair<mtg::LayoutType, QStringList> CardData::getPictureFilenames(int row)
 			addToListLambda(imageFile);
 		}
 	}
-	return qMakePair(layout, list);
+	return picInfo;
 }

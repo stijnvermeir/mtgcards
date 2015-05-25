@@ -160,12 +160,14 @@ void CollectionWindow::updateStatusBar()
 	QTextStream stream(&message);
 	stream << " Showing " << collectionTableModel_.rowCount() << " of " << mtg::Collection::instance().getNumRows() << " cards";
 	int numCopies = 0;
+	int numUsed = 0;
 	for (int i = 0; i < collectionTableModel_.rowCount(); ++i)
 	{
 		QModelIndex sourceIndex = collectionTableModel_.mapToSource(collectionTableModel_.index(i, 0));
 		numCopies += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Quantity).toInt();
+		numUsed += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Used).toInt();
 	}
-	stream << " (" << numCopies << " copies)";
+	stream << " (" << numCopies << " copies, " << numUsed << " used)";
 	ui_.statusBar->showMessage(message);
 }
 

@@ -231,6 +231,22 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	connect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
+
+	const Deck& deck = deckWidget->deck();
+	int diff = 0;
+	for (int i = 0; i < deck.getNumRows(); ++i)
+	{
+		int dataRowIndex = deck.getDataRowIndex(i);
+		int qtyInDeck = deck.getQuantity(dataRowIndex);
+		int qtyInColl = mtg::Collection::instance().getQuantity(dataRowIndex);
+		if (qtyInColl < qtyInDeck)
+		{
+			qDebug() << deck.get(i, mtg::ColumnType::SetCode).toString() << deck.get(i, mtg::ColumnType::Name).toString() << qtyInDeck << " in deck, " << qtyInColl << " in collection";
+			diff += (qtyInDeck - qtyInColl);
+		}
+	}
+	qDebug() << diff << " cards in decks that are not in collection";
+
 	return deckWidget;
 }
 
@@ -452,23 +468,45 @@ void DeckWindow::createProxies()
 			}
 		};
 
+		QStringList missing;
 		for (int index : indices)
 		{
 			auto quantity = deckWidget->deck().getQuantity(index);
-			auto pictureData = mtg::CardData::instance().getPictureFilenames(index);
-			for (int i = 0; i < quantity; ++i)
+			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index);
+			if (pictureInfo.missing.empty())
 			{
-				printCardLambda(pictureData.second.first());
-				if (pictureData.first == mtg::LayoutType::DoubleFaced)
+				for (int i = 0; i < quantity; ++i)
 				{
-					printCardLambda(pictureData.second.last());
+					printCardLambda(pictureInfo.filenames.first());
+					if (pictureInfo.layout == mtg::LayoutType::DoubleFaced)
+					{
+						printCardLambda(pictureInfo.filenames.last());
+					}
 				}
+			}
+			else
+			{
+				missing << pictureInfo.missing;
 			}
 		}
 
 		painter.end();
 
-		QMessageBox::information(this, "Success", "Proxy generation successful.");
+		if (missing.empty())
+		{
+			QMessageBox::information(this, "Success", "Proxy generation successful.");
+		}
+		else
+		{
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Issues");
+			msgBox.setText("Some card images could not be found and were skipped during proxy generation.");
+			msgBox.setInformativeText("See details to know which files are missing.");
+			msgBox.setDetailedText(missing.join("\n"));
+			msgBox.setStandardButtons(QMessageBox::Ok);
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
 	}
 }
 
