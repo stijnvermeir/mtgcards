@@ -39,6 +39,7 @@ const QVector<QString> NAMES =
 	"Quantity",
 	"Used",
 	"Sideboard",
+	"Owned",
 	"UserDefined"
 };
 
@@ -74,6 +75,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Qty",
 	"Used",
 	"SB",
+	"Owned",
 	"User Defined"
 };
 

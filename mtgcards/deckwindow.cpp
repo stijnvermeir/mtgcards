@@ -231,22 +231,6 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	connect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
-
-	const Deck& deck = deckWidget->deck();
-	int diff = 0;
-	for (int i = 0; i < deck.getNumRows(); ++i)
-	{
-		int dataRowIndex = deck.getDataRowIndex(i);
-		int qtyInDeck = deck.getQuantity(dataRowIndex);
-		int qtyInColl = mtg::Collection::instance().getQuantity(dataRowIndex);
-		if (qtyInColl < qtyInDeck)
-		{
-			qDebug() << deck.get(i, mtg::ColumnType::SetCode).toString() << deck.get(i, mtg::ColumnType::Name).toString() << qtyInDeck << " in deck, " << qtyInColl << " in collection";
-			diff += (qtyInDeck - qtyInColl);
-		}
-	}
-	qDebug() << diff << " cards in decks that are not in collection";
-
 	return deckWidget;
 }
 

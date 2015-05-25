@@ -43,6 +43,7 @@ public:
 		Quantity,
 		Used,
 		Sideboard,
+		Owned,
 		UserDefined,
 
 		COUNT,

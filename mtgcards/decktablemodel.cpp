@@ -1,6 +1,7 @@
 #include "decktablemodel.h"
 
 #include "deckmanager.h"
+#include "magiccollection.h"
 #include "settings.h"
 
 #include <QAbstractTableModel>
@@ -38,7 +39,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::Toughness,
 	mtg::ColumnType::Loyalty,
 	mtg::ColumnType::Layout,
-	mtg::ColumnType::ImageName
+	mtg::ColumnType::ImageName,
+	mtg::ColumnType::Owned
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -123,6 +125,11 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
+					if (GetColumns()[index.column()] == mtg::ColumnType::Owned)
+					{
+						int dataRowIndex = deck_->getDataRowIndex(index.row());
+						return mtg::Collection::instance().getQuantity(dataRowIndex);
+					}
 					const QVariant& ret = deck_->get(index.row(), GetColumns()[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
