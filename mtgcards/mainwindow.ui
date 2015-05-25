@@ -37,7 +37,6 @@
      <string>Tools</string>
     </property>
     <addaction name="actionOptions"/>
-    <addaction name="actionAbout"/>
     <addaction name="separator"/>
     <addaction name="actionImportCollection"/>
     <addaction name="actionImportDecks"/>
@@ -47,6 +46,9 @@
      <string>Help</string>
     </property>
     <addaction name="actionOnlineManual"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
    </widget>
    <addaction name="menuWindow"/>
    <addaction name="menuTools"/>
@@ -119,6 +121,11 @@
   <action name="actionOnlineManual">
    <property name="text">
     <string>Online Manual</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

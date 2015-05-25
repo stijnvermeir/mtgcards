@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// about
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
+	connect(ui_.actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	// import collection
 	connect(ui_.actionImportCollection, SIGNAL(triggered()), this, SLOT(importCollection()));
