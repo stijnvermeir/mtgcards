@@ -12,6 +12,7 @@ public:
 	void setFilterRootNode(const FilterNode::Ptr& node);
 
 	virtual int columnToIndex(const mtg::ColumnType& column) const = 0;
+	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const = 0;
 
 protected:
 	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;

@@ -1,7 +1,10 @@
 #include "magicsortfilterproxymodel.h"
+
 #include "manacost.h"
+#include "magiccarddata.h"
 
 #include <QDebug>
+#include <QUrl>
 
 #include <functional>
 
@@ -86,6 +89,14 @@ QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) con
 	if (d.canConvert<ManaCost>() && role == Qt::ToolTipRole)
 	{
 		return qvariant_cast<ManaCost>(d).getText();
+	}
+	if (index.column() == columnToIndex(mtg::ColumnType::Name) && role == Qt::ToolTipRole)
+	{
+		auto picInfo = mtg::CardData::instance().getPictureInfo(getDataRowIndex(index));
+		if (picInfo.missing.empty())
+		{
+			return QString("<img src=\"") + picInfo.filenames.front() + "\" />";
+		}
 	}
 	return d;
 }

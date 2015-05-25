@@ -20,7 +20,7 @@ public:
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 	const Deck& deck() const;
 
-	int getDataRowIndex(const QModelIndex& proxyIndex) const;
+	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	int getRowIndex(const int dataRowIndex) const;
 
 	virtual int columnToIndex(const mtg::ColumnType& column) const;

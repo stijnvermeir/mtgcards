@@ -132,3 +132,9 @@ int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const
 	}
 	return -1;
 }
+
+int PoolTableModel::getDataRowIndex(const QModelIndex& proxyIndex) const
+{
+	QModelIndex sourceIndex = mapToSource(proxyIndex);
+	return sourceIndex.row();
+}

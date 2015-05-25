@@ -262,6 +262,12 @@ int CollectionTableModel::columnToIndex(const mtg::ColumnType& column) const
 	return pimpl_->columnToIndex(column);
 }
 
+int CollectionTableModel::getDataRowIndex(const QModelIndex& proxyIndex) const
+{
+	QModelIndex sourceIndex = mapToSource(proxyIndex);
+	return mtg::Collection::instance().getDataRowIndex(sourceIndex.row());
+}
+
 mtg::ColumnType CollectionTableModel::columnIndexToType(const int columnIndex) const
 {
 	if (columnIndex >= 0 && columnIndex < sourceModel()->columnCount())

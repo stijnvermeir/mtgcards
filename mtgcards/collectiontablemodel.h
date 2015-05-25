@@ -17,6 +17,7 @@ public:
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
+	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	mtg::ColumnType columnIndexToType(const int columnIndex) const;
 
 	void updateUsedCount();
