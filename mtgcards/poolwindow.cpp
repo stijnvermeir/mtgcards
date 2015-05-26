@@ -186,3 +186,9 @@ void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 		ui_.poolTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
 	}
 }
+
+void PoolWindow::handleGlobalFilterChanged()
+{
+	poolTableModel_.setFilterRootNode(rootFilterNode_);
+	updateStatusBar();
+}

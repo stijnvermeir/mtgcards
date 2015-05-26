@@ -2,6 +2,7 @@
 
 #include "shortcuttype.h"
 #include "usercolumn.h"
+#include "filter.h"
 
 #include <QString>
 #include <QKeySequence>
@@ -35,6 +36,9 @@ public:
 
 	const QVector<UserColumn>& getUserColumns() const;
 	void setUserColumns(const QVector<UserColumn>& userColumns);
+
+	const FilterNode::Ptr& getGlobalFilter() const;
+	void setGlobalFilter(const FilterNode::Ptr& globalFilter);
 private:
 
 	struct Pimpl;

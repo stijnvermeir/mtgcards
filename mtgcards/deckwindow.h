@@ -66,4 +66,5 @@ private slots:
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);
+	void handleGlobalFilterChanged();
 };

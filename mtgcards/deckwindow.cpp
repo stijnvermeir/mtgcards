@@ -524,3 +524,16 @@ void DeckWindow::headerStateChangedSlot(const QString& headerState)
 		}
 	}
 }
+
+void DeckWindow::handleGlobalFilterChanged()
+{
+	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
+	{
+		QWidget* widget = ui_.tabWidget->widget(tabIndex);
+		if (widget)
+		{
+			static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+		}
+	}
+	updateStatusBar();
+}

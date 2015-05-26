@@ -49,4 +49,5 @@ private slots:
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
+	void handleGlobalFilterChanged();
 };

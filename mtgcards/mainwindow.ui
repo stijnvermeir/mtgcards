@@ -40,6 +40,8 @@
     <addaction name="separator"/>
     <addaction name="actionImportCollection"/>
     <addaction name="actionImportDecks"/>
+    <addaction name="separator"/>
+    <addaction name="actionGlobalFilter"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -126,6 +128,11 @@
   <action name="actionAboutQt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionGlobalFilter">
+   <property name="text">
+    <string>Global filter ...</string>
    </property>
   </action>
  </widget>

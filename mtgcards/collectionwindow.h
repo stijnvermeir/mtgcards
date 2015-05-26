@@ -57,4 +57,5 @@ private slots:
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 	void rowContextMenuRequested(const QPoint& pos);
 	void updateUsedCount();
+	void handleGlobalFilterChanged();
 };

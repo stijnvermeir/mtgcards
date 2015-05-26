@@ -313,3 +313,9 @@ void CollectionWindow::updateUsedCount()
 {
 	collectionTableModel_.updateUsedCount();
 }
+
+void CollectionWindow::handleGlobalFilterChanged()
+{
+	collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	updateStatusBar();
+}

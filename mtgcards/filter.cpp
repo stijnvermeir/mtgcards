@@ -248,8 +248,11 @@ const vector<FilterNode::Ptr>& FilterNode::getChildren() const
 
 void FilterNode::addChild(Ptr& child)
 {
-	child->parent_ = shared_from_this();
-	children_.push_back(child);
+	if (child)
+	{
+		child->parent_ = shared_from_this();
+		children_.push_back(child);
+	}
 }
 
 void FilterNode::removeChild(Ptr& child)
@@ -257,6 +260,7 @@ void FilterNode::removeChild(Ptr& child)
 	auto it = std::find(children_.begin(), children_.end(), child);
 	if (it != children_.end())
 	{
+		(*it)->parent_.reset();
 		children_.erase(it);
 	}
 }

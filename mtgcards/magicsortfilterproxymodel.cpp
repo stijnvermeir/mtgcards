@@ -2,6 +2,7 @@
 
 #include "manacost.h"
 #include "magiccarddata.h"
+#include "settings.h"
 
 #include <QDebug>
 #include <QUrl>
@@ -84,7 +85,16 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 		return false;
 	};
 
-	return applyFilter(filterRootNode_);
+	FilterNode::Ptr local = filterRootNode_;
+	FilterNode::Ptr global = Settings::instance().getGlobalFilter();
+	FilterNode::Ptr node = FilterNode::create();
+	node->setType(FilterNode::Type::AND);
+	node->addChild(local);
+	node->addChild(global);
+	bool rv = applyFilter(node);
+	node->removeChild(global);
+	node->removeChild(local);
+	return rv;
 }
 
 QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) const

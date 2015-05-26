@@ -18,6 +18,7 @@ struct Settings::Pimpl
 	QString cardImageDir_;
 	QMap<ShortcutType, QKeySequence> shortcuts_;
 	QVector<UserColumn> userColumns_;
+	FilterNode::Ptr globalFilter_;
 
 	Pimpl()
 	{
@@ -51,6 +52,11 @@ struct Settings::Pimpl
 				userColumn.name_ = userColumnMap["name"].toString();
 				userColumns_.push_back(userColumn);
 			}
+		}
+
+		if (settings.contains("globalfilter"))
+		{
+			globalFilter_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("globalfilter").toString().toUtf8()));
 		}
 	}
 
@@ -113,6 +119,21 @@ struct Settings::Pimpl
 			userColumnList.push_back(userColumnMap);
 		}
 		settings.setValue("options/usercolumns", QString(QJsonDocument::fromVariant(userColumnList).toJson()));
+	}
+
+	void setGlobalFilter(const FilterNode::Ptr& globalFilter)
+	{
+		globalFilter_ = globalFilter;
+
+		QSettings settings;
+		if (globalFilter_)
+		{
+			settings.setValue("globalfilter", QString(globalFilter_->toJson().toJson(QJsonDocument::Compact)));
+		}
+		else
+		{
+			settings.remove("globalfilter");
+		}
 	}
 };
 
@@ -194,4 +215,14 @@ const QVector<UserColumn>& Settings::getUserColumns() const
 void Settings::setUserColumns(const QVector<UserColumn>& userColumns)
 {
 	pimpl_->setUserColumns(userColumns);
+}
+
+const FilterNode::Ptr& Settings::getGlobalFilter() const
+{
+	return pimpl_->globalFilter_;
+}
+
+void Settings::setGlobalFilter(const FilterNode::Ptr& globalFilter)
+{
+	pimpl_->setGlobalFilter(globalFilter);
 }

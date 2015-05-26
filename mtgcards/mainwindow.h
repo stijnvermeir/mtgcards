@@ -20,6 +20,9 @@ public:
 	void saveSettings();
 	bool toQuitOrNotToQuit(QEvent* event);
 
+signals:
+	void globalFilterChanged();
+
 private:
 	Ui::MainWindow ui_;
 	PoolWindow poolWindow_;
@@ -38,5 +41,6 @@ private slots:
 	void aboutActionClicked();
 	void importCollection();
 	void importDecks();
+	void globalFilter();
 	void onlineManual();
 };

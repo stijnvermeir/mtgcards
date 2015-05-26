@@ -6,6 +6,7 @@
 #include "magiccollection.h"
 #include "deckmanager.h"
 #include "settings.h"
+#include "filtereditordialog.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -65,6 +66,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// import decks
 	connect(ui_.actionImportDecks, SIGNAL(triggered()), this, SLOT(importDecks()));
+
+	// global filter
+	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
+	connect(this, SIGNAL(globalFilterChanged()), &poolWindow_, SLOT(handleGlobalFilterChanged()));
+	connect(this, SIGNAL(globalFilterChanged()), &collectionWindow_, SLOT(handleGlobalFilterChanged()));
+	connect(this, SIGNAL(globalFilterChanged()), &deckWindow_, SLOT(handleGlobalFilterChanged()));
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
@@ -422,6 +429,16 @@ void MainWindow::importDecks()
 			QMessageBox::information(0, "Success", "All decks were imported successfully.");
 		}
 	}
+}
+
+void MainWindow::globalFilter()
+{
+	FilterEditorDialog editor;
+	editor.setWindowTitle("Global filter");
+	editor.setFilterRootNode(Settings::instance().getGlobalFilter());
+	editor.exec();
+	Settings::instance().setGlobalFilter(editor.getFilterRootNode());
+	emit globalFilterChanged();
 }
 
 void MainWindow::onlineManual()
