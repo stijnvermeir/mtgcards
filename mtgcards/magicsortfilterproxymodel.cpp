@@ -75,6 +75,10 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 				return true;
 			}
 			QVariant d = sourceModel()->data(sourceModel()->index(source_row, columnIndex));
+			if (node->getFilter().negate)
+			{
+				return !(node->getFilter().function->apply(d));
+			}
 			return node->getFilter().function->apply(d);
 		}
 		return false;

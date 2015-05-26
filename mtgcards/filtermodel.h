@@ -13,6 +13,7 @@ public:
 		{
 			Type,
 			Field,
+			Negate,
 			Filter,
 
 			COUNT

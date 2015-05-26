@@ -51,10 +51,12 @@ struct Filter
 {
 	mtg::ColumnType column;
 	FilterFunction::Ptr function;
+	bool negate;
 
 	Filter()
 		: column(mtg::ColumnType::Name)
-		, function(nullptr) {}
+		, function(nullptr)
+		, negate(false) {}
 };
 
 class FilterNode : public std::enable_shared_from_this<FilterNode>

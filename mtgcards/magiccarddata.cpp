@@ -45,7 +45,8 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::Toughness,
 	ColumnType::Loyalty,
 	ColumnType::Layout,
-	ColumnType::ImageName
+	ColumnType::ImageName,
+	ColumnType::IsLatestPrint
 };
 
 QVector<int> generateColumnIndices()
@@ -144,6 +145,8 @@ struct CardData::Pimpl
 			data_.reserve(numCards);
 			quickLookUpTable_.reserve(numCards);
 
+			QHash<QString, QPair<int, QDate>> latestPrintHash;
+
 			for (const auto& s : obj)
 			{
 				auto set = s.toObject();
@@ -168,6 +171,7 @@ struct CardData::Pimpl
 					onlineOnly = set["onlineOnly"].toBool();
 				}
 				auto border = set["border"].toString();
+				bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
 				for (const auto& c : set["cards"].toArray())
 				{
 					auto card = c.toObject();
@@ -206,6 +210,28 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();
 					QString imageName = card["imageName"].toString();
 					r[columnToIndex(ColumnType::ImageName)] = imageName;
+					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
+
+					if (includeInLatestPrintCheck)
+					{
+						if (latestPrintHash.contains(cardName))
+						{
+							auto& entry = latestPrintHash[cardName];
+							if (setReleaseDate > entry.second)
+							{
+								// unflag the previous latest
+								data_[entry.first][columnToIndex(ColumnType::IsLatestPrint)] = false;
+								entry.first = data_.size();
+								entry.second = setReleaseDate;
+								r[columnToIndex(ColumnType::IsLatestPrint)] = true;
+							}
+						}
+						else
+						{
+							latestPrintHash[cardName] = qMakePair(data_.size(), setReleaseDate);
+							r[columnToIndex(ColumnType::IsLatestPrint)] = true;
+						}
+					}
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
 					data_.push_back(r);

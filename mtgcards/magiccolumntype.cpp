@@ -40,6 +40,7 @@ const QVector<QString> NAMES =
 	"Used",
 	"Sideboard",
 	"Owned",
+	"IsLatestPrint",
 	"UserDefined"
 };
 
@@ -76,6 +77,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Used",
 	"SB",
 	"Owned",
+	"Is latest print",
 	"User Defined"
 };
 

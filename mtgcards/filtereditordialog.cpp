@@ -44,6 +44,22 @@ public:
 					return columnCbx;
 				}
 				else
+				if (index.column() == FilterModel::Column::Negate)
+				{
+					QComboBox* negateCbx = new QComboBox(parent);
+					negateCbx->addItem("");
+					negateCbx->addItem("not");
+					if (filterNode->getFilter().negate)
+					{
+						negateCbx->setCurrentText("not");
+					}
+					else
+					{
+						negateCbx->setCurrentText("");
+					}
+					return negateCbx;
+				}
+				else
 				if (index.column() == FilterModel::Column::Filter)
 				{
 					if (filterNode->getFilter().function)
@@ -93,6 +109,12 @@ public:
 						filterNode->getFilter().column = qvariant_cast<mtg::ColumnType>(columnCbx->currentData());
 					}
 					else
+					if (index.column() == FilterModel::Column::Negate)
+					{
+						QComboBox* negateCbx = static_cast<QComboBox*>(editor);
+						filterNode->getFilter().negate = (negateCbx->currentText() == "not");
+					}
+					else
 					if (index.column() == FilterModel::Column::Filter)
 					{
 						if (filterNode->getFilter().function)
@@ -133,7 +155,8 @@ FilterEditorDialog::FilterEditorDialog(QWidget* parent)
 	ui_.treeView->setItemDelegate(itemDelegate_.data());
 	ui_.treeView->header()->resizeSection(FilterModel::Column::Type, 150);
 	ui_.treeView->header()->resizeSection(FilterModel::Column::Field, 150);
-	ui_.treeView->header()->resizeSection(FilterModel::Column::Filter, 300);
+	ui_.treeView->header()->resizeSection(FilterModel::Column::Negate, 50);
+	ui_.treeView->header()->resizeSection(FilterModel::Column::Filter, 250);
 
 	connect(ui_.newBtn, SIGNAL(released()), this, SLOT(newBtnClicked()));
 	connect(ui_.openBtn, SIGNAL(released()), this, SLOT(openBtnClicked()));

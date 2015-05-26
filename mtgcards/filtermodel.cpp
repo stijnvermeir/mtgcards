@@ -121,6 +121,11 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 			}
 		}
 		else
+		if (index.column() == Column::Negate)
+		{
+			return (node->getFilter().negate ? "not" : "");
+		}
+		else
 		if (index.column() == Column::Filter)
 		{
 			if (node->getType() == FilterNode::Type::LEAF && node->getFilter().function)
@@ -152,6 +157,11 @@ QVariant FilterModel::headerData(int section, Qt::Orientation orientation, int r
 	if (section == Column::Field)
 	{
 		return "Field";
+	}
+
+	if (section == Column::Negate)
+	{
+		return "Negate";
 	}
 
 	if (section == Column::Filter)

@@ -44,6 +44,7 @@ public:
 		Used,
 		Sideboard,
 		Owned,
+		IsLatestPrint,
 		UserDefined,
 
 		COUNT,

@@ -193,6 +193,10 @@ void FilterNode::loadFromJson(const QJsonDocument& doc)
 			{
 				node.filter_.function->fromJson(filterFunction);
 			}
+			if (filterObj.contains("negate"))
+			{
+				node.filter_.negate = filterObj["negate"].toBool();
+			}
 		}
 	};
 	jsonToNode(doc.object(), *this);
@@ -219,6 +223,7 @@ QJsonDocument FilterNode::toJson() const
 				filterObject["userColumn"] = node.getFilter().column.userColumn().name_;
 			}
 			filterObject["function"] = node.getFilter().function->toJson();
+			filterObject["negate"] = node.getFilter().negate;
 			o["filter"] = filterObject;
 		}
 		return o;
