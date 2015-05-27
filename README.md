@@ -43,9 +43,28 @@ If the application doesn't start, you probably need to install vcredist_x64.exe 
 
 Tested on Windows 7. Probably works on newer versions as well.
 
-### Linux
+### Ubuntu 14.04 64-bit and derivatives
 
-No binaries available (yet). I will try to create a package on Launchpad for this. For now, see how to build from source.
+Install my public repo: (you only need to do this once)
+
+	# install the public gpg key from packagecloud.io
+	curl https://packagecloud.io/gpg.key | sudo apt-key add -
+	
+	# make it possible for apt to fetch packages over https
+	sudo apt-get install -y apt-transport-https
+	
+	# add the repo
+	HOSTNAME=`hostname -f` && curl "https://packagecloud.io/install/repositories/stijnv/public/config_file.list?os=ubuntu&dist=trusty&name=${HOSTNAME}" | sudo tee /etc/apt/sources.list.d/stijnvpublic.list
+	
+Install or update MTGCards
+	
+	# update apt
+	sudo apt-get update
+	
+	# finally install mtgcards package
+	sudo apt-get install mtgcards
+	
+This package install the executable in /usr/local/bin, so you can start it by just typing `mtgcards`.
 
 Build from source
 -----------------
