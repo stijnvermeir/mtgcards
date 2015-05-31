@@ -48,6 +48,7 @@ DeckWidget::DeckWidget(const QString& filename, QWidget* parent)
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(&deckTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+	connect(this, SIGNAL(fontChanged()), ui_.tableView, SLOT(handleFontChanged()));
 
 	connect(ui_.tableView, SIGNAL(searchStringChanged(QString)), this, SIGNAL(searchStringChanged(QString)));
 }

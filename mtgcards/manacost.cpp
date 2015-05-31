@@ -1,5 +1,7 @@
 #include "manacost.h"
 
+#include "settings.h"
+
 #include <QFontDatabase>
 #include <QFile>
 #include <QTextStream>
@@ -215,7 +217,14 @@ QString ManaCost::getRichText() const
 	{
 		qWarning() << "Found an unreplaced bracket: " << text_;
 	}
-	return prefix + copy + suffix;
+	QString rt;
+	QTextStream str(&rt);
+	str << prefix;
+	str << "<span style=\"font-size: " << Settings::instance().getFont().pointSize() + 10 << "pt\" >";
+	str << copy;
+	str << "</span>";
+	str << suffix;
+	return rt;
 }
 
 bool operator<(const ManaCost& lhs, const ManaCost& rhs)

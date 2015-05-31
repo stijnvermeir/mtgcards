@@ -29,6 +29,7 @@ signals:
 	void addToDeck(QVector<int>);
 	void removeFromDeck(QVector<int>);
 	void requestOpenDeck(QString);
+	void fontChanged();
 
 private:
 	Ui::CollectionWindow ui_;

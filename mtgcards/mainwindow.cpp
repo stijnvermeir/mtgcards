@@ -218,6 +218,9 @@ void MainWindow::optionsActionClicked()
 {
 	OptionsDialog options(this);
 	moveToCenterOfScreen(&options);
+	connect(&options, SIGNAL(fontChanged()), &poolWindow_, SIGNAL(fontChanged()));
+	connect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
+	connect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
 	if (options.isPoolReloadRequired())
 	{
@@ -228,6 +231,9 @@ void MainWindow::optionsActionClicked()
 	poolWindow_.updateShortcuts();
 	collectionWindow_.updateShortcuts();
 	deckWindow_.updateShortcuts();
+	disconnect(&options, SIGNAL(fontChanged()), &poolWindow_, SIGNAL(fontChanged()));
+	disconnect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
+	disconnect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 }
 
 void MainWindow::aboutActionClicked()

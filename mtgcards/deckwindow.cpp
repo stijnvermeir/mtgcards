@@ -229,6 +229,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
 	connect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
+	connect(this, SIGNAL(fontChanged()), deckWidget, SIGNAL(fontChanged()));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
 	return deckWidget;
@@ -261,6 +262,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 			disconnect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
 			disconnect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
+			disconnect(this, SIGNAL(fontChanged()), deckWidget, SIGNAL(fontChanged()));
 			deckWidget->close();
 			ui_.tabWidget->removeTab(index);
 			delete deckWidget;

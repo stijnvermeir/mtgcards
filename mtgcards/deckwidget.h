@@ -36,6 +36,7 @@ signals:
 	void deckEdited();
 	void headerStateChangedSignal(QString);
 	void searchStringChanged(const QString& searchString);
+	void fontChanged();
 
 private:
 	Ui::DeckWidget ui_;

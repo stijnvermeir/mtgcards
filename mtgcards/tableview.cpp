@@ -1,14 +1,17 @@
 #include "tableview.h"
 
 #include "magicconvert.h"
+#include "settings.h"
 
 #include <QKeyEvent>
+#include <QHeaderView>
 #include <QDebug>
 
 TableView::TableView(QWidget* parent)
 	: QTableView(parent)
 	, searchString_()
 {
+	handleFontChanged();
 }
 
 TableView::~TableView()
@@ -135,4 +138,11 @@ bool TableView::findNextHit(const QModelIndex& startFrom, const bool searchDown)
 void TableView::currentChangedSlot()
 {
 	resetKeyboardSearch();
+}
+
+void TableView::handleFontChanged()
+{
+	setFont(Settings::instance().getFont());
+	verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	verticalHeader()->setDefaultSectionSize(Settings::instance().getFont().pointSize() + 15);
 }

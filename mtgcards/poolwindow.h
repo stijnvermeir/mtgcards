@@ -28,6 +28,7 @@ signals:
 	void removeFromCollection(QVector<int>);
 	void addToDeck(QVector<int>);
 	void removeFromDeck(QVector<int>);
+	void fontChanged();
 
 private:
 	Ui::PoolWindow ui_;

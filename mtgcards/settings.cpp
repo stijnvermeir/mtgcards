@@ -19,6 +19,7 @@ struct Settings::Pimpl
 	QMap<ShortcutType, QKeySequence> shortcuts_;
 	QVector<UserColumn> userColumns_;
 	FilterNode::Ptr globalFilter_;
+	QFont font_;
 
 	Pimpl()
 	{
@@ -57,6 +58,11 @@ struct Settings::Pimpl
 		if (settings.contains("globalfilter"))
 		{
 			globalFilter_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("globalfilter").toString().toUtf8()));
+		}
+
+		if (settings.contains("options/font"))
+		{
+			font_.fromString(settings.value("options/font").toString());
 		}
 	}
 
@@ -134,6 +140,14 @@ struct Settings::Pimpl
 		{
 			settings.remove("globalfilter");
 		}
+	}
+
+	void setFont(const QFont& font)
+	{
+		font_ = font;
+
+		QSettings settings;
+		settings.setValue("options/font", font_.toString());
 	}
 };
 
@@ -225,4 +239,14 @@ const FilterNode::Ptr& Settings::getGlobalFilter() const
 void Settings::setGlobalFilter(const FilterNode::Ptr& globalFilter)
 {
 	pimpl_->setGlobalFilter(globalFilter);
+}
+
+const QFont& Settings::getFont() const
+{
+	return pimpl_->font_;
+}
+
+void Settings::setFont(const QFont& font)
+{
+	pimpl_->setFont(font);
 }

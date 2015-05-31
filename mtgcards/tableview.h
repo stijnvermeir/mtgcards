@@ -26,4 +26,5 @@ private:
 
 private slots:
 	void currentChangedSlot();
+	void handleFontChanged();
 };

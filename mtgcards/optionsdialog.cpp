@@ -9,6 +9,7 @@
 #include <QKeySequenceEdit>
 #include <QComboBox>
 #include <QProcess>
+#include <QFontDialog>
 #include <QDebug>
 
 namespace {
@@ -346,6 +347,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	// misc tab
 	connect(ui_.browseAppDataDirBtn, SIGNAL(clicked()), this, SLOT(browseAppDataDirBtnClicked()));
 	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
+	connect(ui_.fontBtn, SIGNAL(clicked()), this, SLOT(changeFontBtnClicked()));
+	ui_.fontTxt->setText(Settings::instance().getFont().toString());
 }
 
 OptionsDialog::~OptionsDialog()
@@ -467,5 +470,17 @@ void OptionsDialog::browseAppDataDirBtnClicked()
 	{
 		ui_.appDataDirTxt->setText(dir);
 		Settings::instance().setAppDataDir(dir);
+	}
+}
+
+void OptionsDialog::changeFontBtnClicked()
+{
+	bool ok;
+	QFont f = QFontDialog::getFont(&ok, Settings::instance().getFont(), this);
+	if (ok)
+	{
+		Settings::instance().setFont(f);
+		ui_.fontTxt->setText(Settings::instance().getFont().toString());
+		emit fontChanged();
 	}
 }

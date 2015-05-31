@@ -9,6 +9,7 @@
 #include <QVector>
 #include <QScopedPointer>
 #include <QMap>
+#include <QFont>
 
 class Settings
 {
@@ -39,6 +40,9 @@ public:
 
 	const FilterNode::Ptr& getGlobalFilter() const;
 	void setGlobalFilter(const FilterNode::Ptr& globalFilter);
+
+	const QFont& getFont() const;
+	void setFont(const QFont& font);
 private:
 
 	struct Pimpl;

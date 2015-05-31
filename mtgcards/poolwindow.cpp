@@ -33,6 +33,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(this, SIGNAL(fontChanged()), ui_.poolTbl_, SLOT(handleFontChanged()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
 	QLabel* permanentStatusBarLabel = new QLabel();

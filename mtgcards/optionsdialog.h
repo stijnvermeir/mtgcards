@@ -17,6 +17,9 @@ public:
 
 	bool isPoolReloadRequired() const;
 
+signals:
+	void fontChanged();
+
 private:
 	Ui::OptionsDialog ui_;
 	bool poolReloadRequired_;
@@ -42,4 +45,5 @@ private slots:
 
 	// misc tab
 	void browseAppDataDirBtnClicked();
+	void changeFontBtnClicked();
 };

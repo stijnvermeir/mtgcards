@@ -59,6 +59,7 @@ CollectionWindow::CollectionWindow(QWidget* parent)
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
+	connect(this, SIGNAL(fontChanged()), ui_.collectionTbl_, SLOT(handleFontChanged()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
 	QLabel* permanentStatusBarLabel = new QLabel();

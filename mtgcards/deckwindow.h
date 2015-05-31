@@ -30,6 +30,7 @@ signals:
 	void selectedCardChanged(int);
 	void addToCollection(QVector<int>);
 	void removeFromCollection(QVector<int>);
+	void fontChanged();
 
 private:
 	Ui::DeckWindow ui_;
