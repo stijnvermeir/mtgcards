@@ -26,6 +26,7 @@ Download binaries
 
 ### Mac OS X
 
+[MTGCards-0.1.1.dmg](http://download.stijn-v.be/MTGCards-0.1.1.dmg)
 [MTGCards-0.1.0.dmg](http://download.stijn-v.be/MTGCards-0.1.0.dmg)
 
 Once you download the .dmg file, open it and drag and drop MTGCards.app to your Applications.
