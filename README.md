@@ -37,6 +37,7 @@ Tested on Mac OS X 10.9.5. Probably works on Yosemite too.
 
 ### Windows 64-bit
 
+* [MTGCards-0.1.1-64bit-installer.exe](http://download.stijn-v.be/MTGCards-0.1.1-64bit-installer.exe)
 * [MTGCards-0.1.0-64bit-installer.exe](http://download.stijn-v.be/MTGCards-0.1.0-64bit-installer.exe)
 * [vcredist_x64.exe](http://download.stijn-v.be/vcredist_x64.exe)
 
