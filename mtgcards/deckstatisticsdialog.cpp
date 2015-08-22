@@ -18,12 +18,19 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 
 	const int MAX_CMC = 10;
 	const QString COLORS = "WUBRG";
+	const QStringList TYPES = {"Creature", "Artifact", "Enchantment", "Instant", "Sorcery", "Land", "Planeswalker"};
+	const QStringList COLOR_NAMES = {"White", "Blue", "Black", "Red", "Green", "Multicolor", "Colorless"};
+	const QStringList RARITIES = {"Common", "Uncommon", "Rare", "Mythic Rare", "Special", "Basic Land"};
 
 	int maxCmcCount = 0;
 	QVector<int> cmcCount(MAX_CMC + 1, 0);
 	QMap<QChar, int> cost;
 	int totalCards = 0;
 	int totalCmc = 0;
+
+	QMap<QString, int> typeCount;
+	QMap<QString, int> colorCount;
+	QMap<QString, int> rarityCount;
 
 	auto lambda = [&](const Deck& deck, int row, int dataRow)
 	{
@@ -51,8 +58,41 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	};
 	for (int row = 0; row < deck.getNumRows(); ++row)
 	{
+		QStringList types = deck.get(row, mtg::ColumnType::Types).toStringList();
+		int q = deck.get(row, mtg::ColumnType::Quantity).toInt();
+		for (const QString& type : TYPES)
+		{
+			if (types.contains(type))
+			{
+				typeCount[type] += q;
+			}
+		}
+
+		QStringList colors = deck.get(row, mtg::ColumnType::Color).toStringList();
+		if (colors.empty())
+		{
+			colorCount["Colorless"] += q;
+		}
+		else
+		if (colors.size() > 1)
+		{
+			colorCount["Multicolor"] += q;
+		}
+		else
+		{
+			for (const QString& color : COLOR_NAMES)
+			{
+				if (colors.contains(color))
+				{
+					colorCount[color] += q;
+				}
+			}
+		}
+
+		rarityCount[deck.get(row, mtg::ColumnType::Rarity).toString()] += q;
+
 		// if not a land
-		if (!deck.get(row, mtg::ColumnType::Types).toStringList().contains("Land"))
+		if (!types.contains("Land"))
 		{
 			if (deck.get(row, mtg::ColumnType::Layout).toString() == "split")
 			{
@@ -67,6 +107,47 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			{
 				lambda(deck, row, deck.getDataRowIndex(row));
 			}
+		}
+	}
+
+	int numCards = deck.getNumCards();
+
+	// colors
+	{
+		for (const QString& color : COLOR_NAMES)
+		{
+			QString text;
+			QTextStream str(&text);
+			str.setRealNumberPrecision(2);
+			str.setRealNumberNotation(QTextStream::FixedNotation);
+			str << color << ": " << colorCount[color] << " (" << 100.0 * colorCount[color] / numCards << " %)";
+			ui_.colorsLayout->addWidget(new QLabel(text, this));
+		}
+	}
+
+	// card types
+	{
+		for (const QString& type : TYPES)
+		{
+			QString text;
+			QTextStream str(&text);
+			str.setRealNumberPrecision(2);
+			str.setRealNumberNotation(QTextStream::FixedNotation);
+			str << type << ": " << typeCount[type] << " (" << 100.0 * typeCount[type] / numCards << " %)";
+			ui_.cardTypesLayout->addWidget(new QLabel(text, this));
+		}
+	}
+
+	// rarity
+	{
+		for (const QString& rarity : RARITIES)
+		{
+			QString text;
+			QTextStream str(&text);
+			str.setRealNumberPrecision(2);
+			str.setRealNumberNotation(QTextStream::FixedNotation);
+			str << rarity << ": " << rarityCount[rarity] << " (" << 100.0 * rarityCount[rarity] / numCards << " %)";
+			ui_.rarityLayout->addWidget(new QLabel(text, this));
 		}
 	}
 

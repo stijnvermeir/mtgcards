@@ -227,6 +227,10 @@
    </property>
   </action>
   <action name="actionStats">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/chart59.svg</normaloff>:/resources/icons/chart59.svg</iconset>
+   </property>
    <property name="text">
     <string>Stats</string>
    </property>

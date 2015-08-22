@@ -70,7 +70,23 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QVBoxLayout" name="colorsLayout"/>
+           <layout class="QVBoxLayout" name="colorsLayout">
+            <property name="spacing">
+             <number>-1</number>
+            </property>
+            <property name="leftMargin">
+             <number>5</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>5</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -94,7 +110,20 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QVBoxLayout" name="cardTypesLayout"/>
+           <layout class="QVBoxLayout" name="cardTypesLayout">
+            <property name="leftMargin">
+             <number>5</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>5</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -118,7 +147,20 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QVBoxLayout" name="rarityLayout"/>
+           <layout class="QVBoxLayout" name="rarityLayout">
+            <property name="leftMargin">
+             <number>5</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>5</number>
+            </property>
+            <property name="bottomMargin">
+             <number>5</number>
+            </property>
+           </layout>
           </item>
          </layout>
         </widget>
