@@ -90,6 +90,8 @@
    <addaction name="actionToggleDeckActive"/>
    <addaction name="separator"/>
    <addaction name="actionCreateProxies"/>
+   <addaction name="separator"/>
+   <addaction name="actionStats"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
@@ -222,6 +224,14 @@
    </property>
    <property name="toolTip">
     <string>Create proxies from selection</string>
+   </property>
+  </action>
+  <action name="actionStats">
+   <property name="text">
+    <string>Stats</string>
+   </property>
+   <property name="toolTip">
+    <string>Statistics</string>
    </property>
   </action>
  </widget>

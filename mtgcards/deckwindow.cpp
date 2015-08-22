@@ -7,6 +7,7 @@
 #include "filtereditordialog.h"
 #include "settings.h"
 #include "util.h"
+#include "deckstatisticsdialog.h"
 
 #include <QCloseEvent>
 #include <QSettings>
@@ -42,6 +43,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
+	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
 	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel_);
@@ -493,6 +495,16 @@ void DeckWindow::createProxies()
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.exec();
 		}
+	}
+}
+
+void DeckWindow::showStatistics()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		DeckStatisticsDialog dlg(deckWidget->deck(), this);
+		dlg.exec();
 	}
 }
 

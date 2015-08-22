@@ -52,7 +52,9 @@ SOURCES += main.cpp\
     usercolumn.cpp \
     filters/timefilterfunction.cpp \
     filters/comparetype.cpp \
-    filters/numberfilterfunction.cpp
+    filters/numberfilterfunction.cpp \
+    deckstatisticsdialog.cpp \
+    manacurvelinewidget.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -88,7 +90,9 @@ HEADERS  += mainwindow.h \
     usercolumn.h \
     filters/timefilterfunction.h \
     filters/comparetype.h \
-    filters/numberfilterfunction.h
+    filters/numberfilterfunction.h \
+    deckstatisticsdialog.h \
+    manacurvelinewidget.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
@@ -98,7 +102,9 @@ FORMS    += mainwindow.ui \
     deckwidget.ui \
     optionsdialog.ui \
     aboutdialog.ui \
-    filtereditordialog.ui
+    filtereditordialog.ui \
+    deckstatisticsdialog.ui \
+    manacurvelinewidget.ui
 
 RESOURCES += \
     mtgcards.qrc

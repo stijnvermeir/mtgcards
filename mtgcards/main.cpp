@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationName("stijnvsoftware");
 	QCoreApplication::setOrganizationDomain("stijn-v.be");
 	QCoreApplication::setApplicationName("MTGCards");
-	QCoreApplication::setApplicationVersion("0.1.1");
+	QCoreApplication::setApplicationVersion("0.1.2");
 	QGuiApplication::setQuitOnLastWindowClosed(false);
 
 	MyApplication a(argc, argv);

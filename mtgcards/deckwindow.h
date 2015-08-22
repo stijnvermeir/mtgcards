@@ -64,6 +64,7 @@ private slots:
 	void actionRemoveFromDeck();
 	void actionToggleDeckActive(bool);
 	void createProxies();
+	void showStatistics();
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);

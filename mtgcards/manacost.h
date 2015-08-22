@@ -30,6 +30,8 @@ public:
 
 	QString getRichText() const;
 
+	static QString replaceTagsWithSymbols(const QString& in, const int fontSizeInPt);
+
 private:
 	QString text_;
 	double cmc_;

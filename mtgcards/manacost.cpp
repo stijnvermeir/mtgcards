@@ -183,6 +183,11 @@ void initializeTagToRichTextMap()
 
 QString ManaCost::getRichText() const
 {
+	return replaceTagsWithSymbols(text_, Settings::instance().getFont().pointSize() + 10);
+}
+
+QString ManaCost::replaceTagsWithSymbols(const QString& in, const int fontSizeInPt)
+{
 	static bool loadStaticResources = true;
 	static QString prefix = "";
 	static QString suffix = "</body></html>";
@@ -192,10 +197,7 @@ QString ManaCost::getRichText() const
 		QFontDatabase::addApplicationFont(":/resources/fonts/MagicSymbols2013.ttf");
 
 		// load style sheet
-		QFile styleFile(":/resources/fonts/style.css");
-		styleFile.open(QFile::ReadOnly | QFile::Text);
-		QTextStream in(&styleFile);
-		prefix = "<html><style type=\"text/css\">" + in.readAll() + "</style><body>";
+		prefix = "<html><link rel=\"stylesheet\" type=\"text/css\" href=\":/resources/fonts/style.css\"/><body>";
 
 		// initialize map
 		initializeTagToRichTextMap();
@@ -203,10 +205,10 @@ QString ManaCost::getRichText() const
 		loadStaticResources = false;
 	}
 
-	QString copy = text_;
+	QString copy = in;
 	for (auto it = tagToRichTextMap.begin(); it != tagToRichTextMap.end(); ++it)
 	{
-		copy.replace(it.key(), it.value());
+		copy.replace(it.key(), QString("<span style=\"font-size: %1pt\">%2</span>").arg(fontSizeInPt).arg(it.value()));
 		if (!copy.contains('{'))
 		{
 			// don't continue trying to replace if it doesn't make sense anymore
@@ -215,14 +217,12 @@ QString ManaCost::getRichText() const
 	}
 	if (copy.contains('{'))
 	{
-		qWarning() << "Found an unreplaced bracket: " << text_;
+		qWarning() << "Found an unreplaced bracket: " << in;
 	}
 	QString rt;
 	QTextStream str(&rt);
 	str << prefix;
-	str << "<span style=\"font-size: " << Settings::instance().getFont().pointSize() + 10 << "pt\" >";
 	str << copy;
-	str << "</span>";
 	str << suffix;
 	return rt;
 }
