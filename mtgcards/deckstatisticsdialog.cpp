@@ -10,6 +10,15 @@
 #include <QLabel>
 #include <QDebug>
 
+namespace
+{
+#ifndef Q_OS_OSX
+const int MAGIC_SYMBOL_FONT_SIZE = 20;
+#else
+const int MAGIC_SYMBOL_FONT_SIZE = 24;
+#endif
+}
+
 DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	: QDialog(parent)
 	, ui_()
@@ -182,7 +191,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			{
 				str << " (" << (1.0 * cost[c] * 100 / total) << " %)";
 			}
-			QLabel* lbl = new QLabel(ManaCost::replaceTagsWithSymbols(text, 24), this);
+			QLabel* lbl = new QLabel(ManaCost::replaceTagsWithSymbols(text, MAGIC_SYMBOL_FONT_SIZE), this);
 			ui_.manaColorsLayout->addWidget(lbl);
 			ui_.manaColorsLayout->setAlignment(lbl, Qt::AlignHCenter);
 		}
@@ -195,7 +204,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 		int col = 0;
 		auto addWidgetLambda = [&](const QString& text)
 		{
-			ui_.manaBreakdownLayout->addWidget(new QLabel(ManaCost::replaceTagsWithSymbols(text, 24), this), row, col);
+			ui_.manaBreakdownLayout->addWidget(new QLabel(ManaCost::replaceTagsWithSymbols(text, MAGIC_SYMBOL_FONT_SIZE), this), row, col);
 			++row;
 			if (row >= MAX_ROWS)
 			{

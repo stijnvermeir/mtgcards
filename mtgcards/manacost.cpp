@@ -183,7 +183,11 @@ void initializeTagToRichTextMap()
 
 QString ManaCost::getRichText() const
 {
+#ifndef Q_OS_OSX
+	return replaceTagsWithSymbols(text_, Settings::instance().getFont().pointSize() + 5);
+#else
 	return replaceTagsWithSymbols(text_, Settings::instance().getFont().pointSize() + 10);
+#endif
 }
 
 QString ManaCost::replaceTagsWithSymbols(const QString& in, const int fontSizeInPt)
