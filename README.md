@@ -26,8 +26,7 @@ Download binaries
 
 ### Mac OS X
 
-* [MTGCards-0.1.1.dmg](http://download.stijn-v.be/MTGCards-0.1.1.dmg)
-* [MTGCards-0.1.0.dmg](http://download.stijn-v.be/MTGCards-0.1.0.dmg)
+* [MTGCards-0.1.2.dmg](http://download.stijn-v.be/MTGCards-0.1.2.dmg)
 
 Once you download the .dmg file, open it and drag and drop MTGCards.app to your Applications.
 
@@ -37,8 +36,7 @@ Tested on Mac OS X 10.9.5. Probably works on Yosemite too.
 
 ### Windows 64-bit
 
-* [MTGCards-0.1.1-64bit-installer.exe](http://download.stijn-v.be/MTGCards-0.1.1-64bit-installer.exe)
-* [MTGCards-0.1.0-64bit-installer.exe](http://download.stijn-v.be/MTGCards-0.1.0-64bit-installer.exe)
+* [MTGCards-0.1.2-64bit-installer.exe](http://download.stijn-v.be/MTGCards-0.1.2-64bit-installer.exe)
 * [vcredist_x64.exe](http://download.stijn-v.be/vcredist_x64.exe)
 
 If the application doesn't start, you probably need to install vcredist_x64.exe as well.
