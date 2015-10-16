@@ -50,9 +50,9 @@ Source: "C:\Users\Stijn\git\mtgcards\build\deploy\Qt5Core.dll"; DestDir: "{app}"
 Source: "C:\Users\Stijn\git\mtgcards\build\deploy\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Stijn\git\mtgcards\build\deploy\Qt5Svg.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Stijn\git\mtgcards\build\deploy\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Stijn\git\mtgcards\build\deploy\iconengines\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Stijn\git\mtgcards\build\deploy\imageformats\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Stijn\git\mtgcards\build\deploy\platforms\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Stijn\git\mtgcards\build\deploy\iconengines\*"; DestDir: "{app}\iconengines"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Stijn\git\mtgcards\build\deploy\imageformats\*"; DestDir: "{app}\imageformats"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Stijn\git\mtgcards\build\deploy\platforms\*"; DestDir: "{app}\platforms"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
