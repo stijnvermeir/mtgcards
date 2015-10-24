@@ -29,6 +29,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.poolTbl_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
 	connect(ui_.poolTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
+	connect(ui_.actionEnableFilter, SIGNAL(triggered(bool)), this, SLOT(actionEnableFilter(bool)));
 	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
@@ -71,10 +72,17 @@ void PoolWindow::loadSettings()
 	{
 		ui_.poolTbl_->resizeColumnsToContents();
 	}
+	if (settings.contains("poolwindow/filterEnable"))
+	{
+		ui_.actionEnableFilter->setChecked(settings.value("poolwindow/filterEnable").toBool());
+	}
 	if (settings.contains("poolwindow/filter"))
 	{
 		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("poolwindow/filter").toString().toUtf8()));
-		poolTableModel_.setFilterRootNode(rootFilterNode_);
+		if (ui_.actionEnableFilter->isChecked())
+		{
+			poolTableModel_.setFilterRootNode(rootFilterNode_);
+		}
 	}
 	updateStatusBar();
 	updateShortcuts();
@@ -84,6 +92,7 @@ void PoolWindow::saveSettings()
 {
 	QSettings settings;
 	settings.setValue("poolwindow/headerstate", Util::saveHeaderViewState(*ui_.poolTbl_->horizontalHeader()));
+	settings.setValue("poolwindow/filterEnable", ui_.actionEnableFilter->isChecked());
 	if (rootFilterNode_)
 	{
 		settings.setValue("poolwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
@@ -145,7 +154,23 @@ void PoolWindow::actionAdvancedFilter()
 	editor.setFilterRootNode(rootFilterNode_);
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
-	poolTableModel_.setFilterRootNode(rootFilterNode_);
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	updateStatusBar();
+}
+
+void PoolWindow::actionEnableFilter(bool enable)
+{
+	if (enable)
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
 	updateStatusBar();
 }
 
@@ -190,6 +215,13 @@ void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 
 void PoolWindow::handleGlobalFilterChanged()
 {
-	poolTableModel_.setFilterRootNode(rootFilterNode_);
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
 	updateStatusBar();
 }

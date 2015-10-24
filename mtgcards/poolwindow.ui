@@ -58,6 +58,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAdvancedFilter"/>
+   <addaction name="actionEnableFilter"/>
    <addaction name="actionAddToCollection"/>
    <addaction name="actionRemoveFromCollection"/>
    <addaction name="actionAddToDeck"/>
@@ -122,6 +123,17 @@
    </property>
    <property name="toolTip">
     <string>Remove from deck</string>
+   </property>
+  </action>
+  <action name="actionEnableFilter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Filter</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable Filter</string>
    </property>
   </action>
  </widget>
