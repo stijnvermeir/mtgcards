@@ -44,6 +44,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
+	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(fetchOnlineData()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
 	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel_);
@@ -505,6 +506,15 @@ void DeckWindow::showStatistics()
 	{
 		DeckStatisticsDialog dlg(deckWidget->deck(), this);
 		dlg.exec();
+	}
+}
+
+void DeckWindow::fetchOnlineData()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		deckWidget->fetchOnlineData();
 	}
 }
 

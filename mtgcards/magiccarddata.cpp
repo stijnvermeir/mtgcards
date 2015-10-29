@@ -3,6 +3,8 @@
 #include "manacost.h"
 #include "settings.h"
 
+#include <mkm/mkm.h>
+
 #include <QDate>
 #include <QDir>
 #include <QFile>
@@ -65,6 +67,32 @@ int columnToIndex(const ColumnType::type_t column)
 	return COLUMN_INDICES[column];
 }
 
+const QVector<ColumnType> ONLINE_COLUMNS =
+{
+	ColumnType::PriceTrend
+};
+
+QVector<int> generateOnlineColumnIndices()
+{
+	QVector<int> indices(ColumnType::COUNT, -1);
+	for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
+	{
+		indices[ONLINE_COLUMNS[i]] = i;
+	}
+	return indices;
+}
+
+int onlineColumnToIndex(const ColumnType::type_t column)
+{
+	static const QVector<int> ONLINE_COLUMN_INDICES = generateOnlineColumnIndices();
+	return ONLINE_COLUMN_INDICES[column];
+}
+
+bool isOnlineColumn(const ColumnType::type_t column)
+{
+	return (onlineColumnToIndex(column) >= 0);
+}
+
 QStringList jsonArrayToStringList(const QJsonArray& array)
 {
 	QStringList list;
@@ -118,10 +146,12 @@ struct CardData::Pimpl
 	typedef QVector<QVariant> Row;
 	QVector<Row> data_;
 	QHash<QString, QHash<QString, int>> quickLookUpTable_;
+	QVector<Row> onlineData_;
 
 	Pimpl()
 		: data_()
 		, quickLookUpTable_()
+		, onlineData_()
 	{
 		reload();
 	}
@@ -130,6 +160,7 @@ struct CardData::Pimpl
 	{
 		data_.clear();
 		quickLookUpTable_.clear();
+		onlineData_.clear();
 
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -144,6 +175,8 @@ struct CardData::Pimpl
 
 			data_.reserve(numCards);
 			quickLookUpTable_.reserve(numCards);
+			onlineData_.resize(numCards);
+			onlineData_.fill(Row(ONLINE_COLUMNS.size()));
 
 			QHash<QString, QPair<int, QDate>> latestPrintHash;
 
@@ -249,10 +282,18 @@ struct CardData::Pimpl
 	{
 		if (row >= 0 && row < getNumRows())
 		{
-			auto index = columnToIndex(column);
-			if (index < COLUMNS.size())
+			if (isOnlineColumn(column))
 			{
-				return data_[row][index];
+				auto index = onlineColumnToIndex(column);
+				return onlineData_[row][index];
+			}
+			else
+			{
+				auto index = columnToIndex(column);
+				if (index < COLUMNS.size())
+				{
+					return data_[row][index];
+				}
 			}
 		}
 		static const QVariant EMPTY;
@@ -303,6 +344,29 @@ struct CardData::Pimpl
 			}
 		}
 		return -1;
+	}
+
+	void fetchOnlineData(const int row)
+	{
+		QString search = removeAccents(data_[row][columnToIndex(ColumnType::Name)].toString());
+		search.replace(" ", "");
+		search.replace(",", "");
+		search.replace("-", "");
+		search.replace("'", "");
+		search.replace("\"", "");
+		QString expansion = data_[row][columnToIndex(ColumnType::Set)].toString();
+		const auto& settings = Settings::instance().getMkm();
+		mkm::Mkm client(settings.getEndpoint() , settings.appToken, settings.appSecret, settings.accessToken, settings.accessTokenSecret);
+		auto result = client.findProduct(search);
+		for (const mkm::Product& p : result)
+		{
+			if (expansion.contains(p.expansion, Qt::CaseInsensitive))
+			{
+				onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = p.priceGuide.trend;
+				return;
+			}
+		}
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = "error";
 	}
 };
 
@@ -439,4 +503,9 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 		}
 	}
 	return picInfo;
+}
+
+void CardData::fetchOnlineData(const int row)
+{
+	pimpl_->fetchOnlineData(row);
 }

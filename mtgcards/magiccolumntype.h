@@ -45,6 +45,7 @@ public:
 		Sideboard,
 		Owned,
 		IsLatestPrint,
+		PriceTrend,
 		UserDefined,
 
 		COUNT,

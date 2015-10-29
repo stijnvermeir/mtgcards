@@ -174,6 +174,11 @@ void DeckWidget::removeFromDeck(const QVector<int>& dataRowIndices)
 	}
 }
 
+void DeckWidget::fetchOnlineData()
+{
+	deckTableModel_.fetchOnlineData(ui_.tableView->selectionModel()->selectedRows());
+}
+
 void DeckWidget::currentRowChanged(QModelIndex, QModelIndex)
 {
 	if (ui_.tableView->hasFocus())

@@ -55,6 +55,7 @@ private slots:
 	void actionRemoveFromCollection();
 	void actionAddToDeck();
 	void actionRemoveFromDeck();
+	void actionFetchOnlineData();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
 	void rowContextMenuRequested(const QPoint& pos);
 	void updateUsedCount();

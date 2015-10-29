@@ -29,6 +29,7 @@ public:
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
 	PictureInfo getPictureInfo(int row);
+	void fetchOnlineData(const int row);
 
 private:
 	CardData();

@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 CONFIG += c++11
-QT += core gui widgets
+QT += core gui widgets network
 
 macx {
 	QT += svg
@@ -108,3 +108,13 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     mtgcards.qrc
+
+MKMLIB_PATH = $$PWD/../../mkmlib
+
+CONFIG(release, debug|release): LIBS += -L$$MKMLIB_PATH/build/release/
+else:CONFIG(debug, debug|release): LIBS += -L$$MKMLIB_PATH/build/debug/
+
+LIBS += -lmkm
+
+INCLUDEPATH += $$MKMLIB_PATH/mkm
+DEPENDPATH += $$MKMLIB_PATH/mkm

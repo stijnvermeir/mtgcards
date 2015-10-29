@@ -59,10 +59,14 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAdvancedFilter"/>
+   <addaction name="actionEnableFilter"/>
+   <addaction name="separator"/>
    <addaction name="actionAddToCollection"/>
    <addaction name="actionRemoveFromCollection"/>
    <addaction name="actionAddToDeck"/>
    <addaction name="actionRemoveFromDeck"/>
+   <addaction name="separator"/>
+   <addaction name="actionFetchOnlineData"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
@@ -123,6 +127,31 @@
    </property>
    <property name="toolTip">
     <string>Remove from collection</string>
+   </property>
+  </action>
+  <action name="actionEnableFilter">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/switches3.svg</normaloff>
+     <normalon>:/resources/icons/switch14.svg</normalon>:/resources/icons/switches3.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Enable filter</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable filter</string>
+   </property>
+  </action>
+  <action name="actionFetchOnlineData">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/internet43.svg</normaloff>:/resources/icons/internet43.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Fetch online data</string>
+   </property>
+   <property name="toolTip">
+    <string>Fetch online data for selection</string>
    </property>
   </action>
  </widget>

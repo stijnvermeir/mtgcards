@@ -57,6 +57,7 @@ CollectionWindow::CollectionWindow(QWidget* parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(actionFetchOnlineData()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
 	connect(this, SIGNAL(fontChanged()), ui_.collectionTbl_, SLOT(handleFontChanged()));
@@ -269,6 +270,11 @@ void CollectionWindow::actionAddToDeck()
 void CollectionWindow::actionRemoveFromDeck()
 {
 	emit removeFromDeck(currentDataRowIndices());
+}
+
+void CollectionWindow::actionFetchOnlineData()
+{
+	collectionTableModel_.fetchOnlineData(ui_.collectionTbl_->selectionModel()->selectedRows());
 }
 
 void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)

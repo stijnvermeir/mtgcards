@@ -6,6 +6,7 @@
 
 #include <QDebug>
 #include <QUrl>
+#include <QProgressDialog>
 
 #include <functional>
 
@@ -20,6 +21,25 @@ void MagicSortFilterProxyModel::setFilterRootNode(const FilterNode::Ptr& rootNod
 {
 	filterRootNode_ = rootNode;
 	invalidateFilter();
+}
+
+void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedRows)
+{
+	QProgressDialog progress("Fetching online data ...", "Cancel", 0, selectedRows.size());
+	progress.setWindowModality(Qt::WindowModal);
+	int i = 0;
+	for (const QModelIndex& row : selectedRows)
+	{
+		int dataRowIndex = getDataRowIndex(row);
+		mtg::CardData::instance().fetchOnlineData(dataRowIndex);
+		emit dataChanged(index(row.row(), 0), index(row.row(), columnCount() - 1));
+		progress.setValue(i++);
+		if (progress.wasCanceled())
+		{
+			break;
+		}
+	}
+	progress.setValue(selectedRows.size());
 }
 
 bool MagicSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const

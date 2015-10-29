@@ -34,6 +34,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(actionFetchOnlineData()));
 	connect(this, SIGNAL(fontChanged()), ui_.poolTbl_, SLOT(handleFontChanged()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
@@ -192,6 +193,11 @@ void PoolWindow::actionAddToDeck()
 void PoolWindow::actionRemoveFromDeck()
 {
 	emit removeFromDeck(currentDataRowIndices());
+}
+
+void PoolWindow::actionFetchOnlineData()
+{
+	poolTableModel_.fetchOnlineData(ui_.poolTbl_->selectionModel()->selectedRows());
 }
 
 void PoolWindow::hideColumnsContextMenuRequested(const QPoint& pos)

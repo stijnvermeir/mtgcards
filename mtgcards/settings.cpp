@@ -8,6 +8,20 @@
 #include <QVariantList>
 #include <QJsonDocument>
 
+const QString& Settings::Mkm::getEndpoint() const
+{
+	if (useSandbox)
+	{
+		static QString ENDPOINT = "https://sandbox.mkmapi.eu/ws/v1.1/output.json/";
+		return ENDPOINT;
+	}
+	else
+	{
+		static QString ENDPOINT = "https://www.mkmapi.eu/ws/v1.1/output.json/";
+		return ENDPOINT;
+	}
+}
+
 struct Settings::Pimpl
 {
 	QString appDataDir_;
@@ -20,6 +34,7 @@ struct Settings::Pimpl
 	QVector<UserColumn> userColumns_;
 	FilterNode::Ptr globalFilter_;
 	QFont font_;
+	Mkm mkm_;
 
 	Pimpl()
 	{
@@ -64,6 +79,12 @@ struct Settings::Pimpl
 		{
 			font_.fromString(settings.value("options/font").toString());
 		}
+
+		mkm_.appToken = settings.value("options/mkm/appToken").toString();
+		mkm_.appSecret = settings.value("options/mkm/appSecret").toString();
+		mkm_.accessToken = settings.value("options/mkm/accessToken").toString();
+		mkm_.accessTokenSecret = settings.value("options/mkm/accessTokenSecret").toString();
+		mkm_.useSandbox = settings.value("options/mkm/useSandbox").toBool();
 	}
 
 	void setAppDataDir(const QString& appDataDir)
@@ -148,6 +169,18 @@ struct Settings::Pimpl
 
 		QSettings settings;
 		settings.setValue("options/font", font_.toString());
+	}
+
+	void setMkm(const Mkm& mkm)
+	{
+		mkm_ = mkm;
+
+		QSettings settings;
+		settings.setValue("options/mkm/appToken", mkm_.appToken);
+		settings.setValue("options/mkm/appSecret", mkm_.appSecret);
+		settings.setValue("options/mkm/accessToken", mkm_.accessToken);
+		settings.setValue("options/mkm/accessTokenSecret", mkm_.accessTokenSecret);
+		settings.setValue("options/mkm/useSandbox", mkm_.useSandbox);
 	}
 };
 
@@ -249,4 +282,14 @@ const QFont& Settings::getFont() const
 void Settings::setFont(const QFont& font)
 {
 	pimpl_->setFont(font);
+}
+
+const Settings::Mkm& Settings::getMkm() const
+{
+	return pimpl_->mkm_;
+}
+
+void Settings::setMkm(const Mkm& mkm)
+{
+	pimpl_->setMkm(mkm);
 }
