@@ -16,10 +16,11 @@ public:
 	virtual int columnToIndex(const mtg::ColumnType& column) const = 0;
 	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const = 0;
 
+	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
 protected:
 	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 	virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
-	virtual QVariant data(const QModelIndex& index, int role) const;
 
 private:
 	FilterNode::Ptr filterRootNode_;

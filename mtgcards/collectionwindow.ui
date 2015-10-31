@@ -130,6 +130,9 @@
    </property>
   </action>
   <action name="actionEnableFilter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="mtgcards.qrc">
      <normaloff>:/resources/icons/switches3.svg</normaloff>

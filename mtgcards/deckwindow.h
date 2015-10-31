@@ -58,6 +58,7 @@ private slots:
 	void actionSaveDeck();
 	void actionSaveDeckAs();
 	void actionAdvancedFilter();
+	void actionEnableFilter(bool enable);
 	void actionAddToCollection();
 	void actionRemoveFromCollection();
 	void actionAddToDeck();

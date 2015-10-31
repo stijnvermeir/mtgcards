@@ -42,6 +42,24 @@ void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedR
 	progress.setValue(selectedRows.size());
 }
 
+QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) const
+{
+	QVariant d = QSortFilterProxyModel::data(index, role);
+	if (d.canConvert<ManaCost>() && role == Qt::ToolTipRole)
+	{
+		return qvariant_cast<ManaCost>(d).getText();
+	}
+	if (index.column() == columnToIndex(mtg::ColumnType::Name) && role == Qt::ToolTipRole)
+	{
+		auto picInfo = mtg::CardData::instance().getPictureInfo(getDataRowIndex(index));
+		if (picInfo.missing.empty())
+		{
+			return QString("<img src=\"") + picInfo.filenames.front() + "\" />";
+		}
+	}
+	return d;
+}
+
 bool MagicSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
 	if (left.data().canConvert<ManaCost>())
@@ -115,22 +133,4 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 	node->removeChild(global);
 	node->removeChild(local);
 	return rv;
-}
-
-QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) const
-{
-	QVariant d = QSortFilterProxyModel::data(index, role);
-	if (d.canConvert<ManaCost>() && role == Qt::ToolTipRole)
-	{
-		return qvariant_cast<ManaCost>(d).getText();
-	}
-	if (index.column() == columnToIndex(mtg::ColumnType::Name) && role == Qt::ToolTipRole)
-	{
-		auto picInfo = mtg::CardData::instance().getPictureInfo(getDataRowIndex(index));
-		if (picInfo.missing.empty())
-		{
-			return QString("<img src=\"") + picInfo.filenames.front() + "\" />";
-		}
-	}
-	return d;
 }

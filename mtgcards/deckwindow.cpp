@@ -37,6 +37,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionSaveDeck, SIGNAL(triggered()), this, SLOT(actionSaveDeck()));
 	connect(ui_.actionSaveDeckAs, SIGNAL(triggered()), this, SLOT(actionSaveDeckAs()));
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
+	connect(ui_.actionEnableFilter, SIGNAL(triggered(bool)), this, SLOT(actionEnableFilter(bool)));
 	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
@@ -82,6 +83,10 @@ void DeckWindow::updateShortcuts()
 void DeckWindow::loadSettings()
 {
 	QSettings settings;
+	if (settings.contains("deckwindow/filterEnable"))
+	{
+		ui_.actionEnableFilter->setChecked(settings.value("deckwindow/filterEnable").toBool());
+	}
 	if (settings.contains("deckwindow/filter"))
 	{
 		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("deckwindow/filter").toString().toUtf8()));
@@ -105,6 +110,7 @@ void DeckWindow::loadSettings()
 void DeckWindow::saveSettings()
 {
 	QSettings settings;
+	settings.setValue("deckwindow/filterEnable", ui_.actionEnableFilter->isChecked());
 	if (rootFilterNode_)
 	{
 		settings.setValue("deckwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
@@ -174,29 +180,30 @@ void DeckWindow::updateStatusBar()
 		auto getValue = [&model](int row, mtg::ColumnType columnType)
 		{
 			int column = model.columnToIndex(columnType);
-			QModelIndex index = model.sourceModel()->index(row, column);
-			return model.sourceModel()->data(index);
+			QModelIndex index = model.index(row, column);
+			return model.data(index);
 		};
-		int landCount = 0;
-		int creatureCount = 0;
-		int cardCount = 0;
-		for (int row = 0; row < model.sourceModel()->rowCount(); ++row)
+		int numLands = 0;
+		int numCreatures = 0;
+		int numCopies = 0;
+		for (int row = 0; row < model.rowCount(); ++row)
 		{
 			int quantity = getValue(row, mtg::ColumnType::Quantity).toInt();
 			QString type = getValue(row, mtg::ColumnType::Type).toString();
 			if (type.contains("Creature"))
 			{
-				creatureCount += quantity;
+				numCreatures += quantity;
 			}
 			if (type.contains("Land"))
 			{
-				landCount += quantity;
+				numLands += quantity;
 			}
-			cardCount += quantity;
+			numCopies += quantity;
 		}
 		QString message;
 		QTextStream str(&message);
-		str << cardCount << " cards (" << landCount << " lands, " << creatureCount << " creatures, " << cardCount - creatureCount - landCount << " others)";
+		str << "Showing " << model.rowCount() << " of " << deckWidget->deck().getNumRows() << " cards";
+		str << " (" << numCopies << " copies, " << numLands << " lands, " << numCreatures << " creatures, " << numCopies - numCreatures - numLands << " others)";
 		ui_.statusBar->showMessage(message);
 		ui_.actionToggleDeckActive->setChecked(deckWidget->deck().isActive());
 	}
@@ -227,7 +234,10 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 
 	DeckWidget* deckWidget = new DeckWidget(filename);
 	deckWidget->setHeaderState(headerState_);
-	deckWidget->setFilterRootNode(rootFilterNode_);
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		deckWidget->setFilterRootNode(rootFilterNode_);
+	}
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
@@ -365,12 +375,38 @@ void DeckWindow::actionAdvancedFilter()
 	editor.setFilterRootNode(rootFilterNode_);
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
+		{
+			QWidget* widget = ui_.tabWidget->widget(tabIndex);
+			if (widget)
+			{
+				if (ui_.actionEnableFilter->isChecked())
+				{
+					static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+				}
+			}
+		}
+	}
+	updateStatusBar();
+}
+
+void DeckWindow::actionEnableFilter(bool enable)
+{
 	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
 	{
 		QWidget* widget = ui_.tabWidget->widget(tabIndex);
 		if (widget)
 		{
-			static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+			if (enable)
+			{
+				static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+			}
+			else
+			{
+				static_cast<DeckWidget*>(widget)->setFilterRootNode(FilterNode::Ptr());
+			}
 		}
 	}
 	updateStatusBar();
@@ -556,7 +592,14 @@ void DeckWindow::handleGlobalFilterChanged()
 		QWidget* widget = ui_.tabWidget->widget(tabIndex);
 		if (widget)
 		{
-			static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+			if (ui_.actionEnableFilter->isChecked())
+			{
+				static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
+			}
+			else
+			{
+				static_cast<DeckWidget*>(widget)->setFilterRootNode(FilterNode::Ptr());
+			}
 		}
 	}
 	updateStatusBar();

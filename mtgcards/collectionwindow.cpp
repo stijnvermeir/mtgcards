@@ -53,6 +53,7 @@ CollectionWindow::CollectionWindow(QWidget* parent)
 	connect(ui_.collectionTbl_, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(rowContextMenuRequested(QPoint)));
 	connect(ui_.collectionTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
+	connect(ui_.actionEnableFilter, SIGNAL(triggered(bool)), this, SLOT(actionEnableFilter(bool)));
 	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
@@ -98,10 +99,17 @@ void CollectionWindow::loadSettings()
 	{
 		ui_.collectionTbl_->resizeColumnsToContents();
 	}
+	if (settings.contains("collectionwindow/filterEnable"))
+	{
+		ui_.actionEnableFilter->setChecked(settings.value("collectionwindow/filterEnable").toBool());
+	}
 	if (settings.contains("collectionwindow/filter"))
 	{
 		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("collectionwindow/filter").toString().toUtf8()));
-		collectionTableModel_.setFilterRootNode(rootFilterNode_);
+		if (ui_.actionEnableFilter->isChecked())
+		{
+			collectionTableModel_.setFilterRootNode(rootFilterNode_);
+		}
 	}
 	updateStatusBar();
 	updateShortcuts();
@@ -111,6 +119,7 @@ void CollectionWindow::saveSettings()
 {
 	QSettings settings;
 	settings.setValue("collectionwindow/headerstate", Util::saveHeaderViewState(*ui_.collectionTbl_->horizontalHeader()));
+	settings.setValue("collectionwindow/filterEnable", ui_.actionEnableFilter->isChecked());
 	if (rootFilterNode_)
 	{
 		settings.setValue("collectionwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
@@ -248,7 +257,23 @@ void CollectionWindow::actionAdvancedFilter()
 	editor.setFilterRootNode(rootFilterNode_);
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
-	collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	updateStatusBar();
+}
+
+void CollectionWindow::actionEnableFilter(bool enable)
+{
+	if (enable)
+	{
+		collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		collectionTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
 	updateStatusBar();
 }
 
@@ -323,6 +348,13 @@ void CollectionWindow::updateUsedCount()
 
 void CollectionWindow::handleGlobalFilterChanged()
 {
-	collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	if (ui_.actionEnableFilter->isChecked())
+	{
+		collectionTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		collectionTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
 	updateStatusBar();
 }
