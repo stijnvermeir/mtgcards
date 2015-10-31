@@ -115,6 +115,11 @@ const DeckTableModel& DeckWidget::model() const
 	return deckTableModel_;
 }
 
+bool DeckWidget::isColumnHidden(const mtg::ColumnType& columnType) const
+{
+	return ui_.tableView->isColumnHidden(deckTableModel_.columnToIndex(columnType));
+}
+
 void DeckWidget::resetSearchString()
 {
 	ui_.tableView->resetKeyboardSearch();

@@ -30,6 +30,7 @@ public:
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
 	const DeckTableModel& model() const;
+	bool isColumnHidden(const mtg::ColumnType& columnType) const;
 
 signals:
 	void selectedCardChanged(int);

@@ -172,13 +172,44 @@ void CollectionWindow::updateStatusBar()
 	stream << " Showing " << collectionTableModel_.rowCount() << " of " << mtg::Collection::instance().getNumRows() << " cards";
 	int numCopies = 0;
 	int numUsed = 0;
+	double sumPriceLowest = 0.0;
+	double sumPriceLowestFoil = 0.0;
+	double sumPriceAverage = 0.0;
+	double sumPriceTrend = 0.0;
+	auto getValue = [this](int row, const mtg::ColumnType& columnType)
+	{
+		int column = collectionTableModel_.columnToIndex(columnType);
+		QModelIndex index = collectionTableModel_.index(row, column);
+		return collectionTableModel_.data(index);
+	};
 	for (int i = 0; i < collectionTableModel_.rowCount(); ++i)
 	{
 		QModelIndex sourceIndex = collectionTableModel_.mapToSource(collectionTableModel_.index(i, 0));
 		numCopies += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Quantity).toInt();
 		numUsed += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Used).toInt();
+
+		sumPriceLowest += getValue(i, mtg::ColumnType::PriceLowest).toDouble();
+		sumPriceLowestFoil += getValue(i, mtg::ColumnType::PriceLowestFoil).toDouble();
+		sumPriceAverage += getValue(i, mtg::ColumnType::PriceAverage).toDouble();
+		sumPriceTrend += getValue(i, mtg::ColumnType::PriceTrend).toDouble();
 	}
 	stream << " (" << numCopies << " copies, " << numUsed << " used)";
+	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowest)))
+	{
+		stream << " [Sum lowest price: " << sumPriceLowest << "]";
+	}
+	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowestFoil)))
+	{
+		stream << " [Sum lowest price foil: " << sumPriceLowestFoil << "]";
+	}
+	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceAverage)))
+	{
+		stream << " [Sum average price: " << sumPriceAverage << "]";
+	}
+	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceTrend)))
+	{
+		stream << " [Sum price trend: " << sumPriceTrend << "]";
+	}
 	ui_.statusBar->showMessage(message);
 }
 
@@ -318,6 +349,7 @@ void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)
 	if (a)
 	{
 		ui_.collectionTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+		updateStatusBar();
 	}
 }
 

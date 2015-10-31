@@ -177,7 +177,7 @@ void DeckWindow::updateStatusBar()
 	if (deckWidget)
 	{
 		const auto& model = deckWidget->model();
-		auto getValue = [&model](int row, mtg::ColumnType columnType)
+		auto getValue = [&model](int row, const mtg::ColumnType& columnType)
 		{
 			int column = model.columnToIndex(columnType);
 			QModelIndex index = model.index(row, column);
@@ -186,6 +186,10 @@ void DeckWindow::updateStatusBar()
 		int numLands = 0;
 		int numCreatures = 0;
 		int numCopies = 0;
+		double sumPriceLowest = 0.0;
+		double sumPriceLowestFoil = 0.0;
+		double sumPriceAverage = 0.0;
+		double sumPriceTrend = 0.0;
 		for (int row = 0; row < model.rowCount(); ++row)
 		{
 			int quantity = getValue(row, mtg::ColumnType::Quantity).toInt();
@@ -199,11 +203,32 @@ void DeckWindow::updateStatusBar()
 				numLands += quantity;
 			}
 			numCopies += quantity;
+
+			sumPriceLowest += getValue(row, mtg::ColumnType::PriceLowest).toDouble();
+			sumPriceLowestFoil += getValue(row, mtg::ColumnType::PriceLowestFoil).toDouble();
+			sumPriceAverage += getValue(row, mtg::ColumnType::PriceAverage).toDouble();
+			sumPriceTrend += getValue(row, mtg::ColumnType::PriceTrend).toDouble();
 		}
 		QString message;
 		QTextStream str(&message);
 		str << "Showing " << model.rowCount() << " of " << deckWidget->deck().getNumRows() << " cards";
 		str << " (" << numCopies << " copies, " << numLands << " lands, " << numCreatures << " creatures, " << numCopies - numCreatures - numLands << " others)";
+		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceLowest))
+		{
+			str << " [Sum lowest price: " << sumPriceLowest << "]";
+		}
+		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceLowestFoil))
+		{
+			str << " [Sum lowest price foil: " << sumPriceLowestFoil << "]";
+		}
+		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceAverage))
+		{
+			str << " [Sum average price: " << sumPriceAverage << "]";
+		}
+		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceTrend))
+		{
+			str << " [Sum price trend: " << sumPriceTrend << "]";
+		}
 		ui_.statusBar->showMessage(message);
 		ui_.actionToggleDeckActive->setChecked(deckWidget->deck().isActive());
 	}
@@ -583,6 +608,7 @@ void DeckWindow::headerStateChangedSlot(const QString& headerState)
 			connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 		}
 	}
+	updateStatusBar();
 }
 
 void DeckWindow::handleGlobalFilterChanged()

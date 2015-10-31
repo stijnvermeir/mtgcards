@@ -372,10 +372,10 @@ struct CardData::Pimpl
 				return;
 			}
 		}
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = -1.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = -1.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = -1.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = -1.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = 0.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = 0.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = 0.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = 0.0;
 	}
 };
 
