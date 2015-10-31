@@ -41,6 +41,9 @@ const QVector<QString> NAMES =
 	"Sideboard",
 	"Owned",
 	"IsLatestPrint",
+	"PriceLowest",
+	"PriceLowestFoil",
+	"PriceAverage",
 	"PriceTrend",
 	"UserDefined"
 };
@@ -79,6 +82,9 @@ const QVector<QString> DISPLAY_NAMES =
 	"SB",
 	"Owned",
 	"Is latest print",
+	"Lowest Price (EX+)",
+	"Lowest Price (Foil)",
+	"Average Price",
 	"Price Trend",
 	"User Defined"
 };

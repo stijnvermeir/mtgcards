@@ -40,6 +40,9 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 	mtg::ColumnType::Loyalty,
 	mtg::ColumnType::Layout,
 	mtg::ColumnType::ImageName,
+	mtg::ColumnType::PriceLowest,
+	mtg::ColumnType::PriceLowestFoil,
+	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend
 };
 

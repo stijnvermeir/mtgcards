@@ -45,6 +45,9 @@ public:
 		Sideboard,
 		Owned,
 		IsLatestPrint,
+		PriceLowest,
+		PriceLowestFoil,
+		PriceAverage,
 		PriceTrend,
 		UserDefined,
 

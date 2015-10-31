@@ -69,6 +69,9 @@ int columnToIndex(const ColumnType::type_t column)
 
 const QVector<ColumnType> ONLINE_COLUMNS =
 {
+	ColumnType::PriceLowest,
+	ColumnType::PriceLowestFoil,
+	ColumnType::PriceAverage,
 	ColumnType::PriceTrend
 };
 
@@ -362,11 +365,17 @@ struct CardData::Pimpl
 		{
 			if (expansion.contains(p.expansion, Qt::CaseInsensitive))
 			{
+				onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = p.priceGuide.lowExPlus;
+				onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = p.priceGuide.lowFoil;
+				onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = p.priceGuide.avg;
 				onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = p.priceGuide.trend;
 				return;
 			}
 		}
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = "error";
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = -1.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = -1.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = -1.0;
+		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = -1.0;
 	}
 };
 

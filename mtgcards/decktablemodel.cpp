@@ -41,6 +41,9 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::Layout,
 	mtg::ColumnType::ImageName,
 	mtg::ColumnType::Owned,
+	mtg::ColumnType::PriceLowest,
+	mtg::ColumnType::PriceLowestFoil,
+	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend
 };
 
