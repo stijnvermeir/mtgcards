@@ -2,6 +2,7 @@
 
 #include "manacost.h"
 #include "magiccarddata.h"
+#include "onlinedatacache.h"
 #include "settings.h"
 
 #include <QDebug>
@@ -39,6 +40,7 @@ void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedR
 			break;
 		}
 	}
+	OnlineDataCache::instance().save();
 	progress.setValue(selectedRows.size());
 }
 

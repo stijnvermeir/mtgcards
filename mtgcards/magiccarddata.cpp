@@ -2,6 +2,7 @@
 
 #include "manacost.h"
 #include "settings.h"
+#include "onlinedatacache.h"
 
 #include <mkm/mkm.h>
 
@@ -68,35 +69,6 @@ int columnToIndex(const ColumnType::type_t column)
 	return COLUMN_INDICES[column];
 }
 
-const QVector<ColumnType> ONLINE_COLUMNS =
-{
-	ColumnType::PriceLowest,
-	ColumnType::PriceLowestFoil,
-	ColumnType::PriceAverage,
-	ColumnType::PriceTrend
-};
-
-QVector<int> generateOnlineColumnIndices()
-{
-	QVector<int> indices(ColumnType::COUNT, -1);
-	for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
-	{
-		indices[ONLINE_COLUMNS[i]] = i;
-	}
-	return indices;
-}
-
-int onlineColumnToIndex(const ColumnType::type_t column)
-{
-	static const QVector<int> ONLINE_COLUMN_INDICES = generateOnlineColumnIndices();
-	return ONLINE_COLUMN_INDICES[column];
-}
-
-bool isOnlineColumn(const ColumnType::type_t column)
-{
-	return (onlineColumnToIndex(column) >= 0);
-}
-
 QStringList jsonArrayToStringList(const QJsonArray& array)
 {
 	QStringList list;
@@ -150,12 +122,10 @@ struct CardData::Pimpl
 	typedef QVector<QVariant> Row;
 	QVector<Row> data_;
 	QHash<QString, QHash<QString, int>> quickLookUpTable_;
-	QVector<Row> onlineData_;
 
 	Pimpl()
 		: data_()
 		, quickLookUpTable_()
-		, onlineData_()
 	{
 		reload();
 	}
@@ -164,7 +134,6 @@ struct CardData::Pimpl
 	{
 		data_.clear();
 		quickLookUpTable_.clear();
-		onlineData_.clear();
 
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -179,8 +148,6 @@ struct CardData::Pimpl
 
 			data_.reserve(numCards);
 			quickLookUpTable_.reserve(numCards);
-			onlineData_.resize(numCards);
-			onlineData_.fill(Row(ONLINE_COLUMNS.size()));
 
 			QHash<QString, QPair<int, QDate>> latestPrintHash;
 
@@ -287,10 +254,9 @@ struct CardData::Pimpl
 	{
 		if (row >= 0 && row < getNumRows())
 		{
-			if (isOnlineColumn(column))
+			if (OnlineDataCache::isOnlineColumn(column))
 			{
-				auto index = onlineColumnToIndex(column);
-				return onlineData_[row][index];
+				return OnlineDataCache::instance().get(data_[row][columnToIndex(ColumnType::SetCode)].toString(), data_[row][columnToIndex(ColumnType::Name)].toString(), column);
 			}
 			else
 			{
@@ -353,7 +319,9 @@ struct CardData::Pimpl
 
 	void fetchOnlineData(const int row)
 	{
-		QString search = removeAccents(data_[row][columnToIndex(ColumnType::Name)].toString());
+		QString set = data_[row][columnToIndex(ColumnType::SetCode)].toString();
+		QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
+		QString search = removeAccents(name);
 		search.replace(" ", "");
 		search.replace(",", "");
 		search.replace("-", "");
@@ -367,17 +335,16 @@ struct CardData::Pimpl
 		{
 			if (expansion.contains(p.expansion, Qt::CaseInsensitive))
 			{
-				onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = p.priceGuide.lowExPlus;
-				onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = p.priceGuide.lowFoil;
-				onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = p.priceGuide.avg;
-				onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = p.priceGuide.trend;
+				OnlineDataCache& cache = OnlineDataCache::instance();
+				cache.set(set, name, ColumnType::PriceLowest, p.priceGuide.lowExPlus);
+				cache.set(set, name, ColumnType::PriceLowestFoil, p.priceGuide.lowFoil);
+				cache.set(set, name, ColumnType::PriceAverage, p.priceGuide.avg);
+				cache.set(set, name, ColumnType::PriceTrend, p.priceGuide.trend);
+				cache.set(set, name, ColumnType::MkmProductId, p.idProduct);
+				cache.set(set, name, ColumnType::MkmMetaproductId, p.idMetaproduct);
 				return;
 			}
 		}
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowest)] = 0.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceLowestFoil)] = 0.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceAverage)] = 0.0;
-		onlineData_[row][onlineColumnToIndex(ColumnType::PriceTrend)] = 0.0;
 	}
 };
 

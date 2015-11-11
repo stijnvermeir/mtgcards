@@ -50,6 +50,8 @@ public:
 		PriceLowestFoil,
 		PriceAverage,
 		PriceTrend,
+		MkmProductId,
+		MkmMetaproductId,
 		UserDefined,
 
 		COUNT,

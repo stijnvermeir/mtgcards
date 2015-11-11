@@ -46,6 +46,8 @@ const QVector<QString> NAMES =
 	"PriceLowestFoil",
 	"PriceAverage",
 	"PriceTrend",
+	"MkmProductId",
+	"MkmMetaproductId",
 	"UserDefined"
 };
 
@@ -88,6 +90,8 @@ const QVector<QString> DISPLAY_NAMES =
 	"Lowest Price (Foil)",
 	"Average Price",
 	"Price Trend",
+	"MKM Product Id",
+	"MKM Metaproduct Id",
 	"User Defined"
 };
 
