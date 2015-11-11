@@ -15,6 +15,9 @@ class DeckManager : public QObject
 public:
 	static DeckManager& instance();
 
+	const QVector<QSharedPointer<Deck>>& getDecks() const;
+
+	QSharedPointer<Deck> findDeck(const QString& id);
 	QSharedPointer<Deck> getDeck(const QString& id);
 	void closeDeck(const QSharedPointer<Deck>& deck);
 

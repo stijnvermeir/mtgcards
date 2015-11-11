@@ -9,6 +9,7 @@ namespace {
 
 const QVector<QString> NAMES =
 {
+	"Id",
 	"Set",
 	"SetCode",
 	"SetGathererCode",
@@ -50,6 +51,7 @@ const QVector<QString> NAMES =
 
 const QVector<QString> DISPLAY_NAMES =
 {
+	"Id",
 	"Set Name",
 	"Set",
 	"Set Gatherer Code",

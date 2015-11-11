@@ -39,6 +39,19 @@ struct DeckManager::Pimpl
 		return deck;
 	}
 
+	QSharedPointer<Deck> findDeck(const QString& id)
+	{
+		for (const QSharedPointer<Deck>& deck : decks_)
+		{
+			if (deck->getId() == id)
+			{
+				return deck;
+			}
+		}
+
+		return QSharedPointer<Deck>();
+	}
+
 	QSharedPointer<Deck> getDeck(const QString& id)
 	{
 		for (const QSharedPointer<Deck>& deck : decks_)
@@ -105,6 +118,16 @@ DeckManager& DeckManager::instance()
 {
 	static DeckManager inst;
 	return inst;
+}
+
+const QVector<QSharedPointer<Deck>>& DeckManager::getDecks() const
+{
+	return pimpl_->decks_;
+}
+
+QSharedPointer<Deck> DeckManager::findDeck(const QString& id)
+{
+	return pimpl_->findDeck(id);
 }
 
 QSharedPointer<Deck> DeckManager::getDeck(const QString& id)

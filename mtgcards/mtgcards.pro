@@ -54,7 +54,8 @@ SOURCES += main.cpp\
     filters/comparetype.cpp \
     filters/numberfilterfunction.cpp \
     deckstatisticsdialog.cpp \
-    manacurvelinewidget.cpp
+    manacurvelinewidget.cpp \
+    filters/deckfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -92,7 +93,8 @@ HEADERS  += mainwindow.h \
     filters/comparetype.h \
     filters/numberfilterfunction.h \
     deckstatisticsdialog.h \
-    manacurvelinewidget.h
+    manacurvelinewidget.h \
+    filters/deckfilterfunction.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

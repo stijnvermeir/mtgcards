@@ -21,6 +21,7 @@ namespace {
 
 const QVector<ColumnType> COLUMNS =
 {
+	ColumnType::Id,
 	ColumnType::Set,
 	ColumnType::SetCode,
 	ColumnType::SetGathererCode,
@@ -212,6 +213,7 @@ struct CardData::Pimpl
 				{
 					auto card = c.toObject();
 					Row r(COLUMNS.size());
+					r[columnToIndex(ColumnType::Id)] = data_.size();
 					// set
 					r[columnToIndex(ColumnType::Set)] = setName;
 					r[columnToIndex(ColumnType::SetCode)] = setCode;

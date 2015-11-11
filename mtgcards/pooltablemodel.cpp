@@ -40,7 +40,8 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
 	mtg::ColumnType::PriceLowest,
 	mtg::ColumnType::PriceLowestFoil,
 	mtg::ColumnType::PriceAverage,
-	mtg::ColumnType::PriceTrend
+	mtg::ColumnType::PriceTrend,
+	mtg::ColumnType::Id
 };
 
 } // namespace

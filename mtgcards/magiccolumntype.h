@@ -13,6 +13,7 @@ class ColumnType
 public:
 	enum type_t
 	{
+		Id,
 		Set,
 		SetCode,
 		SetGathererCode,
