@@ -2,6 +2,7 @@
 
 #include "magiccolumntype.h"
 #include "magiclayouttype.h"
+#include "magicruling.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -29,6 +30,7 @@ public:
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
 	PictureInfo getPictureInfo(int row);
+	const QVector<mtg::Ruling>& getRulings(int row);
 	void fetchOnlineData(const int row);
 
 private:

@@ -51,6 +51,7 @@ QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) con
 	{
 		return qvariant_cast<ManaCost>(d).getText();
 	}
+	/*
 	if (index.column() == columnToIndex(mtg::ColumnType::Name) && role == Qt::ToolTipRole)
 	{
 		auto picInfo = mtg::CardData::instance().getPictureInfo(getDataRowIndex(index));
@@ -59,6 +60,7 @@ QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) con
 			return QString("<img src=\"") + picInfo.filenames.front() + "\" />";
 		}
 	}
+	*/
 	return d;
 }
 

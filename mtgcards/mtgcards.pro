@@ -96,7 +96,8 @@ HEADERS  += mainwindow.h \
     deckstatisticsdialog.h \
     manacurvelinewidget.h \
     filters/deckfilterfunction.h \
-    onlinedatacache.h
+    onlinedatacache.h \
+    magicruling.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

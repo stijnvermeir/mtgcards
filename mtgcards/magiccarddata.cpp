@@ -121,10 +121,12 @@ struct CardData::Pimpl
 {
 	typedef QVector<QVariant> Row;
 	QVector<Row> data_;
+	QVector<QVector<mtg::Ruling>> rulings_;
 	QHash<QString, QHash<QString, int>> quickLookUpTable_;
 
 	Pimpl()
 		: data_()
+		, rulings_()
 		, quickLookUpTable_()
 	{
 		reload();
@@ -147,6 +149,7 @@ struct CardData::Pimpl
 			}
 
 			data_.reserve(numCards);
+			rulings_.reserve(numCards);
 			quickLookUpTable_.reserve(numCards);
 
 			QHash<QString, QPair<int, QDate>> latestPrintHash;
@@ -211,7 +214,7 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::Toughness)] = card["toughness"].toString();
 					r[columnToIndex(ColumnType::Loyalty)] = card["loyalty"].toInt();
 
-					// hidden
+					// misc
 					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();
 					QString imageName = card["imageName"].toString();
 					r[columnToIndex(ColumnType::ImageName)] = imageName;
@@ -236,6 +239,25 @@ struct CardData::Pimpl
 							latestPrintHash[cardName] = qMakePair(data_.size(), setReleaseDate);
 							r[columnToIndex(ColumnType::IsLatestPrint)] = true;
 						}
+					}
+
+					// rulings
+					if (card.contains("rulings"))
+					{
+						QVector<mtg::Ruling> rulings;
+						for (const QJsonValue& rv : card["rulings"].toArray())
+						{
+							QJsonObject r = rv.toObject();
+							mtg::Ruling ruling;
+							ruling.date = QDate::fromString(r["date"].toString(), "yyyy-MM-dd");
+							ruling.text = r["text"].toString();
+							rulings.push_back(ruling);
+						}
+						rulings_.push_back(rulings);
+					}
+					else
+					{
+						rulings_.push_back(QVector<mtg::Ruling>());
 					}
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
@@ -315,6 +337,16 @@ struct CardData::Pimpl
 			}
 		}
 		return -1;
+	}
+
+	const QVector<mtg::Ruling>& getRulings(int row)
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			return rulings_[row];
+		}
+		static const QVector<mtg::Ruling> EMPTY;
+		return EMPTY;
 	}
 
 	void fetchOnlineData(const int row)
@@ -481,6 +513,11 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 		}
 	}
 	return picInfo;
+}
+
+const QVector<mtg::Ruling>& CardData::getRulings(int row)
+{
+	return pimpl_->getRulings(row);
 }
 
 void CardData::fetchOnlineData(const int row)

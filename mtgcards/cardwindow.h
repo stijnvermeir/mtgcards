@@ -24,8 +24,10 @@ private:
 	mtg::LayoutType layoutType_;
 	QStringList imageFiles_;
 	bool secondViewActive_;
+	int picturePage_;
 
 	void closeEvent(QCloseEvent* event);
+	bool eventFilter(QObject* object, QEvent* event);
 	void setCardPicture(const QString& imageFile, double rotation);
 
 public slots:
