@@ -77,7 +77,6 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 {
 	Pimpl()
 	{
-		loadData();
 	}
 
 	void loadData()
@@ -158,7 +157,6 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						if (mtg::Collection::instance().getQuantity(dataRowIndex) != value.toInt() && value.toInt() >= 0)
 						{
 							mtg::Collection::instance().setQuantity(dataRowIndex, value.toInt());
-							mtg::Collection::instance().save();
 							emit dataChanged(index, index);
 							return true;
 						}
@@ -174,7 +172,6 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 					if (GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
 					{
 						mtg::Collection::instance().set(index.row(), GetColumns()[index.column()], value);
-						mtg::Collection::instance().save();
 						emit dataChanged(index, index);
 						return true;
 					}

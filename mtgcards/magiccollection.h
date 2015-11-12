@@ -4,6 +4,7 @@
 
 #include <QVariant>
 #include <QScopedPointer>
+#include <QtSql/QSqlDatabase>
 
 namespace mtg {
 
@@ -12,8 +13,9 @@ class Collection
 public:
 	static Collection& instance();
 
+	QSqlDatabase getConnection();
+
 	void load();
-	void save();
 
 	int getNumRows() const;
 	int getNumCards() const;

@@ -26,6 +26,7 @@ struct Settings::Pimpl
 {
 	QString appDataDir_;
 	QString collectionFile_;
+    QString collectionDb_;
 	QString onlineDataCacheFile_;
 	QString filtersDir_;
 	QString decksDir_;
@@ -97,6 +98,7 @@ struct Settings::Pimpl
 		settings.setValue("options/misc/appdatadir", appDataDir);
 		appDataDir_ = appDataDir;
 		collectionFile_ = appDataDir_ + QDir::separator() + "collection.json";
+        collectionDb_ = appDataDir_ + QDir::separator() + "collection.db";
 		onlineDataCacheFile_ = appDataDir_ + QDir::separator() + "onlinedatacache.json";
 		filtersDir_ = appDataDir_ + QDir::separator() + "filters";
 		decksDir_ = appDataDir_ + QDir::separator() + "decks";
@@ -213,7 +215,12 @@ void Settings::setAppDataDir(const QString& appDataDir) const
 
 const QString& Settings::getCollectionFile() const
 {
-	return pimpl_->collectionFile_;
+    return pimpl_->collectionFile_;
+}
+
+const QString& Settings::getCollectionDb() const
+{
+    return pimpl_->collectionDb_;
 }
 
 const QString& Settings::getOnlineDataCacheFile() const

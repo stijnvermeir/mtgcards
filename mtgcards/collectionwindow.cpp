@@ -222,7 +222,6 @@ void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
 	}
 	if (!dataRowIndices.empty())
 	{
-		mtg::Collection::instance().save();
 		int rowIndex = mtg::Collection::instance().getRowIndex(dataRowIndices.back());
 		if (rowIndex >= 0)
 		{
@@ -261,10 +260,6 @@ void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
 				ui_.collectionTbl_->setCurrentIndex(proxyIndex);
 			}
 		}
-	}
-	if (!dataRowIndices.empty())
-	{
-		mtg::Collection::instance().save();
 	}
 	updateStatusBar();
 }

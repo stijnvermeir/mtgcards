@@ -259,6 +259,9 @@ void MainWindow::importCollection()
 			}
 			importFile.close();
 
+			QSqlDatabase db = mtg::Collection::instance().getConnection();
+			db.transaction();
+
 			QProgressDialog progress("Importing ...", "Cancel", 0, lines.size());
 			progress.setWindowModality(Qt::WindowModal);
 			QStringList errors;
@@ -292,6 +295,7 @@ void MainWindow::importCollection()
 				progress.setValue(i);
 				if (progress.wasCanceled())
 				{
+					db.rollback();
 					break;
 				}
 			}
@@ -300,7 +304,7 @@ void MainWindow::importCollection()
 			{
 				if (errors.empty())
 				{
-					mtg::Collection::instance().save();
+					db.commit();
 				}
 				else
 				{
@@ -315,7 +319,11 @@ void MainWindow::importCollection()
 					int ret = msgBox.exec();
 					if (ret == QMessageBox::Yes)
 					{
-						mtg::Collection::instance().save();
+						db.commit();
+					}
+					else
+					{
+						db.rollback();
 					}
 				}
 			}

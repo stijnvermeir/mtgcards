@@ -4,6 +4,7 @@
 #include "deckmanager.h"
 #include "settings.h"
 
+#include <QtSql>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,17 +15,106 @@
 using namespace std;
 using namespace mtg;
 
+namespace {
+
+QSqlDatabase conn()
+{
+	return QSqlDatabase::database("collection");
+}
+
+QSqlError initDb()
+{
+	const int DB_VERSION = 1;
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "collection");
+	db.setDatabaseName(Settings::instance().getCollectionDb());
+	if (!db.open()) return db.lastError();
+
+	if (!db.tables().contains("version")) // database does not exist yet
+	{
+		qDebug() << "Creating collection db ...";
+		QSqlQuery q(db);
+
+		// version table
+		if (!q.exec("CREATE TABLE version(number integer primary key)")) return q.lastError();
+		if (!q.prepare("INSERT INTO version(number) VALUES (?)")) return q.lastError();
+		q.addBindValue(DB_VERSION);
+		if (!q.exec()) return q.lastError();
+
+		// card table
+		if (!q.exec("CREATE TABLE card(id integer primary key, set_code varchar, name varchar, image_name varchar, quantity integer, user_data varchar)")) return q.lastError();
+		QFile file(Settings::instance().getCollectionFile());
+		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+		{
+			qDebug() << "Converting collection.json to collection.db ...";
+			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
+			QJsonObject obj = d.object();
+			QJsonArray cards = obj["cards"].toArray();
+			if (!db.transaction()) return db.lastError();
+			for (const auto& c : cards)
+			{
+				QJsonObject card = c.toObject();
+				auto set = card["Set"].toString();
+				auto name = card["Name"].toString();
+				auto imageName = card["ImageName"].toString();
+				auto quantity = card["Quantity"].toInt();
+				QVariantMap userData = UserColumn::loadFromJson(card);
+				if (!q.prepare("INSERT INTO card(set_code, name, image_name, quantity, user_data) VALUES (?, ?, ?, ?, ?)"))
+				{
+					db.rollback();
+					return q.lastError();
+				}
+				q.addBindValue(set);
+				q.addBindValue(name);
+				q.addBindValue(imageName);
+				q.addBindValue(quantity);
+				QJsonObject userDataObj;
+				UserColumn::saveToJson(userDataObj, userData);
+				QJsonDocument userDataDoc(userDataObj);
+				q.addBindValue(userDataDoc.toJson(QJsonDocument::Compact));
+				if (!q.exec())
+				{
+					db.rollback();
+					return q.lastError();
+				}
+			}
+			if (!db.commit()) return db.lastError();
+			qDebug() << "Successfully converted collection.json to db.";
+		}
+
+		qDebug() << "Collection db created succesfully.";
+	}
+	else
+	{
+		QSqlQuery q(db);
+		if (!q.exec("SELECT max(number) FROM version")) return q.lastError();
+		if (!q.next()) return q.lastError();
+		int currentVersion = q.value(0).toInt();
+		if (currentVersion != DB_VERSION)
+		{
+			qDebug() << "Collection db version" << currentVersion;
+			// for auto database model updates later
+			qFatal("Invalid collection db version");
+		}
+	}
+
+	return QSqlError();
+}
+
+} // namespace
+
 struct Collection::Pimpl
 {
 	struct Row
 	{
 		int rowIndexInData;
+		int dbId;
 		QVariant quantity;
 		QVariant used;
 		QVariantMap userData;
 
 		Row()
 			: rowIndexInData(-1)
+			, dbId(-1)
 			, quantity(0)
 			, used(0)
 			, userData() {}
@@ -34,61 +124,42 @@ struct Collection::Pimpl
 	Pimpl()
 		: data_()
 	{
-		load();
+		QSqlError err = initDb();
+		if (err.isValid())
+		{
+			qDebug() << err;
+		}
+		err = load();
+		if (err.isValid())
+		{
+			qDebug() << err;
+		}
 	}
 
-	void load()
+	QSqlError load()
 	{
 		data_.clear();
 
-		QFile file(Settings::instance().getCollectionFile());
-		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+		QSqlDatabase db = conn();
+		QSqlQuery q(db);
+		if (!q.exec("SELECT id, set_code, name, image_name, quantity, user_data FROM card")) return q.lastError();
+		while (q.next())
 		{
-			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
-			QJsonObject obj = d.object();
-			QJsonArray cards = obj["cards"].toArray();
-			data_.reserve(cards.size());
-			for (const auto& c : cards)
-			{
-				QJsonObject card = c.toObject();
-				auto set = card["Set"].toString();
-				auto name = card["Name"].toString();
-				auto imageName = card["ImageName"].toString();
-				Row r;
-				r.rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
-				r.quantity = card["Quantity"].toInt();
-				r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
-				r.userData = UserColumn::loadFromJson(card);
-				data_.push_back(r);
-			}
-		}
-	}
+			auto set = q.value(1).toString();
+			auto name = q.value(2).toString();
+			auto imageName = q.value(3).toString();
 
-	void save()
-	{
-		QJsonArray cards;
-		for (const Row& r : data_)
-		{
-			QJsonObject cardObj;
-			cardObj["Set"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::SetCode).toString();
-			cardObj["Name"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
-			cardObj["ImageName"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::ImageName).toString();
-			cardObj["Quantity"] = r.quantity.toInt();
-			UserColumn::saveToJson(cardObj, r.userData);
-			cards.append(cardObj);
+			Row r;
+			r.rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
+			r.dbId = q.value(0).toInt();
+			r.quantity = q.value(4).toInt();
+			r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
+			QJsonDocument userDataDoc = QJsonDocument::fromJson(q.value(5).toByteArray());
+			r.userData = UserColumn::loadFromJson(userDataDoc.object());
+			data_.push_back(r);
 		}
-		QJsonObject obj;
-		obj["cards"] = cards;
-		QJsonDocument doc(obj);
-		QFile file(Settings::instance().getCollectionFile());
-		if (!file.open(QIODevice::WriteOnly))
-		{
-			qWarning() << "Failed to save to file " << file.fileName();
-		}
-		else
-		{
-			file.write(doc.toJson());
-		}
+
+		return QSqlError();
 	}
 
 	int getNumRows() const
@@ -194,22 +265,57 @@ struct Collection::Pimpl
 		{
 			if (newQuantity >= 0)
 			{
-				row->quantity = newQuantity;
+				QSqlDatabase db = conn();
+				QSqlQuery q(db);
+				q.prepare("UPDATE card SET quantity = ? WHERE id = ?");
+				q.addBindValue(newQuantity);
+				q.addBindValue(row->dbId);
+				q.exec();
+				if (!q.lastError().isValid())
+				{
+					row->quantity = newQuantity;
+				}
 			}
 			else
 			{
-				data_.erase(row);
+				QSqlDatabase db = conn();
+				QSqlQuery q(db);
+				q.prepare("DELETE FROM card WHERE id = ?");
+				q.addBindValue(row->dbId);
+				q.exec();
+				if (!q.lastError().isValid())
+				{
+					data_.erase(row);
+				}
 			}
 		}
 		else
 		{
 			if (newQuantity >= 0)
 			{
-				Row newRow;
-				newRow.rowIndexInData = dataRowIndex;
-				newRow.quantity = newQuantity;
-				newRow.used = DeckManager::instance().getUsedCount(newRow.rowIndexInData);
-				data_.push_back(newRow);
+				auto setCode = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::SetCode).toString();
+				auto name = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+				auto imageName = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::ImageName).toString();
+
+				QSqlDatabase db = conn();
+				QSqlQuery q(db);
+				q.prepare("INSERT INTO card(set_code, name, image_name, quantity, user_data) VALUES(?, ?, ?, ?, ?)");
+				q.addBindValue(setCode);
+				q.addBindValue(name);
+				q.addBindValue(imageName);
+				q.addBindValue(newQuantity);
+				q.addBindValue(QByteArray("{}"));
+				q.exec();
+				QVariant dbId = q.lastInsertId();
+				if (dbId.isValid() && !q.lastError().isValid())
+				{
+					Row newRow;
+					newRow.rowIndexInData = dataRowIndex;
+					newRow.dbId = dbId.toInt();
+					newRow.quantity = newQuantity;
+					newRow.used = DeckManager::instance().getUsedCount(newRow.rowIndexInData);
+					data_.push_back(newRow);
+				}
 			}
 		}
 	}
@@ -230,7 +336,22 @@ struct Collection::Pimpl
 			Row& entry = data_[row];
 			if (column == ColumnType::UserDefined)
 			{
-				entry.userData[column.userColumn().name_] = data;
+				QVariantMap userDataCopy = entry.userData;
+				userDataCopy[column.userColumn().name_] = data;
+				QJsonObject obj;
+				UserColumn::saveToJson(obj, userDataCopy);
+				QJsonDocument doc(obj);
+
+				QSqlDatabase db = conn();
+				QSqlQuery q(db);
+				q.prepare("UPDATE card SET user_data = ? WHERE id = ?");
+				q.addBindValue(doc.toJson(QJsonDocument::Compact));
+				q.addBindValue(entry.dbId);
+				q.exec();
+				if (!q.lastError().isValid())
+				{
+					entry.userData = userDataCopy;
+				}
 			}
 		}
 	}
@@ -251,14 +372,18 @@ Collection::~Collection()
 {
 }
 
-void Collection::load()
+QSqlDatabase Collection::getConnection()
 {
-	pimpl_->load();
+	return conn();
 }
 
-void Collection::save()
+void Collection::load()
 {
-	pimpl_->save();
+	QSqlError err = pimpl_->load();
+	if (err.isValid())
+	{
+		qDebug() << err;
+	}
 }
 
 int Collection::getNumRows() const

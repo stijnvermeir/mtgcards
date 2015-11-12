@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 CONFIG += c++11
-QT += core gui widgets network
+QT += core gui widgets network sql
 
 macx {
 	QT += svg

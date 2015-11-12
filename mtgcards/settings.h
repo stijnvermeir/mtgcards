@@ -35,6 +35,7 @@ public:
 	const QString& getAppDataDir() const;
 	void setAppDataDir(const QString& appDataDir) const;
 	const QString& getCollectionFile() const;
+	const QString& getCollectionDb() const;
 	const QString& getOnlineDataCacheFile() const;
 	const QString& getFiltersDir() const;
 	const QString& getDecksDir() const;
