@@ -177,7 +177,7 @@ struct Collection::Pimpl
 		return numCards;
 	}
 
-	const QVariant& get(const int row, const ColumnType& column) const
+	QVariant get(const int row, const ColumnType& column) const
 	{
 		if (row >= 0 && row < getNumRows())
 		{
@@ -201,8 +201,7 @@ struct Collection::Pimpl
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
-		static const QVariant EMPTY;
-		return EMPTY;
+		return QVariant();
 	}
 
 	int getDataRowIndex(const int row) const
@@ -396,7 +395,7 @@ int Collection::getNumCards() const
 	return pimpl_->getNumCards();
 }
 
-const QVariant& Collection::get(const int row, const ColumnType& column) const
+QVariant Collection::get(const int row, const ColumnType& column) const
 {
 	return pimpl_->get(row, column);
 }

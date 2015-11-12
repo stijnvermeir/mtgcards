@@ -26,7 +26,7 @@ public:
 
 	void reload();
 	int getNumRows() const;
-	const QVariant& get(const int row, const ColumnType& column) const;
+	QVariant get(const int row, const ColumnType& column) const;
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
 	PictureInfo getPictureInfo(int row);

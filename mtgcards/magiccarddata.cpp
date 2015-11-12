@@ -272,7 +272,7 @@ struct CardData::Pimpl
 		return data_.size();
 	}
 
-	const QVariant& get(const int row, const ColumnType& column) const
+	QVariant get(const int row, const ColumnType& column) const
 	{
 		if (row >= 0 && row < getNumRows())
 		{
@@ -289,8 +289,7 @@ struct CardData::Pimpl
 				}
 			}
 		}
-		static const QVariant EMPTY;
-		return EMPTY;
+		return QVariant();
 	}
 
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const
@@ -421,7 +420,7 @@ int CardData::getNumRows() const
 	return pimpl_->getNumRows();
 }
 
-const QVariant& CardData::get(const int row, const ColumnType& column) const
+QVariant CardData::get(const int row, const ColumnType& column) const
 {
 	return pimpl_->get(row, column);
 }

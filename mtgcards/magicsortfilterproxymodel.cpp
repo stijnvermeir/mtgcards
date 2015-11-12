@@ -40,7 +40,6 @@ void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedR
 			break;
 		}
 	}
-	OnlineDataCache::instance().save();
 	progress.setValue(selectedRows.size());
 }
 

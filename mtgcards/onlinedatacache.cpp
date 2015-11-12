@@ -2,26 +2,22 @@
 
 #include "settings.h"
 
-#include <QHash>
+#include <QtSql>
 #include <QVariant>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
 #include <QDebug>
 
 using namespace mtg;
 
 namespace {
 
-const QVector<ColumnType> ONLINE_COLUMNS =
+const QVector<QPair<ColumnType, QString>> ONLINE_COLUMNS =
 {
-	ColumnType::PriceLowest,
-	ColumnType::PriceLowestFoil,
-	ColumnType::PriceAverage,
-	ColumnType::PriceTrend,
-	ColumnType::MkmProductId,
-	ColumnType::MkmMetaproductId
+	{ ColumnType::PriceLowest, "real"},
+	{ ColumnType::PriceLowestFoil, "real"},
+	{ ColumnType::PriceAverage, "real"},
+	{ ColumnType::PriceTrend, "real"},
+	{ ColumnType::MkmProductId, "integer"},
+	{ ColumnType::MkmMetaproductId, "integer"}
 };
 
 QVector<int> generateOnlineColumnIndices()
@@ -29,7 +25,7 @@ QVector<int> generateOnlineColumnIndices()
 	QVector<int> indices(ColumnType::COUNT, -1);
 	for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
 	{
-		indices[ONLINE_COLUMNS[i]] = i;
+		indices[ONLINE_COLUMNS[i].first] = i;
 	}
 	return indices;
 }
@@ -45,84 +41,123 @@ bool isOnlineColumn(const ColumnType::type_t column)
 	return (onlineColumnToIndex(column) >= 0);
 }
 
-} // namespace
-
-struct OnlineDataCache::Pimpl
+QSqlDatabase conn()
 {
-	QHash<QString, QVector<QVariant>> cache_;
+	return QSqlDatabase::database("onlinedatacache");
+}
 
-	Pimpl()
+QSqlError initDb()
+{
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "onlinedatacache");
+	db.setDatabaseName(Settings::instance().getOnlineDataCacheDb());
+	if (!db.open()) return db.lastError();
+
+	if (!db.tables().contains("cache"))
 	{
-		QFile file(Settings::instance().getOnlineDataCacheFile());
-		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+		QString query;
+		QTextStream str(&query);
+		str << "CREATE TABLE cache (id integer primary key, set_code text, name text";
+		for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
 		{
-			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
-			QJsonObject cache = d.object();
-			for (QJsonObject::iterator it = cache.begin(), end = cache.end(); it != end; ++it)
+			str << ", " << (QString) ONLINE_COLUMNS[i].first << " " << ONLINE_COLUMNS[i].second;
+		}
+		str << ")";
+		qDebug() << query;
+		QSqlQuery q(db);
+		if (!q.exec(query)) return q.lastError();
+		if (!q.exec("CREATE UNIQUE INDEX cache_set_name_index ON cache (set_code, name)")) return q.lastError();
+	}
+	else
+	{
+		QSqlRecord record = db.record("cache");
+		QSqlQuery q(db);
+		for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
+		{
+			if (record.indexOf((QString) ONLINE_COLUMNS[i].first) == -1)
 			{
-				QVector<QVariant>& item = cache_[it.key()];
-				item.fill(QVariant(), ONLINE_COLUMNS.size());
-				QJsonObject entry = it.value().toObject();
-				for (QJsonObject::iterator i = entry.begin(), e = entry.end(); i != e; ++i)
-				{
-					ColumnType column(i.key());
-					if (isOnlineColumn(column))
-					{
-						item[onlineColumnToIndex(column)] = ((QJsonValue) i.value()).toVariant();
-					}
-				}
+				QString query;
+				QTextStream str(&query);
+				str << "ALTER TABLE cache ADD COLUMN " << (QString) ONLINE_COLUMNS[i].first << " " << ONLINE_COLUMNS[i].second;
+				qDebug() << query;
+				if (!q.exec(query)) return q.lastError();
 			}
 		}
 	}
 
-	const QVariant& get(const QString& set, const QString& name, const mtg::ColumnType& column) const
+	return QSqlError();
+}
+
+} // namespace
+
+struct OnlineDataCache::Pimpl
+{
+	Pimpl()
+	{
+		QSqlError err = initDb();
+		if (err.isValid())
+		{
+			qDebug() << err;
+		}
+	}
+
+	QVariant get(const QString& set, const QString& name, const mtg::ColumnType& column) const
 	{
 		if (isOnlineColumn(column))
 		{
-			QString key = set + " " + name;
-			if (cache_.contains(key))
+			QSqlDatabase db = conn();
+			QSqlQuery q(db);
+			QString query;
+			QTextStream str(&query);
+			str << "SELECT " << (QString)column << " FROM cache WHERE set_code = ? AND name = ?";
+			q.prepare(query);
+			q.addBindValue(set);
+			q.addBindValue(name);
+			if (q.exec() && q.next())
 			{
-				return cache_[key][onlineColumnToIndex(column)];
+				return q.value(0);
 			}
 		}
-		static const QVariant EMPTY;
-		return EMPTY;
+		return QVariant();
 	}
 
 	void set(const QString& set, const QString& name, const mtg::ColumnType& column, const QVariant& data)
 	{
 		if (isOnlineColumn(column))
 		{
-			QString key = set + " " + name;
-			if (!cache_.contains(key))
+			QSqlDatabase db = conn();
+			QSqlQuery q(db);
+			q.prepare("SELECT id FROM cache WHERE set_code = ? AND name = ?");
+			q.addBindValue(set);
+			q.addBindValue(name);
+			if (q.exec())
 			{
-				cache_[key].fill(QVariant(), ONLINE_COLUMNS.size());
+				if (q.next())
+				{
+					int dbId = q.value(0).toInt();
+					QString query;
+					QTextStream str(&query);
+					str << "UPDATE cache SET " << (QString)column << " = ? WHERE id = ?";
+					q.prepare(query);
+					q.addBindValue(data);
+					q.addBindValue(dbId);
+					q.exec();
+				}
+				else
+				{
+					QString query;
+					QTextStream str(&query);
+					str << "INSERT INTO cache(set_code, name, " << (QString)column << ") VALUES (?, ?, ?)";
+					q.prepare(query);
+					q.addBindValue(set);
+					q.addBindValue(name);
+					q.addBindValue(data);
+					q.exec();
+				}
 			}
-			cache_[key][onlineColumnToIndex(column)] = data;
-		}
-	}
-
-	void save()
-	{
-		QJsonObject cache;
-		for (QHash<QString, QVector<QVariant>>::iterator it = cache_.begin(), end = cache_.end(); it != end; ++it)
-		{
-			QJsonObject entry;
-			for (int column = 0; column < ONLINE_COLUMNS.size(); ++column)
+			if (q.lastError().isValid())
 			{
-				entry[(QString) ONLINE_COLUMNS[column]] = QJsonValue::fromVariant(it.value()[column]);
+				qDebug() << q.lastError();
 			}
-			cache[it.key()] = entry;
-		}
-		QJsonDocument doc(cache);
-		QFile file(Settings::instance().getOnlineDataCacheFile());
-		if (!file.open(QIODevice::WriteOnly))
-		{
-			qWarning() << "Failed to save to file " << file.fileName();
-		}
-		else
-		{
-			file.write(doc.toJson());
 		}
 	}
 };
@@ -138,7 +173,7 @@ OnlineDataCache& OnlineDataCache::instance()
 	return inst;
 }
 
-const QVariant& OnlineDataCache::get(const QString& set, const QString& name, const mtg::ColumnType& column) const
+QVariant OnlineDataCache::get(const QString& set, const QString& name, const mtg::ColumnType& column) const
 {
 	return pimpl_->get(set, name, column);
 }
@@ -146,11 +181,6 @@ const QVariant& OnlineDataCache::get(const QString& set, const QString& name, co
 void OnlineDataCache::set(const QString& set, const QString& name, const mtg::ColumnType& column, const QVariant& data)
 {
 	pimpl_->set(set, name, column, data);
-}
-
-void OnlineDataCache::save()
-{
-	pimpl_->save();
 }
 
 OnlineDataCache::OnlineDataCache()
