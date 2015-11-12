@@ -1,4 +1,10 @@
 #include "mainwindow.h"
+#include "splashscreen.h"
+#include "magiccarddata.h"
+#include "magiccollection.h"
+#include "deckmanager.h"
+#include "onlinedatacache.h"
+
 #include <QApplication>
 #include <QDateTime>
 
@@ -28,26 +34,24 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& /*context*/, cons
 class MyApplication : public QApplication
 {
 public:
+	MainWindow* mainWindow_;
+
 	MyApplication(int &argc, char **argv)
 		: QApplication(argc, argv)
-		, mainWindow_()
+		, mainWindow_(nullptr)
 	{
 	}
 
-protected:
 #ifdef __APPLE__
 	virtual bool event(QEvent* e)
 	{
-		if (e->type() == QEvent::Close)
+		if (e->type() == QEvent::Close && mainWindow_)
 		{
-			return mainWindow_.toQuitOrNotToQuit(e);
+			return mainWindow_->toQuitOrNotToQuit(e);
 		}
 		return QApplication::event(e);
 	}
 #endif
-
-private:
-	MainWindow mainWindow_;
 };
 
 int main(int argc, char *argv[])
@@ -61,5 +65,18 @@ int main(int argc, char *argv[])
 	QGuiApplication::setQuitOnLastWindowClosed(false);
 
 	MyApplication a(argc, argv);
+	SplashScreen splash;
+	mtg::CardData::instance();
+	a.processEvents();
+	DeckManager::instance();
+	a.processEvents();
+	mtg::Collection::instance();
+	a.processEvents();
+	OnlineDataCache::instance();
+	a.processEvents();
+	MainWindow mainWindow;
+	a.processEvents();
+	a.mainWindow_ = &mainWindow;
+	splash.finish(a.mainWindow_);
     return a.exec();
 }

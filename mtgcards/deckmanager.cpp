@@ -1,6 +1,6 @@
 #include "deckmanager.h"
 
-#include"settings.h"
+#include "settings.h"
 
 #include <QDir>
 #include <QDebug>

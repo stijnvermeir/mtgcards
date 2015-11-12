@@ -50,7 +50,6 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 {
 	Pimpl()
 	{
-		loadData();
 	}
 
 	void loadData()

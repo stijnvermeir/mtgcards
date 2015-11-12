@@ -56,7 +56,8 @@ SOURCES += main.cpp\
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
     filters/deckfilterfunction.cpp \
-    onlinedatacache.cpp
+    onlinedatacache.cpp \
+    splashscreen.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -97,7 +98,8 @@ HEADERS  += mainwindow.h \
     manacurvelinewidget.h \
     filters/deckfilterfunction.h \
     onlinedatacache.h \
-    magicruling.h
+    magicruling.h \
+    splashscreen.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
