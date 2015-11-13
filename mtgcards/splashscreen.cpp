@@ -7,7 +7,7 @@ SplashScreen::SplashScreen()
 	: splashScreen_(nullptr)
 {
 	QPixmap pixmap(":/resources/icons/mtgcards.svg");
-	splashScreen_ = new QSplashScreen(pixmap);
+	splashScreen_ = new QSplashScreen(pixmap, Qt::WindowStaysOnTopHint);
 	splashScreen_->show();
 }
 

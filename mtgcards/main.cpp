@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QDateTime>
+#include <QWindow>
 
 #include <iostream>
 
@@ -42,7 +43,7 @@ public:
 	{
 	}
 
-#ifdef __APPLE__
+#ifdef Q_OS_OSX
 	virtual bool event(QEvent* e)
 	{
 		if (e->type() == QEvent::Close && mainWindow_)
@@ -78,5 +79,20 @@ int main(int argc, char *argv[])
 	a.processEvents();
 	a.mainWindow_ = &mainWindow;
 	splash.finish(a.mainWindow_);
+
+#ifndef Q_OS_OSX
+	QObject::connect(qApp, &QApplication::focusWindowChanged, [](QWindow* focusWindow)
+	{
+		for (QWindow* w : qApp->allWindows())
+		{
+			w->raise();
+		}
+		if (focusWindow)
+		{
+			focusWindow->raise();
+		}
+	});
+#endif
+
     return a.exec();
 }
