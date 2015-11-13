@@ -46,6 +46,7 @@ public:
 		Sideboard,
 		Owned,
 		IsLatestPrint,
+		MultiverseId,
 		PriceLowest,
 		PriceLowestFoil,
 		PriceAverage,

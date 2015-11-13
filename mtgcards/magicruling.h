@@ -7,7 +7,7 @@ namespace mtg {
 
 struct Ruling
 {
-	QDate date;
+	QString date;
 	QString text;
 };
 

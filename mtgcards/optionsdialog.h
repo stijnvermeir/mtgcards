@@ -49,4 +49,5 @@ private slots:
 	// misc tab
 	void browseAppDataDirBtnClicked();
 	void changeFontBtnClicked();
+	void automaticArtDownloadClicked(bool enabled);
 };

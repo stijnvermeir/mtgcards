@@ -102,7 +102,7 @@ void CardWindow::changeCardPicture(int row)
 	ui_.rulingsTbl->setRowCount(rulings.size());
 	for (int i = 0; i < rulings.size(); ++i)
 	{
-		ui_.rulingsTbl->setItem(i, 0, new QTableWidgetItem(rulings[i].date.toString("yyyy-MM-dd")));
+		ui_.rulingsTbl->setItem(i, 0, new QTableWidgetItem(rulings[i].date));
 		ui_.rulingsTbl->setItem(i, 1, new QTableWidgetItem(rulings[i].text));
 	}
 	ui_.rulingsTbl->resizeRowsToContents();

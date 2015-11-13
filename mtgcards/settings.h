@@ -60,6 +60,9 @@ public:
 
 	const Mkm& getMkm() const;
 	void setMkm(const Mkm& mkm);
+
+	bool getArtDownloadEnabled() const;
+	void setArtDownloadEnabled(bool enabled);
 private:
 
 	struct Pimpl;

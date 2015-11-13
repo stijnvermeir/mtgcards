@@ -353,6 +353,13 @@
          </item>
         </layout>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Table font</string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <property name="topMargin">
@@ -374,10 +381,10 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_5">
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="artDownloadEnabledChk">
          <property name="text">
-          <string>Table font</string>
+          <string>Automatic card art download (low quality)</string>
          </property>
         </widget>
        </item>

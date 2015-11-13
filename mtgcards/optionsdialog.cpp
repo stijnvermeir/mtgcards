@@ -361,6 +361,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
 	connect(ui_.fontBtn, SIGNAL(clicked()), this, SLOT(changeFontBtnClicked()));
 	ui_.fontTxt->setText(Settings::instance().getFont().toString());
+	ui_.artDownloadEnabledChk->setChecked(Settings::instance().getArtDownloadEnabled());
+	connect(ui_.artDownloadEnabledChk, SIGNAL(clicked(bool)), this, SLOT(automaticArtDownloadClicked(bool)));
 }
 
 OptionsDialog::~OptionsDialog()
@@ -507,4 +509,9 @@ void OptionsDialog::changeFontBtnClicked()
 		ui_.fontTxt->setText(Settings::instance().getFont().toString());
 		emit fontChanged();
 	}
+}
+
+void OptionsDialog::automaticArtDownloadClicked(bool enabled)
+{
+	Settings::instance().setArtDownloadEnabled(enabled);
 }

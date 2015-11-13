@@ -50,7 +50,8 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::Loyalty,
 	ColumnType::Layout,
 	ColumnType::ImageName,
-	ColumnType::IsLatestPrint
+	ColumnType::IsLatestPrint,
+	ColumnType::MultiverseId
 };
 
 QVector<int> generateColumnIndices()
@@ -115,6 +116,26 @@ QString removeAccents(QString s)
 	return output;
 }
 
+bool downloadPicture(int multiverseId, const QString& filename)
+{
+	 QNetworkAccessManager m;
+	 QNetworkRequest request;
+	 request.setUrl(QString("http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%1&type=card").arg(multiverseId));
+	 QScopedPointer<QNetworkReply> reply(m.get(request));
+	 QEventLoop loop;
+	 QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	 loop.exec();
+	 if (reply->error())
+	 {
+		 qDebug() << reply->error() << reply->errorString();
+		 return false;
+	 }
+	 QFileInfo fi(filename);
+	 fi.absoluteDir().mkpath(fi.absolutePath());
+	 QImage picture = QImage::fromData(reply->readAll());
+	 return picture.save(filename);
+}
+
 } // namespace
 
 struct CardData::Pimpl
@@ -140,7 +161,7 @@ struct CardData::Pimpl
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
-			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
+			QJsonDocument d = QJsonDocument::fromJson(file.readAll());
 			QJsonObject obj = d.object();
 			int numCards = 0;
 			for (const auto& set : obj)
@@ -218,6 +239,10 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();
 					QString imageName = card["imageName"].toString();
 					r[columnToIndex(ColumnType::ImageName)] = imageName;
+					if (card.contains("multiverseid"))
+					{
+						r[columnToIndex(ColumnType::MultiverseId)] = card["multiverseid"].toInt();
+					}
 					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
 
 					if (includeInLatestPrintCheck)
@@ -249,7 +274,7 @@ struct CardData::Pimpl
 						{
 							QJsonObject r = rv.toObject();
 							mtg::Ruling ruling;
-							ruling.date = QDate::fromString(r["date"].toString(), "yyyy-MM-dd");
+							ruling.date = r["date"].toString();
 							ruling.text = r["text"].toString();
 							rulings.push_back(ruling);
 						}
@@ -454,7 +479,8 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 		QString prefix = Settings::instance().getCardImageDir();
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
-		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName](QString imageFile)
+		QVariant multiverseId = get(row, mtg::ColumnType::MultiverseId);
+		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName](QString imageFile, const QVariant& multiverseId)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -483,8 +509,16 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 				}
 				else
 				{
-					picInfo.filenames << notFoundImageFile;
-					picInfo.missing << imageFile;
+					// try downloading
+					if (Settings::instance().getArtDownloadEnabled() && multiverseId.isValid() && downloadPicture(multiverseId.toInt(), imageFile))
+					{
+						picInfo.filenames << imageFile;
+					}
+					else
+					{
+						picInfo.filenames << notFoundImageFile;
+						picInfo.missing << imageFile;
+					}
 				}
 			}
 		};
@@ -494,7 +528,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
-			addToListLambda(imageFile);
+			addToListLambda(imageFile, multiverseId);
 		}
 		else
 		if (picInfo.layout == mtg::LayoutType::DoubleFaced)
@@ -503,7 +537,8 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 			for (auto& n : names)
 			{
 				QString imageFile = prefix + n.replace(":", "") + ".jpg";
-				addToListLambda(imageFile);
+				int dataRowIndex = findRowFast(get(row, mtg::ColumnType::SetCode).toString(), n);
+				addToListLambda(imageFile, get(dataRowIndex, mtg::ColumnType::MultiverseId));
 			}
 		}
 		else
@@ -513,12 +548,12 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 			QString tokenName = get(row, mtg::ColumnType::ImageName).toString();
 			tokenName[0] = tokenName[0].toUpper();
 			QString imageFile = prefix + tokenName.replace(":", "") + ".jpg";
-			addToListLambda(imageFile);
+			addToListLambda(imageFile, multiverseId);
 		}
 		else
 		{
 			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
-			addToListLambda(imageFile);
+			addToListLambda(imageFile, multiverseId);
 		}
 	}
 	return picInfo;

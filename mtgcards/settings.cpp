@@ -37,6 +37,7 @@ struct Settings::Pimpl
 	FilterNode::Ptr globalFilter_;
 	QFont font_;
 	Mkm mkm_;
+	bool artDownloadEnabled_;
 
 	Pimpl()
 	{
@@ -87,6 +88,8 @@ struct Settings::Pimpl
 		mkm_.accessToken = settings.value("options/mkm/accessToken").toString();
 		mkm_.accessTokenSecret = settings.value("options/mkm/accessTokenSecret").toString();
 		mkm_.useSandbox = settings.value("options/mkm/useSandbox").toBool();
+
+		artDownloadEnabled_ = settings.value("options/misc/artDownloadEnabled", true).toBool();
 	}
 
 	void setAppDataDir(const QString& appDataDir)
@@ -185,6 +188,14 @@ struct Settings::Pimpl
 		settings.setValue("options/mkm/accessToken", mkm_.accessToken);
 		settings.setValue("options/mkm/accessTokenSecret", mkm_.accessTokenSecret);
 		settings.setValue("options/mkm/useSandbox", mkm_.useSandbox);
+	}
+
+	void setArtDownloadEnabled(bool enabled)
+	{
+		artDownloadEnabled_ = enabled;
+
+		QSettings settings;
+		settings.setValue("options/misc/artDownloadEnabled", artDownloadEnabled_);
 	}
 };
 
@@ -306,4 +317,14 @@ const Settings::Mkm& Settings::getMkm() const
 void Settings::setMkm(const Mkm& mkm)
 {
 	pimpl_->setMkm(mkm);
+}
+
+bool Settings::getArtDownloadEnabled() const
+{
+	return pimpl_->artDownloadEnabled_;
+}
+
+void Settings::setArtDownloadEnabled(bool enabled)
+{
+	pimpl_->setArtDownloadEnabled(enabled);
 }
