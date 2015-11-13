@@ -4,6 +4,8 @@
 
 #include <QtSql>
 #include <QVariant>
+#include <QHash>
+#include <QVector>
 #include <QDebug>
 
 using namespace mtg;
@@ -91,6 +93,8 @@ QSqlError initDb()
 
 struct OnlineDataCache::Pimpl
 {
+	QHash<QString, QVector<QVariant>> localCache_;
+
 	Pimpl()
 	{
 		QSqlError err = initDb();
@@ -98,23 +102,39 @@ struct OnlineDataCache::Pimpl
 		{
 			qDebug() << err;
 		}
+
+		QSqlDatabase db = conn();
+		QSqlQuery q(db);
+		q.exec("SELECT * FROM cache");
+		QSqlRecord record = q.record();
+		int sqlSetIndex = record.indexOf("set_code");
+		int sqlNameIndex = record.indexOf("name");
+		QVector<int> sqlColumnIndices(ONLINE_COLUMNS.size());
+		for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
+		{
+			sqlColumnIndices[i] = record.indexOf((QString)ONLINE_COLUMNS[i].first);
+		}
+		while (q.next())
+		{
+			QVector<QVariant> entry(ONLINE_COLUMNS.size());
+			for (int i = 0; i < ONLINE_COLUMNS.size(); ++i)
+			{
+				entry[i] = q.value(sqlColumnIndices[i]);
+			}
+			QString key = q.value(sqlSetIndex).toString() + q.value(sqlNameIndex).toString();
+			localCache_[key] = entry;
+		}
+		q.finish();
 	}
 
 	QVariant get(const QString& set, const QString& name, const mtg::ColumnType& column) const
 	{
 		if (isOnlineColumn(column))
 		{
-			QSqlDatabase db = conn();
-			QSqlQuery q(db);
-			QString query;
-			QTextStream str(&query);
-			str << "SELECT " << (QString)column << " FROM cache WHERE set_code = ? AND name = ?";
-			q.prepare(query);
-			q.addBindValue(set);
-			q.addBindValue(name);
-			if (q.exec() && q.next())
+			QString key = set + name;
+			if (localCache_.contains(key))
 			{
-				return q.value(0);
+				return localCache_[key][onlineColumnToIndex(column)];
 			}
 		}
 		return QVariant();
@@ -124,6 +144,7 @@ struct OnlineDataCache::Pimpl
 	{
 		if (isOnlineColumn(column))
 		{
+			// store in db
 			QSqlDatabase db = conn();
 			QSqlQuery q(db);
 			q.prepare("SELECT id FROM cache WHERE set_code = ? AND name = ?");
@@ -158,6 +179,14 @@ struct OnlineDataCache::Pimpl
 			{
 				qDebug() << q.lastError();
 			}
+
+			// update local cache
+			QString key = set + name;
+			if (!localCache_.contains(key))
+			{
+				localCache_[key] = QVector<QVariant>(ONLINE_COLUMNS.size());
+			}
+			localCache_[key][onlineColumnToIndex(column)] = data;
 		}
 	}
 };
