@@ -88,6 +88,7 @@
    <addaction name="actionRemoveFromCollection"/>
    <addaction name="actionAddToDeck"/>
    <addaction name="actionRemoveFromDeck"/>
+   <addaction name="actionAddDeckToCollection"/>
    <addaction name="separator"/>
    <addaction name="actionToggleDeckActive"/>
    <addaction name="separator"/>
@@ -285,6 +286,18 @@
    </property>
    <property name="toolTip">
     <string>Add selection to wantslist</string>
+   </property>
+  </action>
+  <action name="actionAddDeckToCollection">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/document24.svg</normaloff>:/resources/icons/document24.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add deck to collection</string>
+   </property>
+   <property name="toolTip">
+    <string>Add entire deck to collection</string>
    </property>
   </action>
  </widget>

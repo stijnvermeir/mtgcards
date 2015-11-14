@@ -89,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(&collectionWindow_, SIGNAL(addToDeck(QVector<int>)), &deckWindow_, SLOT(addToDeck(QVector<int>)));
 	connect(&collectionWindow_, SIGNAL(removeFromDeck(QVector<int>)), &deckWindow_, SLOT(removeFromDeck(QVector<int>)));
 	connect(&deckWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
+	connect(&deckWindow_, SIGNAL(addToCollection(QVector<QPair<int,int>>)), &collectionWindow_, SLOT(addToCollection(QVector<QPair<int,int>>)));
 	connect(&deckWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
 
 	// open used decks

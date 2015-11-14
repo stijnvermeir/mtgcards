@@ -234,6 +234,27 @@ void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
 	updateStatusBar();
 }
 
+void CollectionWindow::addToCollection(const QVector<QPair<int, int>>& additions)
+{
+	for (const QPair<int,int>& add : additions)
+	{
+		auto currentQuantity = collectionTableModel_.getQuantity(add.first);
+		collectionTableModel_.setQuantity(add.first, currentQuantity + add.second);
+	}
+	if (!additions.empty())
+	{
+		int rowIndex = mtg::Collection::instance().getRowIndex(additions.back().first);
+		if (rowIndex >= 0)
+		{
+			int columnIndex = ui_.collectionTbl_->horizontalHeader()->logicalIndexAt(0);
+			QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(rowIndex, columnIndex);
+			QModelIndex proxyIndex = collectionTableModel_.mapFromSource(sourceIndex);
+			ui_.collectionTbl_->setCurrentIndex(proxyIndex);
+		}
+	}
+	updateStatusBar();
+}
+
 void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
 {
 	for (const int dataRowIndex : dataRowIndices)

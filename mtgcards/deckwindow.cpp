@@ -44,6 +44,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(ui_.actionAddDeckToCollection, SIGNAL(triggered()), this, SLOT(actionAddDeckToCollection()));
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
@@ -446,6 +447,15 @@ void DeckWindow::actionAddToCollection()
 	if (widget)
 	{
 		emit addToCollection(static_cast<DeckWidget*>(widget)->currentDataRowIndices());
+	}
+}
+
+void DeckWindow::actionAddDeckToCollection()
+{
+	QWidget* widget = ui_.tabWidget->currentWidget();
+	if (widget)
+	{
+		emit addToCollection(static_cast<DeckWidget*>(widget)->deck().getQuantities());
 	}
 }
 

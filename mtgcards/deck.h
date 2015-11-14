@@ -6,6 +6,8 @@
 #include <QString>
 #include <QScopedPointer>
 #include <QObject>
+#include <QVector>
+#include <QPair>
 
 class Deck : public QObject
 {
@@ -40,6 +42,8 @@ public:
 	void setActive(bool active);
 
 	void set(const int row, const mtg::ColumnType& column, const QVariant& data);
+
+	QVector<QPair<int,int>> getQuantities() const;
 
 signals:
 	void changed();

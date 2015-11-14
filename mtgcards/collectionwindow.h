@@ -45,6 +45,7 @@ private:
 
 public slots:
 	void addToCollection(const QVector<int>&);
+	void addToCollection(const QVector<QPair<int, int>>&);
 	void removeFromCollection(const QVector<int>&);
 
 private slots:

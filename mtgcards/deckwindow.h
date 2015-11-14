@@ -29,6 +29,7 @@ signals:
 	void windowClosed(bool);
 	void selectedCardChanged(int);
 	void addToCollection(QVector<int>);
+	void addToCollection(QVector<QPair<int,int>>);
 	void removeFromCollection(QVector<int>);
 	void fontChanged();
 
@@ -60,6 +61,7 @@ private slots:
 	void actionAdvancedFilter();
 	void actionEnableFilter(bool enable);
 	void actionAddToCollection();
+	void actionAddDeckToCollection();
 	void actionRemoveFromCollection();
 	void actionAddToDeck();
 	void actionRemoveFromDeck();

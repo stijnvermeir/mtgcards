@@ -283,6 +283,21 @@ struct Deck::Pimpl
 			}
 		}
 	}
+
+	QVector<QPair<int,int>> getQuantities() const
+	{
+		QVector<QPair<int,int>> quantities;
+
+		for (const Row& row : data_)
+		{
+			if (row.quantity.toInt() > 0)
+			{
+				quantities.push_back(QPair<int, int>(row.rowIndexInData, row.quantity.toInt()));
+			}
+		}
+
+		return quantities;
+	}
 };
 
 Deck::Deck()
@@ -412,4 +427,9 @@ void Deck::setActive(bool active)
 void Deck::set(const int row, const ColumnType& column, const QVariant& data)
 {
 	pimpl_->set(row, column, data);
+}
+
+QVector<QPair<int, int>> Deck::getQuantities() const
+{
+	return pimpl_->getQuantities();
 }
