@@ -9,6 +9,8 @@
 #include "util.h"
 #include "deckstatisticsdialog.h"
 
+#include <mkm/exception.h>
+
 #include <QCloseEvent>
 #include <QSettings>
 #include <QFileDialog>
@@ -46,6 +48,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
 	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(fetchOnlineData()));
+	connect(ui_.actionAddToWantslist, SIGNAL(triggered()), this, SLOT(addToWantslist()));
 
 	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
 	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel_);
@@ -576,6 +579,30 @@ void DeckWindow::fetchOnlineData()
 	if (deckWidget)
 	{
 		deckWidget->fetchOnlineData();
+	}
+}
+
+void DeckWindow::addToWantslist()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		auto indices = deckWidget->currentDataRowIndices();
+		if (indices.isEmpty())
+		{
+			QMessageBox::information(this, "No selection", "No cards were selected. Please select the cards you want to add to a wantslist.");
+			return;
+		}
+		try
+		{
+			deckWidget->addSelectionToWantslist();
+		}
+		catch (const mkm::MkmException& e)
+		{
+			QMessageBox msg(QMessageBox::Critical, "Error", e.getErrorMessage());
+			msg.setDetailedText(e.getErrorDetails());
+			msg.exec();
+		}
 	}
 }
 

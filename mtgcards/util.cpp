@@ -1,4 +1,5 @@
 #include "util.h"
+#include "settings.h"
 
 #include <QHeaderView>
 #include <QJsonDocument>
@@ -55,4 +56,10 @@ void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
 		Qt::SortOrder sortOrder = static_cast<Qt::SortOrder>(headerState["sortIndicatorOrder"].toInt());
 		headerView.setSortIndicator(sortSection, sortOrder);
 	}
+}
+
+std::unique_ptr<mkm::Mkm> Util::mkmClient()
+{
+	static const auto& settings = Settings::instance().getMkm();
+	return std::unique_ptr<mkm::Mkm>(new mkm::Mkm(settings.getEndpoint() , settings.appToken, settings.appSecret, settings.accessToken, settings.accessTokenSecret));
 }

@@ -3,8 +3,7 @@
 #include "manacost.h"
 #include "settings.h"
 #include "onlinedatacache.h"
-
-#include <mkm/mkm.h>
+#include "util.h"
 
 #include <QDate>
 #include <QDir>
@@ -394,9 +393,7 @@ struct CardData::Pimpl
 		search.replace("'", "");
 		search.replace("\"", "");
 		QString expansion = data_[row][columnToIndex(ColumnType::Set)].toString();
-		const auto& settings = Settings::instance().getMkm();
-		mkm::Mkm client(settings.getEndpoint() , settings.appToken, settings.appSecret, settings.accessToken, settings.accessTokenSecret);
-		auto result = client.findProduct(search);
+		auto result = Util::mkmClient()->findProduct(search);
 		for (const mkm::Product& p : result)
 		{
 			if (expansion.contains(p.expansion, Qt::CaseInsensitive))

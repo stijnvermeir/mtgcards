@@ -20,5 +20,7 @@
         <file>resources/icons/mtgcards.svg</file>
         <file>resources/icons/chart59.svg</file>
         <file>resources/icons/internet43.svg</file>
+        <file>resources/icons/add185.svg</file>
+        <file>resources/icons/printer11.svg</file>
     </qresource>
 </RCC>

@@ -67,6 +67,7 @@ private slots:
 	void createProxies();
 	void showStatistics();
 	void fetchOnlineData();
+	void addToWantslist();
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);

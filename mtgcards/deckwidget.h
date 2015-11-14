@@ -50,6 +50,7 @@ public slots:
 	void addToDeck(const QVector<int>&);
 	void removeFromDeck(const QVector<int>&);
 	void fetchOnlineData();
+	void addSelectionToWantslist();
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);

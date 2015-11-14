@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     manacurvelinewidget.cpp \
     filters/deckfilterfunction.cpp \
     onlinedatacache.cpp \
-    splashscreen.cpp
+    splashscreen.cpp \
+    addtowantslistdialog.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -99,7 +100,8 @@ HEADERS  += mainwindow.h \
     filters/deckfilterfunction.h \
     onlinedatacache.h \
     magicruling.h \
-    splashscreen.h
+    splashscreen.h \
+    addtowantslistdialog.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
@@ -111,7 +113,8 @@ FORMS    += mainwindow.ui \
     aboutdialog.ui \
     filtereditordialog.ui \
     deckstatisticsdialog.ui \
-    manacurvelinewidget.ui
+    manacurvelinewidget.ui \
+    addtowantslistdialog.ui
 
 RESOURCES += \
     mtgcards.qrc
