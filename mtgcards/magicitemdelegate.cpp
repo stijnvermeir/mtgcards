@@ -52,7 +52,9 @@ QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionView
 	mtg::ColumnType columnType = columnIndexToType(index.column());
 	if (columnType == mtg::ColumnType::Quantity || columnType == mtg::ColumnType::Sideboard)
 	{
-		return new QSpinBox(parent);
+		QSpinBox* sbx = new QSpinBox(parent);
+		sbx->setRange(0, 9999);
+		return sbx;
 	}
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
