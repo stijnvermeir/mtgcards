@@ -86,6 +86,7 @@ void AddToWantslistDialog::addWants()
 		w.amount = ui_->countSbx->value();
 		w.minCondition = static_cast<mkm::Want::Condition>(ui_->minConditionCbx->currentData().toInt());
 		w.buyPrice = ui_->wishPriceSbx->value();
+		w.languageIds.push_back(1);
 		wants.push_back(w);
 		progress.setValue(i++);
 		if (progress.wasCanceled())

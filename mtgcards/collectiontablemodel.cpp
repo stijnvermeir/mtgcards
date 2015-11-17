@@ -131,7 +131,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						return tooltip.join("\n");
 					}
 
-					const QVariant& ret = mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
+					QVariant ret = mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
 					if (ret.type() == QVariant::StringList)
 					{
 						return ret.toStringList().join("/");
