@@ -20,6 +20,53 @@
 
 namespace {
 
+#if defined(Q_OS_OSX)
+const QPoint DEFAULT_MAIN_WINDOW_POS(1, 22);
+const QSize DEFAULT_MAIN_WINDOW_SIZE(465, 2);
+
+const QPoint DEFAULT_POOL_WINDOW_POS(467, 22);
+const QSize DEFAULT_POOL_WINDOW_SIZE(1453, 325);
+
+const QPoint DEFAULT_COLLECTION_WINDOW_POS(467, 368);
+const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1453, 313);
+
+const QPoint DEFAULT_DECK_WINDOW_POS(1, 703);
+const QSize DEFAULT_DECK_WINDOW_SIZE(1918, 471);
+
+const QPoint DEFAULT_CARD_WINDOW_POS(2, 22);
+const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
+#elif defined(Q_OS_WIN)
+const QPoint DEFAULT_MAIN_WINDOW_POS(1, 22);
+const QSize DEFAULT_MAIN_WINDOW_SIZE(465, 2);
+
+const QPoint DEFAULT_POOL_WINDOW_POS(467, 22);
+const QSize DEFAULT_POOL_WINDOW_SIZE(1453, 325);
+
+const QPoint DEFAULT_COLLECTION_WINDOW_POS(467, 368);
+const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1453, 313);
+
+const QPoint DEFAULT_DECK_WINDOW_POS(1, 703);
+const QSize DEFAULT_DECK_WINDOW_SIZE(1918, 471);
+
+const QPoint DEFAULT_CARD_WINDOW_POS(2, 22);
+const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
+#else
+const QPoint DEFAULT_MAIN_WINDOW_POS(1, 22);
+const QSize DEFAULT_MAIN_WINDOW_SIZE(465, 2);
+
+const QPoint DEFAULT_POOL_WINDOW_POS(467, 22);
+const QSize DEFAULT_POOL_WINDOW_SIZE(1453, 325);
+
+const QPoint DEFAULT_COLLECTION_WINDOW_POS(467, 368);
+const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1453, 313);
+
+const QPoint DEFAULT_DECK_WINDOW_POS(1, 703);
+const QSize DEFAULT_DECK_WINDOW_SIZE(1918, 471);
+
+const QPoint DEFAULT_CARD_WINDOW_POS(2, 22);
+const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
+#endif
+
 void moveToCenterOfScreen(QDialog* dialog)
 {
 	const QRect screen = QApplication::desktop()->screenGeometry();
@@ -104,32 +151,32 @@ MainWindow::~MainWindow()
 void MainWindow::loadSettings()
 {
 	bool mainWindowVisibleDefault = true;
-	#ifdef __APPLE__
+	#ifdef Q_OS_OSX
 		mainWindowVisibleDefault = false;
 	#endif
 
 	QSettings settings;
-	resize(settings.value("mainwindow/size", QSize(480, 48)).toSize());
-	move(settings.value("mainwindow/pos", QPoint(0, 0)).toPoint());
-	setVisible(true);
+	resize(settings.value("mainwindow/size", DEFAULT_MAIN_WINDOW_SIZE).toSize());
+	move(settings.value("mainwindow/pos", DEFAULT_MAIN_WINDOW_POS).toPoint());
+	setVisible(true); // need to call this at least one, to show the main menu on OS X
 	setVisible(settings.value("mainwindow/visible", mainWindowVisibleDefault).toBool());
 
-	poolWindow_.resize(settings.value("poolwindow/size", QSize(1428, 361)).toSize());
-	poolWindow_.move(settings.value("poolwindow/pos", QPoint(486, 0)).toPoint());
+	poolWindow_.resize(settings.value("poolwindow/size", DEFAULT_POOL_WINDOW_SIZE).toSize());
+	poolWindow_.move(settings.value("poolwindow/pos", DEFAULT_POOL_WINDOW_POS).toPoint());
 	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
 	poolWindow_.loadSettings();
 
-	cardWindow_.resize(settings.value("cardwindow/size", QSize(480, 680)).toSize());
-	cardWindow_.move(settings.value("cardwindow/pos", QPoint(0, 77)).toPoint());
+	cardWindow_.resize(settings.value("cardwindow/size", DEFAULT_CARD_WINDOW_SIZE).toSize());
+	cardWindow_.move(settings.value("cardwindow/pos", DEFAULT_CARD_WINDOW_POS).toPoint());
 	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
 
-	collectionWindow_.resize(settings.value("collectionwindow/size", QSize(1428, 367)).toSize());
-	collectionWindow_.move(settings.value("collectionwindow/pos", QPoint(486, 390)).toPoint());
+	collectionWindow_.resize(settings.value("collectionwindow/size", DEFAULT_COLLECTION_WINDOW_SIZE).toSize());
+	collectionWindow_.move(settings.value("collectionwindow/pos", DEFAULT_COLLECTION_WINDOW_POS).toPoint());
 	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
 	collectionWindow_.loadSettings();
 
-	deckWindow_.resize(settings.value("deckwindow/size", QSize(1914, 360)).toSize());
-	deckWindow_.move(settings.value("deckwindow/pos", QPoint(0, 786)).toPoint());
+	deckWindow_.resize(settings.value("deckwindow/size", DEFAULT_DECK_WINDOW_SIZE).toSize());
+	deckWindow_.move(settings.value("deckwindow/pos", DEFAULT_DECK_WINDOW_POS).toPoint());
 	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
 	deckWindow_.loadSettings();
 }

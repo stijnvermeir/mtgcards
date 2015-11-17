@@ -10,16 +10,8 @@
 
 const QString& Settings::Mkm::getEndpoint() const
 {
-	if (useSandbox)
-	{
-		static QString ENDPOINT = "https://sandbox.mkmapi.eu/ws/v1.1/output.json/";
-		return ENDPOINT;
-	}
-	else
-	{
-		static QString ENDPOINT = "https://www.mkmapi.eu/ws/v1.1/output.json/";
-		return ENDPOINT;
-	}
+	static QString ENDPOINT = "https://www.mkmapi.eu/ws/v1.1/output.json/";
+	return ENDPOINT;
 }
 
 struct Settings::Pimpl
@@ -43,8 +35,8 @@ struct Settings::Pimpl
 	{
 		QSettings settings;
 		setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::DataLocation)).toString());
-		poolDataFile_ = settings.value("options/datasources/allsetsjson").toString();
-		cardImageDir_ = settings.value("options/datasources/cardpicturedir").toString();
+		poolDataFile_ = settings.value("options/datasources/allsetsjson", appDataDir_ + QDir::separator() + "AllSets.json").toString();
+		cardImageDir_ = settings.value("options/datasources/cardpicturedir", appDataDir_ + QDir::separator() + "cardart").toString();
 
 		for (const ShortcutType& shortcut : ShortcutType::list())
 		{
@@ -87,7 +79,6 @@ struct Settings::Pimpl
 		mkm_.appSecret = settings.value("options/mkm/appSecret").toString();
 		mkm_.accessToken = settings.value("options/mkm/accessToken").toString();
 		mkm_.accessTokenSecret = settings.value("options/mkm/accessTokenSecret").toString();
-		mkm_.useSandbox = settings.value("options/mkm/useSandbox").toBool();
 
 		artDownloadEnabled_ = settings.value("options/misc/artDownloadEnabled", true).toBool();
 	}
@@ -187,7 +178,6 @@ struct Settings::Pimpl
 		settings.setValue("options/mkm/appSecret", mkm_.appSecret);
 		settings.setValue("options/mkm/accessToken", mkm_.accessToken);
 		settings.setValue("options/mkm/accessTokenSecret", mkm_.accessTokenSecret);
-		settings.setValue("options/mkm/useSandbox", mkm_.useSandbox);
 	}
 
 	void setArtDownloadEnabled(bool enabled)

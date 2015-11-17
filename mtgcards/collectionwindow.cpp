@@ -15,6 +15,8 @@
 
 namespace {
 
+const QString DEFAULT_HEADER_STATE = "{\"sections\": [{\"hidden\": true,\"size\": 100,\"visualIndex\": 0},{\"hidden\": false,\"size\": 61,\"visualIndex\": 3},{\"hidden\": true,\"size\": 100,\"visualIndex\": 1},{\"hidden\": true,\"size\": 100,\"visualIndex\": 2},{\"hidden\": true,\"size\": 100,\"visualIndex\": 4},{\"hidden\": true,\"size\": 294,\"visualIndex\": 5},{\"hidden\": true,\"size\": 100,\"visualIndex\": 6},{\"hidden\": true,\"size\": 37,\"visualIndex\": 7},{\"hidden\": true,\"size\": 37,\"visualIndex\": 8},{\"hidden\": false,\"size\": 264,\"visualIndex\": 9},{\"hidden\": true,\"size\": 233,\"visualIndex\": 10},{\"hidden\": false,\"size\": 38,\"visualIndex\": 11},{\"hidden\": false,\"size\": 41,\"visualIndex\": 12},{\"hidden\": false,\"size\": 218,\"visualIndex\": 13},{\"hidden\": false,\"size\": 41,\"visualIndex\": 14},{\"hidden\": false,\"size\": 77,\"visualIndex\": 15},{\"hidden\": false,\"size\": 287,\"visualIndex\": 16},{\"hidden\": true,\"size\": 47,\"visualIndex\": 17},{\"hidden\": true,\"size\": 100,\"visualIndex\": 18},{\"hidden\": true,\"size\": 100,\"visualIndex\": 19},{\"hidden\": false,\"size\": 72,\"visualIndex\": 22},{\"hidden\": true,\"size\": 86,\"visualIndex\": 23},{\"hidden\": true,\"size\": 100,\"visualIndex\": 24},{\"hidden\": true,\"size\": 100,\"visualIndex\": 25},{\"hidden\": false,\"size\": 20,\"visualIndex\": 20},{\"hidden\": false,\"size\": 20,\"visualIndex\": 21},{\"hidden\": true,\"size\": 100,\"visualIndex\": 26},{\"hidden\": true,\"size\": 100,\"visualIndex\": 27},{\"hidden\": true,\"size\": 100,\"visualIndex\": 28},{\"hidden\": false,\"size\": 107,\"visualIndex\": 29},{\"hidden\": true,\"size\": 111,\"visualIndex\": 30},{\"hidden\": true,\"size\": 85,\"visualIndex\": 31},{\"hidden\": false,\"size\": 79,\"visualIndex\": 32},{\"hidden\": true,\"size\": 62,\"visualIndex\": 33}],\"sortIndicatorOrder\": 0,\"sortIndicatorSection\": 9}";
+
 class CollectionItemDelegate : public MagicItemDelegate
 {
 public:
@@ -91,14 +93,7 @@ void CollectionWindow::updateShortcuts()
 void CollectionWindow::loadSettings()
 {
 	QSettings settings;
-	if (settings.contains("collectionwindow/headerstate"))
-	{
-		Util::loadHeaderViewState(*ui_.collectionTbl_->horizontalHeader(), settings.value("collectionwindow/headerstate").toString());
-	}
-	else
-	{
-		ui_.collectionTbl_->resizeColumnsToContents();
-	}
+	Util::loadHeaderViewState(*ui_.collectionTbl_->horizontalHeader(), settings.value("collectionwindow/headerstate", DEFAULT_HEADER_STATE).toString());
 	if (settings.contains("collectionwindow/filterEnable"))
 	{
 		ui_.actionEnableFilter->setChecked(settings.value("collectionwindow/filterEnable").toBool());

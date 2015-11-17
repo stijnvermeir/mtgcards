@@ -25,7 +25,6 @@ public:
 		QString appSecret;
 		QString accessToken;
 		QString accessTokenSecret;
-		bool useSandbox;
 
 		const QString& getEndpoint() const;
 	};

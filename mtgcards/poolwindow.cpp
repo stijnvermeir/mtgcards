@@ -11,6 +11,12 @@
 #include <QLabel>
 #include <QDebug>
 
+namespace {
+
+const QString DEFAULT_HEADER_STATE = "{\"sections\": [{\"hidden\": true,\"size\": 187,\"visualIndex\": 0},{\"hidden\": false,\"size\": 44,\"visualIndex\": 2},{\"hidden\": true,\"size\": 100,\"visualIndex\": 3},{\"hidden\": true,\"size\": 100,\"visualIndex\": 4},{\"hidden\": false,\"size\": 119,\"visualIndex\": 1},{\"hidden\": true,\"size\": 122,\"visualIndex\": 5},{\"hidden\": true,\"size\": 100,\"visualIndex\": 6},{\"hidden\": true,\"size\": 97,\"visualIndex\": 7},{\"hidden\": true,\"size\": 81,\"visualIndex\": 8},{\"hidden\": false,\"size\": 268,\"visualIndex\": 9},{\"hidden\": true,\"size\": 314,\"visualIndex\": 10},{\"hidden\": false,\"size\": 219,\"visualIndex\": 12},{\"hidden\": false,\"size\": 36,\"visualIndex\": 13},{\"hidden\": false,\"size\": 100,\"visualIndex\": 14},{\"hidden\": false,\"size\": 272,\"visualIndex\": 15},{\"hidden\": true,\"size\": 83,\"visualIndex\": 16},{\"hidden\": true,\"size\": 100,\"visualIndex\": 17},{\"hidden\": true,\"size\": 100,\"visualIndex\": 18},{\"hidden\": false,\"size\": 112,\"visualIndex\": 19},{\"hidden\": true,\"size\": 53,\"visualIndex\": 20},{\"hidden\": true,\"size\": 100,\"visualIndex\": 21},{\"hidden\": true,\"size\": 170,\"visualIndex\": 24},{\"hidden\": false,\"size\": 31,\"visualIndex\": 22},{\"hidden\": false,\"size\": 29,\"visualIndex\": 23},{\"hidden\": true,\"size\": 100,\"visualIndex\": 25},{\"hidden\": true,\"size\": 100,\"visualIndex\": 26},{\"hidden\": true,\"size\": 100,\"visualIndex\": 11},{\"hidden\": true,\"size\": 100,\"visualIndex\": 27},{\"hidden\": false,\"size\": 109,\"visualIndex\": 28},{\"hidden\": true,\"size\": 100,\"visualIndex\": 29},{\"hidden\": true,\"size\": 82,\"visualIndex\": 30},{\"hidden\": false,\"size\": 86,\"visualIndex\": 31},{\"hidden\": true,\"size\": 44,\"visualIndex\": 32}],\"sortIndicatorOrder\": 1,\"sortIndicatorSection\": 4}";
+
+}
+
 PoolWindow::PoolWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
@@ -65,14 +71,7 @@ void PoolWindow::updateShortcuts()
 void PoolWindow::loadSettings()
 {
 	QSettings settings;
-	if (settings.contains("poolwindow/headerstate"))
-	{
-		Util::loadHeaderViewState(*ui_.poolTbl_->horizontalHeader(), settings.value("poolwindow/headerstate").toString());
-	}
-	else
-	{
-		ui_.poolTbl_->resizeColumnsToContents();
-	}
+	Util::loadHeaderViewState(*ui_.poolTbl_->horizontalHeader(), settings.value("poolwindow/headerstate", DEFAULT_HEADER_STATE).toString());
 	if (settings.contains("poolwindow/filterEnable"))
 	{
 		ui_.actionEnableFilter->setChecked(settings.value("poolwindow/filterEnable").toBool());

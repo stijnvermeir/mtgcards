@@ -349,12 +349,10 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.mkmAppSecretTxt->setText(Settings::instance().getMkm().appSecret);
 	ui_.mkmAccessTokenTxt->setText(Settings::instance().getMkm().accessToken);
 	ui_.mkmAccessTokenSecretTxt->setText(Settings::instance().getMkm().accessTokenSecret);
-	ui_.mkmUseSandboxChk->setChecked(Settings::instance().getMkm().useSandbox);
 	connect(ui_.mkmAppTokenTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
 	connect(ui_.mkmAppSecretTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
 	connect(ui_.mkmAccessTokenTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
 	connect(ui_.mkmAccessTokenSecretTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
-	connect(ui_.mkmUseSandboxChk, SIGNAL(clicked()), this, SLOT(mkmEditFinished()));
 
 	// misc tab
 	connect(ui_.browseAppDataDirBtn, SIGNAL(clicked()), this, SLOT(browseAppDataDirBtnClicked()));
@@ -479,7 +477,6 @@ void OptionsDialog::mkmEditFinished()
 	mkm.appSecret = ui_.mkmAppSecretTxt->text();
 	mkm.accessToken = ui_.mkmAccessTokenTxt->text();
 	mkm.accessTokenSecret = ui_.mkmAccessTokenSecretTxt->text();
-	mkm.useSandbox = ui_.mkmUseSandboxChk->isChecked();
 
 	Settings::instance().setMkm(mkm);
 }

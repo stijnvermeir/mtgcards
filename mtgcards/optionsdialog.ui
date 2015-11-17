@@ -308,13 +308,6 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QCheckBox" name="mkmUseSandboxChk">
-         <property name="text">
-          <string>Use sandbox</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="miscTab">

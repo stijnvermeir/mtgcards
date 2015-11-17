@@ -46,10 +46,10 @@ void initDefaultKeySequences()
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Save);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::SaveAs);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
-		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL++"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+ALT+="));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+ALT+-"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+="));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+-"));
-		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("+"));
-		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("-"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+G"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Delete);
