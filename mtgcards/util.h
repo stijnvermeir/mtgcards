@@ -15,4 +15,6 @@ public:
 	static void loadHeaderViewState(QHeaderView& headerView, const QString& data);
 
 	static std::unique_ptr<mkm::Mkm> mkmClient();
+
+	static bool downloadPoolDataFile();
 };

@@ -1,6 +1,7 @@
 #include "optionsdialog.h"
 #include "settings.h"
 #include "magiccolumntype.h"
+#include "util.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -322,6 +323,7 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 
 	// data bindings tab
 	connect(ui_.browseAllSetsJsonBtn, SIGNAL(clicked()), this, SLOT(browseAllSetsJsonBtnClicked()));
+	connect(ui_.downloadLatestBtn, SIGNAL(clicked()), this, SLOT(downloadLatestAllSetsJsonBtnClicked()));
 	connect(ui_.browseCardPictureDirBtn, SIGNAL(clicked()), this, SLOT(browseCardPictureDirBtnClicked()));
 	ui_.allSetsJsonTxt->setText(Settings::instance().getPoolDataFile());
 	ui_.cardPictureDirTxt->setText(Settings::instance().getCardImageDir());
@@ -384,6 +386,14 @@ void OptionsDialog::browseAllSetsJsonBtnClicked()
 	{
 		ui_.allSetsJsonTxt->setText(filename);
 		Settings::instance().setPoolDataFile(filename);
+		poolReloadRequired_ = true;
+	}
+}
+
+void OptionsDialog::downloadLatestAllSetsJsonBtnClicked()
+{
+	if (Util::downloadPoolDataFile())
+	{
 		poolReloadRequired_ = true;
 	}
 }

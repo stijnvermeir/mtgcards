@@ -31,6 +31,7 @@ private:
 private slots:
 	// data bindings tab
 	void browseAllSetsJsonBtnClicked();
+	void downloadLatestAllSetsJsonBtnClicked();
 	void browseCardPictureDirBtnClicked();
 
 	// shortcuts tab

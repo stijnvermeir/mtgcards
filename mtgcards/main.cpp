@@ -4,10 +4,13 @@
 #include "magiccollection.h"
 #include "deckmanager.h"
 #include "onlinedatacache.h"
+#include "settings.h"
+#include "util.h"
 
 #include <QApplication>
-#include <QDateTime>
 #include <QWindow>
+#include <QFile>
+#include <QDebug>
 
 #include <iostream>
 
@@ -66,6 +69,10 @@ int main(int argc, char *argv[])
 	QGuiApplication::setQuitOnLastWindowClosed(false);
 
 	MyApplication a(argc, argv);
+	if (!QFile(Settings::instance().getPoolDataFile()).exists())
+	{
+		Util::downloadPoolDataFile();
+	}
 	SplashScreen splash;
 	mtg::CardData::instance();
 	a.processEvents();

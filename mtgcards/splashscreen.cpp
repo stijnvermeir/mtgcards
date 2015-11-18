@@ -20,7 +20,6 @@ SplashScreen::~SplashScreen()
 void SplashScreen::showMessage(const QString& message)
 {
 	splashScreen_->showMessage(message, Qt::AlignHCenter | Qt::AlignBottom, Qt::black);
-	QApplication::instance()->processEvents();
 }
 
 void SplashScreen::finish(QWidget* mainWin)
