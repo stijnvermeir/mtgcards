@@ -80,19 +80,5 @@ int main(int argc, char *argv[])
 	a.mainWindow_ = &mainWindow;
 	splash.finish(a.mainWindow_);
 
-#ifndef Q_OS_OSX
-	QObject::connect(qApp, &QApplication::focusWindowChanged, [](QWindow* focusWindow)
-	{
-		for (QWindow* w : qApp->allWindows())
-		{
-			w->raise();
-		}
-		if (focusWindow)
-		{
-			focusWindow->raise();
-		}
-	});
-#endif
-
     return a.exec();
 }
