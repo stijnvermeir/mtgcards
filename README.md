@@ -7,6 +7,9 @@ Main features:
 * Does not require update when new MTG sets are released! Thanks to [mtgjson.com](http://mtgjson.com)
 * Automatic tracking of used cards in your collection!
 * Easy generation of proxies
+* Fetch card prices from [magiccardmarket.eu](http://magiccardmarket.eu)
+* Add to wantslist on [magiccardmarket.eu](http://magiccardmarket.eu)
+* Automatic download of (low resolution) card art
 * Works fast
 * Advanced filter with support for regular expressions
 * Multi window = multi display friendly
