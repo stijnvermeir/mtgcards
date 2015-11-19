@@ -11,12 +11,12 @@ Main features:
 * Add to wantslist on [magiccardmarket.eu](http://magiccardmarket.eu)
 * Automatic download of (low resolution) card art
 * Works fast
-* Advanced filter with support for regular expressions
+* Advanced search possibilities with support for regular expressions
 * Multi window = multi display friendly
 * Highly customizable: create your own columns
-* Cross platform
-* Native application (does not require any other runtime environment)
-* Open file format to store decks and collection (human readable JSON)
+* Cross platform (Mac OS X, Windows, Linux)
+* Native desktop application
+* Works offline (no internet required, except for online only features)
 
 And it's free and always will be!
 
