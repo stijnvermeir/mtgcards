@@ -16,20 +16,20 @@ Main features:
 * Highly customizable: create your own columns
 * Cross platform (Mac OS X, Windows, Linux)
 * Native desktop application
-* Works offline (no internet required, except for online only features)
+* Works offline (no internet required, except for online-only features)
 
 And it's free and always will be!
 
-![screenshot](http://download.stijn-v.be/MTGCards-screenshot.png)
+![screenshot](http://mtgcards.stijn-v.be/screenshot1.png)
 
-Take a look at the [manual](https://github.com/stijnvermeir/mtgcards/blob/master/manual.md) to set up MTGCards during the first run.
+Don't forget to take a look at the [manual](https://github.com/stijnvermeir/mtgcards/blob/master/manual.md).
 
 Download binaries
 -----------------
 
-### Mac OS X
+Binaries can be downloaded [here](http://mtgcards.stijn-v.be).
 
-* [MTGCards-0.2.0.dmg](http://download.stijn-v.be/MTGCards-0.2.0.dmg)
+### Mac OS X
 
 Once you download the .dmg file, open it and drag and drop MTGCards.app to your Applications.
 
@@ -38,8 +38,6 @@ The app is not signed, because I don't want to pay 99$ for that. So you'll have 
 Tested on clean Mac OS X 10.9.5. Probably works on newer version as well.
 
 ### Windows
-
-* [MTGCards-0.2.0.exe](http://download.stijn-v.be/MTGCards-0.2.0.exe)
 
 Tested on Windows 7 and Windows 10. Probably works on newer versions as well.
 

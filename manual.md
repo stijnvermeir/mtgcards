@@ -6,23 +6,21 @@ MTGCards is a tool to manage your collection and decks of Magic the Gathering ca
 First run
 ---------
 
-When you run MTGCards for the first time, it will look bad. That's normal.
-You'll have to configure some stuff before you can work with it properly.
-
 ### 1. Card pool database
 MTGCards does not embed the MTG card data into its binaries,
-but requires the [AllSets.json file](http://mtgjson.com/json/AllSets.json.zip) from <http://mtgjson.com>.
+but requires the AllSets.json file from <http://mtgjson.com>.
 
 This means that every time WotC releases a new MTG set, you don't need to update the application! Yay!
-Just replace your AllSets.json file with the latest version.
 
-1. Download the latest version from the file and put it somewhere on your computer.
-2. In Options, tab Data Sources, let MTGCards know where this file is located on your computer.
+On the first run, you're asked to download this file from within MTGCards. It's the easiest way to get started. You can choose to download the data with or without rulings from the Gatherer.
+
+Later, whenever mtgjson.com releases a new version, you can download the latest version from within MTGCards by going to Options, tab Data Sources and click "Download latest ...".
 
 ### 2. Card preview images
-MTGCards also does not include images of all the cards. You'll have to find them yourself somewhere ...
+MTGCards does not include images of all the cards. By default, they are downloaded from the gatherer website whenever you select a card. You can disable this feature in the Options, under the Misc tab.
 
-Once you find them, you should organize them in a specific way (described below)
+If you want high resolution scans, you'll need to make or find them yourself ... .
+Once you got them, you should organize them in a specific way (described below)
 and let MTGCards know in which folder they are located.
 You can do that in the Data Sources tab in the Options.
 
@@ -56,7 +54,7 @@ For example, one version of a Forest inside a Set should have the name *Forest [
 The windows will have a default position and size when running for the first time. Adjust their position and size to your liking. Their state will be saved at exit.
 
 ### 4. Column width, order and visibility
-The columns will have default sizes and will all be visible on the first run. Resize and move them to your liking. You can hide or unhide columns by right-clicking on the header. Their state will be saved at exit.
+The columns will have default sizes and the most interesting ones will be visible on the first run. Resize and move them to your liking. You can hide or unhide columns by right-clicking on the header. Their state will be saved at exit.
 
 Features
 --------
@@ -77,9 +75,19 @@ You can set a filter per window (Pool, Collection and Deck). You can create an e
 2. **Number** Compare numeric fields against a number
 3. **Date** Compare date fields against a date
 4. **Time** Compare timestamp fields against a time
+5. **Deck** Check if a card is present in a deck
+
+Each filter can be negated to have the opposite effect. For example, with the Deck filter, you can either show only the cards that are in a certain deck or show all cards that are not in certain deck.
+
+### magiccardmarket.eu integration
+You can fetch prices for selected cards by clicking *the cloud icon*.
+
+In the Deck window, you can add selected cards to a wantslist by clicking *the heart icon*.
+
+In order for [magiccardmarket.eu](http://magiccardmarket.eu) integration to work, you'll need an account there and add an app to your profile. Adding an app to your profile will give you an App token, App secret, Access token and Access token secret. Once you enter this information in the Options, under magiccardmarket.eu tab, you're ready to go.
 
 ### Proxy generation
-In the Deck window, you can select multiple cards. When you click *Create Proxies*, choose a name for the output PDF. The selected cards will be printed and cards will be printed as many times as they are used in the deck.
+In the Deck window, you can select multiple cards. When you click *the printer icon*, choose a name for the output PDF. The selected cards will be printed and cards will be printed as many times as they are used in the deck.
 
 ### Keyboard search
 After selecting a cell in Pool, Collection or Card window, you can just start typing and the application will search for the first matching cell in that column.
@@ -89,6 +97,17 @@ Select a different cell to reset the keyboard search.
 Start your search with ^ and it will only match if the name *starts* with the search string.
 
 Use PgUp and PgDn to go to the previous or next match.
+
+### Deck statistics
+Click on *the graph icon* in the Deck window to see statistics about your deck.
+
+### Card pictures
+For double sided cards, you can click on the card image to see the back.
+
+For flipped or split cards, you can click on the card image to flip or rotate the image.
+
+### Card rulings
+When you right click on the card's image, the view will change to *Rulings*. These will only be available when you chose to download the card data file with rulings.
 
 ### Customization
 MTGCards aims to be very customizable.
@@ -136,7 +155,7 @@ For example:
 MTGCards is a native desktop application available for Mac OS X, Windows and Linux.
 
 ### Open file format
-The file format used to save your collection and decks is extremely easy and straight forward. It's just a text file in JSON format. This makes it unnecessary to add export functionality to MTGCards.
+The file format used to save decks is extremely easy and straight forward. It's just a text file in JSON format. Your collection is saved in an SQLite database file which can be opened by applications like [sqlitebrowser](http://sqlitebrowser.org/).
 
 Application Files and Folder
 ----------------------------
