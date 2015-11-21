@@ -16,7 +16,8 @@ ICON = resources/icons/mtgcards.icns
 RC_ICONS = resources/icons/mtgcards.ico
 TEMPLATE = app
 
-DEFINES += "MTGCARDS_VERSION=\"\\\"$$cat(VERSION.txt)\\\"\""
+VERSION = $$cat(VERSION.txt)
+DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
         mainwindow.cpp \
