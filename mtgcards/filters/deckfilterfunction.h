@@ -17,6 +17,7 @@ public:
 	virtual void fromJson(const QJsonObject& obj);
 	virtual QWidget* createEditor(QWidget* parent) const;
 	virtual void updateFromEditor(const QWidget* editor);
+	virtual mtg::ColumnType getColumnOverride() const;
 private:
 	QWeakPointer<Deck> deck_;
 };

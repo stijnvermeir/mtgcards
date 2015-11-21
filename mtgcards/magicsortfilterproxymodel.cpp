@@ -119,12 +119,20 @@ bool MagicSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
 		else
 		if (node->getType() == FilterNode::Type::LEAF)
 		{
-			auto columnIndex = columnToIndex(node->getFilter().column);
-			if (columnIndex < 0)
+			if (!node->getFilter().function)
 			{
 				return true;
 			}
-			if (!node->getFilter().function)
+			int columnIndex = -1;
+			if (node->getFilter().function->getColumnOverride() != mtg::ColumnType::UNKNOWN)
+			{
+				columnIndex = columnToIndex(node->getFilter().function->getColumnOverride());
+			}
+			else
+			{
+				columnIndex = columnToIndex(node->getFilter().column);
+			}
+			if (columnIndex < 0)
 			{
 				return true;
 			}

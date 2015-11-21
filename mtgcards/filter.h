@@ -25,6 +25,7 @@ public:
 	virtual void fromJson(const QJsonObject& obj) = 0;
 	virtual QWidget* createEditor(QWidget* parent) const = 0;
 	virtual void updateFromEditor(const QWidget* editor) = 0;
+	virtual mtg::ColumnType getColumnOverride() const;
 };
 
 class FilterFunctionManager

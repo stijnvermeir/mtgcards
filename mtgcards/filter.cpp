@@ -12,6 +12,12 @@
 
 using namespace std;
 
+mtg::ColumnType FilterFunction::getColumnOverride() const
+{
+	// default = no override
+	return mtg::ColumnType::UNKNOWN;
+}
+
 struct FilterFunctionManager::Pimpl
 {
 	QMap<QString, CreateFunc> createFunctions;

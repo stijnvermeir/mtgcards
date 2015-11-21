@@ -84,3 +84,8 @@ void DeckFilterFunction::updateFromEditor(const QWidget* editor)
 	deck_ = DeckManager::instance().findDeck(cbx->currentData().toString()).toWeakRef();
 }
 
+mtg::ColumnType DeckFilterFunction::getColumnOverride() const
+{
+	return mtg::ColumnType::Id;
+}
+
