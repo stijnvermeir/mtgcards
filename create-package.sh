@@ -2,6 +2,7 @@
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
+VERSION=$(cat mtgcards/VERSION.txt)
 mkdir -p build/temproot/usr/local/bin
 cd build
 cp release/MTGCards temproot/usr/local/bin/mtgcards
@@ -9,7 +10,7 @@ cp release/MTGCards temproot/usr/local/bin/mtgcards
 fpm -s dir \
 	-t deb \
 	-n mtgcards \
-	-v 0.1.1 \
+	-v $VERSION \
 	-m stijnvermeir@users.noreply.github.com \
 	--url https://github.com/stijnvermeir/mtgcards \
 	--vendor stijnvsoftware \
@@ -20,6 +21,9 @@ fpm -s dir \
 	-d libqt5svg5 \
 	-d libqt5widgets5 \
 	-d libqt5xml5 \
+	-d libqt5network5 \
+	-d libqt5sql5 \
+	-d libssl1.0.0 \
 	--prefix / \
 	-C temproot/ \
 	usr/local/bin/mtgcards
@@ -27,5 +31,5 @@ fpm -s dir \
 rm -r temproot
 
 # to upload
-# package_cloud push stijnv/public/ubuntu/trusty build/mtgcards_0.1.1_amd64.deb
+# package_cloud push stijnv/public/ubuntu/trusty build/mtgcards_x.y.z_amd64.deb
 
