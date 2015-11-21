@@ -16,6 +16,7 @@ ICON = resources/icons/mtgcards.icns
 RC_ICONS = resources/icons/mtgcards.ico
 TEMPLATE = app
 
+DEFINES += "MTGCARDS_VERSION=\"\\\"$$cat(VERSION.txt)\\\"\""
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -128,3 +129,6 @@ LIBS += -lmkm
 
 INCLUDEPATH += $$MKMLIB_PATH/mkm
 DEPENDPATH += $$MKMLIB_PATH/mkm
+
+DISTFILES += \
+    VERSION.txt
