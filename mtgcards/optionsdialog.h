@@ -34,6 +34,10 @@ private slots:
 	void downloadLatestAllSetsJsonBtnClicked();
 	void browseCardPictureDirBtnClicked();
 
+	// tags tab
+	void addTagClicked();
+	void removeTagsClicked();
+
 	// shortcuts tab
 	void shortcutsChanged(QModelIndex, QModelIndex);
 	void saveShortcutsClicked();

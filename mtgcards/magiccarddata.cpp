@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "onlinedatacache.h"
 #include "util.h"
+#include "tags.h"
 
 #include <QDate>
 #include <QDir>
@@ -300,6 +301,16 @@ struct CardData::Pimpl
 	{
 		if (row >= 0 && row < getNumRows())
 		{
+			if (column == ColumnType::Tags)
+			{
+				QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
+				if (!names.empty())
+				{
+					return Tags::instance().getCardTags(names.join('/'));
+				}
+				return Tags::instance().getCardTags(data_[row][columnToIndex(ColumnType::Name)].toString());
+			}
+			else
 			if (OnlineDataCache::isOnlineColumn(column))
 			{
 				return OnlineDataCache::instance().get(data_[row][columnToIndex(ColumnType::SetCode)].toString(), data_[row][columnToIndex(ColumnType::Name)].toString(), column);
@@ -407,6 +418,33 @@ struct CardData::Pimpl
 				cache.set(set, name, ColumnType::MkmMetaproductId, p.idMetaproduct);
 				return;
 			}
+		}
+	}
+
+	QStringList getCardTagCompletions(const int row)
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
+			if (!names.empty())
+			{
+				return Tags::instance().getCardCompletions(names.join('/'));
+			}
+			return Tags::instance().getCardCompletions(data_[row][columnToIndex(ColumnType::Name)].toString());
+		}
+		return QStringList();
+	}
+
+	void updateTags(const int row, const QString& update)
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
+			if (!names.empty())
+			{
+				return Tags::instance().updateCardTags(names.join('/'), update);
+			}
+			return Tags::instance().updateCardTags(data_[row][columnToIndex(ColumnType::Name)].toString(), update);
 		}
 	}
 };
@@ -564,4 +602,14 @@ const QVector<mtg::Ruling>& CardData::getRulings(int row)
 void CardData::fetchOnlineData(const int row)
 {
 	pimpl_->fetchOnlineData(row);
+}
+
+QStringList CardData::getCardTagCompletions(const int row)
+{
+	return pimpl_->getCardTagCompletions(row);
+}
+
+void CardData::updateTags(const int row, const QString& update)
+{
+	pimpl_->updateTags(row, update);
 }

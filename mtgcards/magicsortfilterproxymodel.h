@@ -17,6 +17,8 @@ public:
 	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const = 0;
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
 
 protected:
 	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;

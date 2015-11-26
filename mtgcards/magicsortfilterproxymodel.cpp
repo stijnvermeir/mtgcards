@@ -62,17 +62,42 @@ QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) con
 	{
 		return qvariant_cast<ManaCost>(d).getText();
 	}
-	/*
-	if (index.column() == columnToIndex(mtg::ColumnType::Name) && role == Qt::ToolTipRole)
+	if (index.column() == columnToIndex(mtg::ColumnType::Tags))
 	{
-		auto picInfo = mtg::CardData::instance().getPictureInfo(getDataRowIndex(index));
-		if (picInfo.missing.empty())
+		if (role == Qt::DisplayRole || role == Qt::ToolTipRole)
 		{
-			return QString("<img src=\"") + picInfo.filenames.front() + "\" />";
+			return mtg::CardData::instance().get(getDataRowIndex(index), mtg::ColumnType::Tags).toStringList().join('/');
+		}
+		if (role == Qt::EditRole)
+		{
+			return mtg::CardData::instance().getCardTagCompletions(getDataRowIndex(index));
 		}
 	}
-	*/
+	if (d.type() == QVariant::StringList && (role == Qt::DisplayRole || role == Qt::ToolTipRole))
+	{
+		return d.toStringList().join("/");
+	}
 	return d;
+}
+
+bool MagicSortFilterProxyModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	if (index.column() == columnToIndex(mtg::ColumnType::Tags) && role == Qt::EditRole)
+	{
+		mtg::CardData::instance().updateTags(getDataRowIndex(index), value.toString());
+		emit dataChanged(index, index);
+		return true;
+	}
+	return QSortFilterProxyModel::setData(index, value, role);
+}
+
+Qt::ItemFlags MagicSortFilterProxyModel::flags(const QModelIndex& index) const
+{
+	if (index.column() == columnToIndex(mtg::ColumnType::Tags))
+	{
+		return Qt::ItemIsEditable | QSortFilterProxyModel::flags(index);
+	}
+	return QSortFilterProxyModel::flags(index);
 }
 
 bool MagicSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const

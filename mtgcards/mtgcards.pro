@@ -60,7 +60,8 @@ SOURCES += main.cpp\
     filters/deckfilterfunction.cpp \
     onlinedatacache.cpp \
     splashscreen.cpp \
-    addtowantslistdialog.cpp
+    addtowantslistdialog.cpp \
+    tags.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -103,7 +104,8 @@ HEADERS  += mainwindow.h \
     onlinedatacache.h \
     magicruling.h \
     splashscreen.h \
-    addtowantslistdialog.h
+    addtowantslistdialog.h \
+    tags.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

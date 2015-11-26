@@ -41,7 +41,8 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
 	mtg::ColumnType::PriceLowestFoil,
 	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend,
-	mtg::ColumnType::Id
+	mtg::ColumnType::Id,
+	mtg::ColumnType::Tags
 };
 
 } // namespace
@@ -77,12 +78,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{
-					const QVariant& ret = mtg::CardData::instance().get(index.row(), POOLTABLE_COLUMNS[index.column()]);
-					if (ret.type() == QVariant::StringList)
-					{
-						return ret.toStringList().join("/");
-					}
-					return ret;
+					return mtg::CardData::instance().get(index.row(), POOLTABLE_COLUMNS[index.column()]);
 				}
 			}
 		}
@@ -142,4 +138,13 @@ int PoolTableModel::getDataRowIndex(const QModelIndex& proxyIndex) const
 {
 	QModelIndex sourceIndex = mapToSource(proxyIndex);
 	return sourceIndex.row();
+}
+
+mtg::ColumnType PoolTableModel::columnIndexToType(const int columnIndex) const
+{
+	if (columnIndex >= 0 && columnIndex < POOLTABLE_COLUMNS.size())
+	{
+		return POOLTABLE_COLUMNS[columnIndex];
+	}
+	return mtg::ColumnType::UNKNOWN;
 }

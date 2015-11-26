@@ -49,6 +49,7 @@ const QVector<QString> NAMES =
 	"PriceTrend",
 	"MkmProductId",
 	"MkmMetaproductId",
+	"Tags",
 	"UserDefined"
 };
 
@@ -94,6 +95,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Price Trend",
 	"MKM Product Id",
 	"MKM Metaproduct Id",
+	"Tags",
 	"User Defined"
 };
 

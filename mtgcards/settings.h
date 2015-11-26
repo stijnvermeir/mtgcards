@@ -36,6 +36,7 @@ public:
 	const QString& getCollectionFile() const;
 	const QString& getCollectionDb() const;
 	const QString& getOnlineDataCacheDb() const;
+	const QString& getTagsDb() const;
 	const QString& getFiltersDir() const;
 	const QString& getDecksDir() const;
 

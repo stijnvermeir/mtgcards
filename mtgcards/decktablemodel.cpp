@@ -45,7 +45,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::PriceLowestFoil,
 	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend,
-	mtg::ColumnType::Id
+	mtg::ColumnType::Id,
+	mtg::ColumnType::Tags
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -135,12 +136,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						int dataRowIndex = deck_->getDataRowIndex(index.row());
 						return mtg::Collection::instance().getQuantity(dataRowIndex);
 					}
-					const QVariant& ret = deck_->get(index.row(), GetColumns()[index.column()]);
-					if (ret.type() == QVariant::StringList)
-					{
-						return ret.toStringList().join("/");
-					}
-					return ret;
+					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
 			}
 		}

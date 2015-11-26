@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "magiccolumntype.h"
 #include "util.h"
+#include "tags.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -11,6 +12,7 @@
 #include <QComboBox>
 #include <QProcess>
 #include <QFontDialog>
+#include <QInputDialog>
 #include <QDebug>
 
 namespace {
@@ -328,6 +330,12 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.allSetsJsonTxt->setText(Settings::instance().getPoolDataFile());
 	ui_.cardPictureDirTxt->setText(Settings::instance().getCardImageDir());
 
+	// tags tab
+	ui_.tagsList->addItems(Tags::instance().getTags());
+	ui_.tagsList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	connect(ui_.addTagBtn, SIGNAL(clicked()), this, SLOT(addTagClicked()));
+	connect(ui_.removeTagsBtn, SIGNAL(clicked()), this, SLOT(removeTagsClicked()));
+
 	// shortcuts tab
 	ui_.shortcutsTbl->setModel(shortcutsModel_.data());
 	ui_.shortcutsTbl->setItemDelegate(shortcutsItemDelegate_.data());
@@ -411,6 +419,27 @@ void OptionsDialog::browseCardPictureDirBtnClicked()
 		ui_.cardPictureDirTxt->setText(dir);
 		Settings::instance().setCardImageDir(dir);
 	}
+}
+
+void OptionsDialog::addTagClicked()
+{
+	QString tag = QInputDialog::getText(this, "New tag", "Tag:");
+	if (!tag.isNull())
+	{
+		Tags::instance().addTag(tag);
+		ui_.tagsList->clear();
+		ui_.tagsList->addItems(Tags::instance().getTags());
+	}
+}
+
+void OptionsDialog::removeTagsClicked()
+{
+	for (QListWidgetItem* item : ui_.tagsList->selectedItems())
+	{
+		Tags::instance().removeTag(item->text());
+	}
+	ui_.tagsList->clear();
+	ui_.tagsList->addItems(Tags::instance().getTags());
 }
 
 void OptionsDialog::shortcutsChanged(QModelIndex, QModelIndex)

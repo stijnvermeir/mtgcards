@@ -44,7 +44,8 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 	mtg::ColumnType::PriceLowestFoil,
 	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend,
-	mtg::ColumnType::Id
+	mtg::ColumnType::Id,
+	mtg::ColumnType::Tags
 
 };
 
@@ -130,13 +131,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						}
 						return tooltip.join("\n");
 					}
-
-					QVariant ret = mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
-					if (ret.type() == QVariant::StringList)
-					{
-						return ret.toStringList().join("/");
-					}
-					return ret;
+					return mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
 				}
 			}
 		}

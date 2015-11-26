@@ -1,10 +1,11 @@
 #include "magicitemdelegate.h"
-
 #include "manacost.h"
 
 #include <QPaintEngine>
 #include <QLabel>
 #include <QSpinBox>
+#include <QLineEdit>
+#include <QCompleter>
 
 MagicItemDelegate::MagicItemDelegate(QWidget* parent)
 	: QStyledItemDelegate(parent)
@@ -56,6 +57,17 @@ QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionView
 		sbx->setRange(0, 9999);
 		return sbx;
 	}
+	else
+	if (columnType == mtg::ColumnType::Tags)
+	{
+		QLineEdit* widget = new QLineEdit(parent);
+		QCompleter* completer = new QCompleter(index.data(Qt::EditRole).toStringList(), widget);
+		completer->setCaseSensitivity(Qt::CaseInsensitive);
+		completer->setFilterMode(Qt::MatchContains);
+		widget->setCompleter(completer);
+		widget->setPlaceholderText("Type to add/remove tag ...");
+		return widget;
+	}
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
@@ -69,6 +81,11 @@ void MagicItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index)
 		{
 			spinBox->setValue(index.data().toInt());
 		}
+	}
+	else
+	if (columnType == mtg::ColumnType::Tags)
+	{
+		// empty
 	}
 	else
 	{
@@ -85,6 +102,15 @@ void MagicItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 		if (spinBox && model)
 		{
 			model->setData(index, spinBox->value());
+		}
+	}
+	else
+	if (columnType == mtg::ColumnType::Tags)
+	{
+		QLineEdit* widget = static_cast<QLineEdit*>(editor);
+		if (widget && model)
+		{
+			model->setData(index, widget->text());
 		}
 	}
 	else

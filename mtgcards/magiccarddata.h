@@ -32,6 +32,8 @@ public:
 	PictureInfo getPictureInfo(int row);
 	const QVector<mtg::Ruling>& getRulings(int row);
 	void fetchOnlineData(const int row);
+	QStringList getCardTagCompletions(const int row);
+	void updateTags(const int row, const QString& update);
 
 private:
 	CardData();

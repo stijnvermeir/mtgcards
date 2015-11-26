@@ -6,6 +6,7 @@
 #include "onlinedatacache.h"
 #include "settings.h"
 #include "util.h"
+#include "tags.h"
 
 #include <QApplication>
 #include <QWindow>
@@ -81,6 +82,8 @@ int main(int argc, char *argv[])
 	mtg::Collection::instance();
 	a.processEvents();
 	OnlineDataCache::instance();
+	a.processEvents();
+	Tags::instance();
 	a.processEvents();
 	MainWindow mainWindow;
 	a.processEvents();

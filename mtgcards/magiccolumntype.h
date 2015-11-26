@@ -53,6 +53,7 @@ public:
 		PriceTrend,
 		MkmProductId,
 		MkmMetaproductId,
+		Tags,
 		UserDefined,
 
 		COUNT,
