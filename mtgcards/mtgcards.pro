@@ -62,7 +62,8 @@ SOURCES += main.cpp\
 	filters/numberfilterfunction.cpp \
 	filters/deckfilterfunction.cpp \
 	filters/datefilterfunction.cpp \
-	filters/timefilterfunction.cpp
+	filters/timefilterfunction.cpp \
+    filters/tagfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -107,7 +108,8 @@ HEADERS  += mainwindow.h \
     splashscreen.h \
     addtowantslistdialog.h \
     tags.h \
-    filters/containsfilterfunction.h
+    filters/containsfilterfunction.h \
+    filters/tagfilterfunction.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \
