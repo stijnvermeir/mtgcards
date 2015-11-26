@@ -40,8 +40,6 @@ SOURCES += main.cpp\
     magicitemdelegate.cpp \
     filter.cpp \
     magicconvert.cpp \
-    filters/regexfilterfunction.cpp \
-    filters/datefilterfunction.cpp \
     settings.cpp \
     collectiontablemodel.cpp \
     magiccollection.cpp \
@@ -52,16 +50,19 @@ SOURCES += main.cpp\
     tableview.cpp \
     util.cpp \
     usercolumn.cpp \
-    filters/timefilterfunction.cpp \
-    filters/comparetype.cpp \
-    filters/numberfilterfunction.cpp \
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
-    filters/deckfilterfunction.cpp \
     onlinedatacache.cpp \
     splashscreen.cpp \
     addtowantslistdialog.cpp \
-    tags.cpp
+    tags.cpp \
+	filters/comparetype.cpp \
+	filters/containsfilterfunction.cpp \
+	filters/regexfilterfunction.cpp \
+	filters/numberfilterfunction.cpp \
+	filters/deckfilterfunction.cpp \
+	filters/datefilterfunction.cpp \
+	filters/timefilterfunction.cpp
 
 HEADERS  += mainwindow.h \
     pooltablemodel.h \
@@ -105,7 +106,8 @@ HEADERS  += mainwindow.h \
     magicruling.h \
     splashscreen.h \
     addtowantslistdialog.h \
-    tags.h
+    tags.h \
+    filters/containsfilterfunction.h
 
 FORMS    += mainwindow.ui \
     poolwindow.ui \

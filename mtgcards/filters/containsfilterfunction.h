@@ -1,0 +1,21 @@
+#pragma once
+
+#include "filter.h"
+
+#include <QString>
+
+class ContainsFilterFunction : public FilterFunction
+{
+public:
+	ContainsFilterFunction();
+
+	virtual const QString& getId() const;
+	virtual bool apply(const QVariant& data) const;
+	virtual QString getDescription() const;
+	virtual QJsonObject toJson() const;
+	virtual void fromJson(const QJsonObject& obj);
+	virtual QWidget* createEditor(QWidget* parent) const;
+	virtual void updateFromEditor(const QWidget* editor);
+private:
+	QString search_;
+};
