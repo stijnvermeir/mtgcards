@@ -83,13 +83,6 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 	}
 
-	void reload()
-	{
-		beginResetModel();
-		deck_->reload();
-		endResetModel();
-	}
-
 	void save(const QString& filename)
 	{
 		QString previousFilename = deck_->getFilename();
@@ -223,11 +216,6 @@ DeckTableModel::DeckTableModel(const QString& filename)
 DeckTableModel::~DeckTableModel()
 {
 	DeckManager::instance().closeDeck(pimpl_->deck_);
-}
-
-void DeckTableModel::reload()
-{
-	pimpl_->reload();
 }
 
 void DeckTableModel::save(const QString& filename)

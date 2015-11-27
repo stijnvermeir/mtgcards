@@ -24,7 +24,6 @@ public:
 
 	static CardData& instance();
 
-	void reload();
 	int getNumRows() const;
 	QVariant get(const int row, const ColumnType& column) const;
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;

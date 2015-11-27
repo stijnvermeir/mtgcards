@@ -117,6 +117,10 @@ QVariant FilterModel::data(const QModelIndex& index, int role) const
 		{
 			if (node->getType() == FilterNode::Type::LEAF)
 			{
+				if (node->getFilter().function && node->getFilter().function->getColumnOverride() != mtg::ColumnType::UNKNOWN)
+				{
+					return node->getFilter().function->getColumnOverride().getDisplayName();
+				}
 				return node->getFilter().column.getDisplayName();
 			}
 		}
@@ -177,7 +181,17 @@ Qt::ItemFlags FilterModel::flags(const QModelIndex& index) const
 	FilterNode* node = reinterpret_cast<FilterNode*>(index.internalPointer());
 	if (node)
 	{
-		return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
+		if (index.column() == Column::Field &&
+			node->getType() == FilterNode::Type::LEAF &&
+			node->getFilter().function &&
+			node->getFilter().function->getColumnOverride() != mtg::ColumnType::UNKNOWN)
+		{
+			return QAbstractItemModel::flags(index);
+		}
+		else
+		{
+			return (Qt::ItemIsEditable | QAbstractItemModel::flags(index));
+		}
 	}
 	return QAbstractItemModel::flags(index);
 }

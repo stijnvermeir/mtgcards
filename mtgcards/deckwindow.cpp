@@ -65,18 +65,6 @@ DeckWindow::~DeckWindow()
 {
 }
 
-void DeckWindow::reload()
-{
-	for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
-	{
-		QWidget* widget = ui_.tabWidget->widget(tabIndex);
-		if (widget)
-		{
-			static_cast<DeckWidget*>(widget)->reload();
-		}
-	}
-}
-
 void DeckWindow::updateShortcuts()
 {
 	ui_.actionNewDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);

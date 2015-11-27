@@ -14,7 +14,6 @@ public:
 	DeckTableModel(const QString& filename);
 	~DeckTableModel();
 
-	void reload();
 	void save(const QString& filename);
 	void setDeckActive(const bool active);
 	void setQuantity(const int dataRowIndex, const int newQuantity);

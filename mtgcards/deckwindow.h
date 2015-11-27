@@ -18,7 +18,6 @@ public:
 	explicit DeckWindow(QWidget* parent = 0);
 	virtual ~DeckWindow();
 
-	void reload();
 	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();

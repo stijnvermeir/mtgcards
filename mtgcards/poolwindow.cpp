@@ -69,12 +69,6 @@ PoolWindow::~PoolWindow()
 {
 }
 
-void PoolWindow::reload()
-{
-	poolTableModel_.reload();
-	updateStatusBar();
-}
-
 void PoolWindow::updateShortcuts()
 {
 	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);

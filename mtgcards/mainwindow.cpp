@@ -270,12 +270,6 @@ void MainWindow::optionsActionClicked()
 	connect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
 	connect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
-	if (options.isPoolReloadRequired())
-	{
-		poolWindow_.reload();
-		collectionWindow_.reload();
-		deckWindow_.reload();
-	}
 	poolWindow_.updateShortcuts();
 	collectionWindow_.updateShortcuts();
 	deckWindow_.updateShortcuts();

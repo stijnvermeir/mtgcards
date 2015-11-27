@@ -20,7 +20,6 @@ public:
 	explicit DeckWidget(const QString& filename, QWidget* parent = 0);
 	~DeckWidget();
 
-	void reload();
 	void save(const QString& filename);
 	void setDeckActive(const bool active);
 	const Deck& deck() const;

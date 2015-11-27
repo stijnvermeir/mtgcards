@@ -53,13 +53,6 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 	}
 
-	void loadData()
-	{
-		beginResetModel();
-		mtg::CardData::instance().reload();
-		endResetModel();
-	}
-
 	virtual int rowCount(const QModelIndex& ) const
 	{
 		return mtg::CardData::instance().getNumRows();
@@ -114,11 +107,6 @@ PoolTableModel::PoolTableModel()
 
 PoolTableModel::~PoolTableModel()
 {
-}
-
-void PoolTableModel::reload()
-{
-	pimpl_->loadData();
 }
 
 int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const

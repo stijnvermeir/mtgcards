@@ -16,7 +16,6 @@ public:
 	explicit PoolWindow(QWidget *parent = 0);
 	virtual ~PoolWindow();
 
-	void reload();
 	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();

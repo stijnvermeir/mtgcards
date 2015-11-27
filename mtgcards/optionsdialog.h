@@ -15,14 +15,11 @@ public:
 	explicit OptionsDialog(QWidget* parent = 0);
 	virtual ~OptionsDialog();
 
-	bool isPoolReloadRequired() const;
-
 signals:
 	void fontChanged();
 
 private:
 	Ui::OptionsDialog ui_;
-	bool poolReloadRequired_;
 	QScopedPointer<QAbstractItemModel> shortcutsModel_;
 	QScopedPointer<QAbstractItemDelegate> shortcutsItemDelegate_;
 	QScopedPointer<QAbstractItemModel> userColumnsModel_;
@@ -32,6 +29,7 @@ private slots:
 	// data bindings tab
 	void browseAllSetsJsonBtnClicked();
 	void downloadLatestAllSetsJsonBtnClicked();
+	bool confirmRestart();
 	void browseCardPictureDirBtnClicked();
 
 	// tags tab

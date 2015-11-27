@@ -11,8 +11,6 @@ public:
 	PoolTableModel();
 	~PoolTableModel();
 
-	void reload();
-
 	virtual int columnToIndex(const mtg::ColumnType& column) const;
 	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const;
 	virtual mtg::ColumnType columnIndexToType(const int columnIndex) const;

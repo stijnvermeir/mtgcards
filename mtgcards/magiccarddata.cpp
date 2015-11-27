@@ -150,10 +150,10 @@ struct CardData::Pimpl
 		, rulings_()
 		, quickLookUpTable_()
 	{
-		reload();
+		load();
 	}
 
-	void reload()
+	void load()
 	{
 		data_.clear();
 		quickLookUpTable_.clear();
@@ -478,11 +478,6 @@ CardData::CardData()
 
 CardData::~CardData()
 {
-}
-
-void CardData::reload()
-{
-	pimpl_->reload();
 }
 
 int CardData::getNumRows() const

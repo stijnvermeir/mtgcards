@@ -315,7 +315,6 @@ public:
 OptionsDialog::OptionsDialog(QWidget* parent)
 	: QDialog(parent)
 	, ui_()
-	, poolReloadRequired_(false)
 	, shortcutsModel_(new ShortcutsTableModel())
 	, shortcutsItemDelegate_(new ShortcutItemDelegate())
 	, userColumnsModel_(new UserColumnsTableModel())
@@ -377,13 +376,11 @@ OptionsDialog::~OptionsDialog()
 {
 }
 
-bool OptionsDialog::isPoolReloadRequired() const
-{
-	return poolReloadRequired_;
-}
-
 void OptionsDialog::browseAllSetsJsonBtnClicked()
 {
+	if (!confirmRestart())
+		return;
+
 	QString startDir = ui_.allSetsJsonTxt->text();
 	if (startDir.isEmpty())
 	{
@@ -392,18 +389,32 @@ void OptionsDialog::browseAllSetsJsonBtnClicked()
 	auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", startDir, tr("AllSets (*AllSets.json)"));
 	if (!filename.isNull())
 	{
-		ui_.allSetsJsonTxt->setText(filename);
 		Settings::instance().setPoolDataFile(filename);
-		poolReloadRequired_ = true;
+		QProcess::startDetached(QApplication::applicationFilePath());
+		QApplication::quit();
 	}
 }
 
 void OptionsDialog::downloadLatestAllSetsJsonBtnClicked()
 {
+	if (!confirmRestart())
+		return;
+
 	if (Util::downloadPoolDataFile())
 	{
-		poolReloadRequired_ = true;
+		QProcess::startDetached(QApplication::applicationFilePath());
+		QApplication::quit();
 	}
+}
+
+bool OptionsDialog::confirmRestart()
+{
+	int ret = QMessageBox::warning(this,
+									"Restart required",
+									"A restart is required when changing AllSets.json. All unsaved changes will be lost.",
+									QMessageBox::Ok | QMessageBox::Cancel,
+									QMessageBox::Cancel);
+	return ret == QMessageBox::Ok;
 }
 
 void OptionsDialog::browseCardPictureDirBtnClicked()

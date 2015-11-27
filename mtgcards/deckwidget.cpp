@@ -58,11 +58,6 @@ DeckWidget::~DeckWidget()
 {
 }
 
-void DeckWidget::reload()
-{
-	deckTableModel_.reload();
-}
-
 void DeckWidget::save(const QString& filename)
 {
 	deckTableModel_.save(filename);
