@@ -2,6 +2,7 @@
 
 #include "shortcuttype.h"
 #include "usercolumn.h"
+#include "magiccolumntype.h"
 #include "filter.h"
 
 #include <QString>
@@ -63,6 +64,9 @@ public:
 
 	bool getArtDownloadEnabled() const;
 	void setArtDownloadEnabled(bool enabled);
+
+	const QVector<mtg::ColumnType>& getCopyColumns() const;
+	void setCopyColumns(const QVector<mtg::ColumnType>& copyColumns);
 private:
 
 	struct Pimpl;

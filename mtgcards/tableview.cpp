@@ -1,10 +1,13 @@
 #include "tableview.h"
 
 #include "magicconvert.h"
+#include "magicsortfilterproxymodel.h"
 #include "settings.h"
 
 #include <QKeyEvent>
 #include <QHeaderView>
+#include <QApplication>
+#include <QClipboard>
 #include <QDebug>
 
 TableView::TableView(QWidget* parent)
@@ -33,6 +36,37 @@ void TableView::keyboardSearch(const QString& search)
 
 void TableView::keyPressEvent(QKeyEvent* event)
 {
+	if (event->matches(QKeySequence::Copy))
+	{
+		QString text;
+		MagicSortFilterProxyModel* mdl = static_cast<MagicSortFilterProxyModel*>(model());
+		for (const QModelIndex& row : selectionModel()->selectedRows())
+		{
+			bool first = true;
+			for (const mtg::ColumnType& column : Settings::instance().getCopyColumns())
+			{
+				int columnIndex = mdl->columnToIndex(column);
+				if (columnIndex >= 0 && columnIndex < mdl->columnCount())
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						text += '\t';
+					}
+					text += mtg::toString(mdl->data(mdl->index(row.row(), columnIndex)));
+				}
+			}
+			text += '\n';
+		}
+
+		QApplication::clipboard()->setText(text);
+		event->accept();
+		return;
+	}
+
 	if (searchString_.isEmpty())
 	{
 		QTableView::keyPressEvent(event);

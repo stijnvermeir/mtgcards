@@ -31,6 +31,7 @@ struct Settings::Pimpl
 	QFont font_;
 	Mkm mkm_;
 	bool artDownloadEnabled_;
+	QVector<mtg::ColumnType> copyColumns_;
 
 	Pimpl()
 	{
@@ -82,6 +83,25 @@ struct Settings::Pimpl
 		mkm_.accessTokenSecret = settings.value("options/mkm/accessTokenSecret").toString();
 
 		artDownloadEnabled_ = settings.value("options/misc/artDownloadEnabled", true).toBool();
+
+		if (settings.contains("options/copyColumns"))
+		{
+			QStringList copyColumns = settings.value("options/copyColumns").toStringList();
+			for (const QString& copyColumn : copyColumns)
+			{
+				auto column = mtg::ColumnType(copyColumn);
+				if (column != mtg::ColumnType::UNKNOWN && column < mtg::ColumnType::UserDefined)
+				{
+					copyColumns_.push_back(column);
+				}
+			}
+		}
+		else
+		{
+			copyColumns_.push_back(mtg::ColumnType::SetCode);
+			copyColumns_.push_back(mtg::ColumnType::Name);
+			copyColumns_.push_back(mtg::ColumnType::Quantity);
+		}
 	}
 
 	void setAppDataDir(const QString& appDataDir)
@@ -188,6 +208,20 @@ struct Settings::Pimpl
 
 		QSettings settings;
 		settings.setValue("options/misc/artDownloadEnabled", artDownloadEnabled_);
+	}
+
+	void setCopyColumns(const QVector<mtg::ColumnType>& copyColumns)
+	{
+		copyColumns_ = copyColumns;
+
+		QStringList value;
+		for (const mtg::ColumnType& copyColumn : copyColumns_)
+		{
+			value << (QString) copyColumn;
+		}
+
+		QSettings settings;
+		settings.setValue("options/copyColumns", value);
 	}
 };
 
@@ -324,4 +358,14 @@ bool Settings::getArtDownloadEnabled() const
 void Settings::setArtDownloadEnabled(bool enabled)
 {
 	pimpl_->setArtDownloadEnabled(enabled);
+}
+
+const QVector<mtg::ColumnType>& Settings::getCopyColumns() const
+{
+	return pimpl_->copyColumns_;
+}
+
+void Settings::setCopyColumns(const QVector<mtg::ColumnType>& copyColumns)
+{
+	pimpl_->setCopyColumns(copyColumns);
 }

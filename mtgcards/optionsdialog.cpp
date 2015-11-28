@@ -343,6 +343,23 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	connect(shortcutsModel_.data(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(shortcutsChanged(QModelIndex,QModelIndex)));
 	connect(ui_.saveShortcutsBtn, SIGNAL(released()), this, SLOT(saveShortcutsClicked()));
 
+	// copy behavior tab
+	for (const mtg::ColumnType& copyColumn : Settings::instance().getCopyColumns())
+	{
+		QListWidgetItem* item = new QListWidgetItem(copyColumn.getDisplayName());
+		item->setData(Qt::UserRole, (QString) copyColumn);
+		ui_.copyColumnsLst->addItem(item);
+	}
+	for (const mtg::ColumnType& column : mtg::ColumnType::list())
+	{
+		if (column != mtg::ColumnType::UserDefined && !Settings::instance().getCopyColumns().contains(column))
+		{
+			QListWidgetItem* item = new QListWidgetItem(column.getDisplayName());
+			item->setData(Qt::UserRole, (QString) column);
+			ui_.availableColumnsLst->addItem(item);
+		}
+	}
+
 	// user columns tab
 	ui_.userColumnsTbl->setModel(userColumnsModel_.data());
 	ui_.userColumnsTbl->setItemDelegate(userColumnsItemDelegate_.data());
@@ -374,6 +391,12 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 
 OptionsDialog::~OptionsDialog()
 {
+	QVector<mtg::ColumnType> copyColumns;
+	for (int i = 0; i < ui_.copyColumnsLst->count(); ++i)
+	{
+		copyColumns.push_back(ui_.copyColumnsLst->item(i)->data(Qt::UserRole).toString());
+	}
+	Settings::instance().setCopyColumns(copyColumns);
 }
 
 void OptionsDialog::browseAllSetsJsonBtnClicked()
