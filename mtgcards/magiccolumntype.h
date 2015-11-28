@@ -75,6 +75,9 @@ public:
 
 	static const QVector<ColumnType>& list();
 
+	bool operator==(const ColumnType& other) const;
+	bool operator==(ColumnType::type_t other) const;
+
 private:
 	type_t value_;
 	int userColumnIndex_;

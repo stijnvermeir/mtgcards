@@ -197,3 +197,13 @@ const QVector<ColumnType>& ColumnType::list()
 	}
 	return l;
 }
+
+bool ColumnType::operator==(const ColumnType& other) const
+{
+	return (value_ == other.value_) && (userColumnIndex_ == other.userColumnIndex_);
+}
+
+bool ColumnType::operator==(ColumnType::type_t other) const
+{
+	return (value_ == other);
+}
