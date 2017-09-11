@@ -121,6 +121,11 @@ void CardWindow::switchPicture()
 			setCardPicture(imageFiles_.front(), 90);
 		}
 		else
+		if (layoutType_ == mtg::LayoutType::AfterMath)
+		{
+			setCardPicture(imageFiles_.front(), -90);
+		}
+		else
 		if (layoutType_ == mtg::LayoutType::DoubleFaced)
 		{
 			setCardPicture(imageFiles_.back(), 0);
