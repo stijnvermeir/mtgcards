@@ -389,7 +389,7 @@ struct CardData::Pimpl
 		QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
 		mtg::LayoutType layout = mtg::LayoutType(data_[row][columnToIndex(ColumnType::Layout)].toString());
 		QString search;
-		if (layout == mtg::LayoutType::Split)
+		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::AfterMath || layout == mtg::LayoutType::DoubleFaced || layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
 			search = removeAccents(names.join(""));

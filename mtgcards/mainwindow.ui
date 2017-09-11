@@ -36,10 +36,17 @@
     <property name="title">
      <string>Tools</string>
     </property>
+    <widget class="QMenu" name="menuImport_decks">
+     <property name="title">
+      <string>Import deck</string>
+     </property>
+     <addaction name="actionImportDeckFromXML"/>
+     <addaction name="actionImportDeckFromText"/>
+    </widget>
     <addaction name="actionOptions"/>
     <addaction name="separator"/>
     <addaction name="actionImportCollection"/>
-    <addaction name="actionImportDecks"/>
+    <addaction name="menuImport_decks"/>
     <addaction name="separator"/>
     <addaction name="actionGlobalFilter"/>
    </widget>
@@ -115,11 +122,6 @@
     <string>Import collection ...</string>
    </property>
   </action>
-  <action name="actionImportDecks">
-   <property name="text">
-    <string>Import decks ...</string>
-   </property>
-  </action>
   <action name="actionOnlineManual">
    <property name="text">
     <string>Online Manual</string>
@@ -133,6 +135,16 @@
   <action name="actionGlobalFilter">
    <property name="text">
     <string>Global filter ...</string>
+   </property>
+  </action>
+  <action name="actionImportDeckFromXML">
+   <property name="text">
+    <string>From XML</string>
+   </property>
+  </action>
+  <action name="actionImportDeckFromText">
+   <property name="text">
+    <string>From Text</string>
    </property>
   </action>
  </widget>

@@ -12,6 +12,11 @@ QString toString(const QVariant& data)
 		return manaCost.getText();
 	}
 	else
+	if (data.canConvert<QStringList>())
+	{
+		return data.toStringList().join(" / ");
+	}
+	else
 	{
 		return data.toString();
 	}

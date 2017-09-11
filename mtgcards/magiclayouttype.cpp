@@ -12,7 +12,8 @@ const QVector<QString> NAMES =
 	"double-faced",
 	"flip",
 	"split",
-	"token"
+	"token",
+	"aftermath"
 };
 
 } // namespace

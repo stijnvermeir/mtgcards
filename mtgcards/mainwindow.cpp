@@ -17,6 +17,7 @@
 #include <QProgressDialog>
 #include <QXmlStreamReader>
 #include <QDesktopServices>
+#include <QInputDialog>
 
 namespace {
 
@@ -112,7 +113,8 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionImportCollection, SIGNAL(triggered()), this, SLOT(importCollection()));
 
 	// import decks
-	connect(ui_.actionImportDecks, SIGNAL(triggered()), this, SLOT(importDecks()));
+	connect(ui_.actionImportDeckFromXML, SIGNAL(triggered()), this, SLOT(importDeckFromXML()));
+	connect(ui_.actionImportDeckFromText, SIGNAL(triggered()), this, SLOT(importDeckFromText()));
 
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
@@ -374,7 +376,7 @@ void MainWindow::importCollection()
 	}
 }
 
-void MainWindow::importDecks()
+void MainWindow::importDeckFromXML()
 {
 	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import decks from xml", QDir::homePath(), "Decks (*.deck)");
 	if (!filenames.empty())
@@ -424,6 +426,116 @@ void MainWindow::importDecks()
 					if (xml.hasError())
 					{
 						errors << xml.errorString();
+					}
+				}
+
+				bool ok = true;
+				if (!errors.empty())
+				{
+					decksWithIssues << fileInfo.baseName();
+					if (!yesToAll && !noToAll)
+					{
+						QMessageBox msgBox;
+						msgBox.setWindowTitle("Issues");
+						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
+						msgBox.setInformativeText("See details to see the issues.");
+						msgBox.setDetailedText(errors.join("\n"));
+						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
+						msgBox.setDefaultButton(QMessageBox::NoToAll);
+						msgBox.setIcon(QMessageBox::Warning);
+						int ret = msgBox.exec();
+						if (ret == QMessageBox::No)
+						{
+							ok = false;
+						}
+						if (ret == QMessageBox::NoToAll)
+						{
+							noToAll = true;
+						}
+						if (ret == QMessageBox::YesToAll)
+						{
+							yesToAll = true;
+						}
+					}
+					if (noToAll)
+					{
+						ok = false;
+					}
+				}
+
+				if (ok)
+				{
+					deck.save(newFilename);
+					deckWindow_.openDeck(newFilename);
+				}
+			}
+		}
+		if (!decksWithIssues.empty())
+		{
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Decks with issues");
+			msgBox.setText("There were some decks with import issues.");
+			msgBox.setInformativeText("See details to see which decks had issues.");
+			msgBox.setDetailedText(decksWithIssues.join("\n"));
+			msgBox.setStandardButtons(QMessageBox::Ok);
+			msgBox.setDefaultButton(QMessageBox::Ok);
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
+		else
+		{
+			QMessageBox::information(0, "Success", "All decks were imported successfully.");
+		}
+	}
+}
+
+void MainWindow::importDeckFromText()
+{
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import decks from text", QDir::homePath(), "Decks (*.txt)");
+	QString set = QInputDialog::getText(this, "Enter Set Code", "Set Code");
+	if (!filenames.empty())
+	{
+		bool yesToAll = false;
+		bool noToAll = false;
+		QStringList decksWithIssues;
+		for (const QString& filename : filenames)
+		{
+			QStringList errors;
+			QFile importFile(filename);
+			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				QFileInfo fileInfo(filename);
+				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
+				if (QFileInfo(newFilename).exists())
+				{
+					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
+				}
+				Deck deck;
+				deck.setActive(false);
+				QStringList lines;
+				QTextStream in(&importFile);
+				while (!in.atEnd())
+				{
+					lines << in.readLine();
+				}
+				importFile.close();
+
+				for (int i = 0; i < lines.size(); ++i)
+				{
+					QTextStream stream(&lines[i]);
+					int amount;
+					stream >> amount;
+					QString name = stream.readAll().trimmed();
+					qDebug() << "Amount" << amount;
+					qDebug() << "Name" << name;
+					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
+					if (dataRowIndex != -1)
+					{
+						deck.setQuantity(dataRowIndex, amount);
+					}
+					else
+					{
+						errors << (set + " " + name + " not found");
 					}
 				}
 

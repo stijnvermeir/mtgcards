@@ -40,6 +40,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	QMap<QString, int> typeCount;
 	QMap<QString, int> colorCount;
 	QMap<QString, int> rarityCount;
+	QMap<QString, int> tagsCount;
 
 	auto lambda = [&](const Deck& deck, int row, int dataRow)
 	{
@@ -116,6 +117,12 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			{
 				lambda(deck, row, deck.getDataRowIndex(row));
 			}
+		}
+
+		auto tags = deck.get(row, mtg::ColumnType::Tags).toStringList();
+		for (const QString& tag : tags)
+		{
+			tagsCount[tag] += 1;
 		}
 	}
 
@@ -271,10 +278,26 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			addWidgetLambda(text);
 		}
 	}
+
+	// Tags stats
+	{
+		ui_.tagsTbl->setRowCount(tagsCount.size());
+		int r = 0;
+		auto tag = tagsCount.constBegin();
+		while (tag != tagsCount.constEnd())
+		{
+			ui_.tagsTbl->setItem(r, 0, new QTableWidgetItem(tag.key()));
+			auto item = new QTableWidgetItem(QString::number(tag.value()));
+			item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+			ui_.tagsTbl->setItem(r, 1, item);
+			++tag;
+			++r;
+		}
+		ui_.tagsTbl->resizeColumnsToContents();
+
+	}
 }
 
 DeckStatisticsDialog::~DeckStatisticsDialog()
 {
 }
-
-

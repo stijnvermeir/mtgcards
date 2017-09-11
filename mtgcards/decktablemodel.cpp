@@ -127,6 +127,23 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 					if (GetColumns()[index.column()] == mtg::ColumnType::Owned)
 					{
 						int dataRowIndex = deck_->getDataRowIndex(index.row());
+						if (role == Qt::ToolTipRole)
+						{
+							QStringList tooltip;
+							auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
+							for (const auto& deck : decks)
+							{
+								QString tooltipLine;
+								QTextStream str(&tooltipLine);
+								str << deck->getQuantity(dataRowIndex) << "x in " << deck->getDisplayName();
+								tooltip << tooltipLine;
+							}
+							if (tooltip.empty())
+							{
+								return "Not used.";
+							}
+							return tooltip.join("\n");
+						}
 						return mtg::Collection::instance().getQuantity(dataRowIndex);
 					}
 					return deck_->get(index.row(), GetColumns()[index.column()]);

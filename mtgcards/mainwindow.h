@@ -40,7 +40,8 @@ private slots:
 	void optionsActionClicked();
 	void aboutActionClicked();
 	void importCollection();
-	void importDecks();
+	void importDeckFromXML();
+	void importDeckFromText();
 	void globalFilter();
 	void onlineManual();
 };
