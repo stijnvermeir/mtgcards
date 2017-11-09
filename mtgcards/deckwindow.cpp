@@ -199,10 +199,10 @@ void DeckWindow::updateStatusBar()
 			}
 			numCopies += quantity;
 
-			sumPriceLowest += getValue(row, mtg::ColumnType::PriceLowest).toDouble();
-			sumPriceLowestFoil += getValue(row, mtg::ColumnType::PriceLowestFoil).toDouble();
-			sumPriceAverage += getValue(row, mtg::ColumnType::PriceAverage).toDouble();
-			sumPriceTrend += getValue(row, mtg::ColumnType::PriceTrend).toDouble();
+			sumPriceLowest += quantity * getValue(row, mtg::ColumnType::PriceLowest).toDouble();
+			sumPriceLowestFoil += quantity * getValue(row, mtg::ColumnType::PriceLowestFoil).toDouble();
+			sumPriceAverage += quantity * getValue(row, mtg::ColumnType::PriceAverage).toDouble();
+			sumPriceTrend += quantity * getValue(row, mtg::ColumnType::PriceTrend).toDouble();
 		}
 		QString message;
 		QTextStream str(&message);

@@ -32,6 +32,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	const QStringList RARITIES = {"Common", "Uncommon", "Rare", "Mythic Rare", "Special", "Basic Land"};
 
 	int maxCmcCount = 0;
+	int xCmcCount = 0;
 	QVector<int> cmcCount(MAX_CMC + 1, 0);
 	QMap<QChar, int> cost;
 	int totalCards = 0;
@@ -52,12 +53,23 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 		int q = deck.get(row, mtg::ColumnType::Quantity).toInt();
 		if (q > 0)
 		{
-			cmcCount[cmc] += q;
-			if (cmcCount[cmc] > maxCmcCount)
-			{
-				maxCmcCount = cmcCount[cmc];
-			}
 			QString manaCost = mtg::toString(mtg::CardData::instance().get(dataRow, mtg::ColumnType::ManaCost));
+			if (manaCost.contains("{X}"))
+			{
+				xCmcCount += q;
+				if (xCmcCount > maxCmcCount)
+				{
+					maxCmcCount = xCmcCount;
+				}
+			}
+			else
+			{
+				cmcCount[cmc] += q;
+				if (cmcCount[cmc] > maxCmcCount)
+				{
+					maxCmcCount = cmcCount[cmc];
+				}
+			}
 			for (const auto& c : COLORS)
 			{
 				cost[c] += manaCost.count(c) * q;
@@ -122,7 +134,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 		auto tags = deck.get(row, mtg::ColumnType::Tags).toStringList();
 		for (const QString& tag : tags)
 		{
-			tagsCount[tag] += 1;
+			tagsCount[tag] += q;
 		}
 	}
 
@@ -178,6 +190,11 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			w->setCount(cmcCount[i]);
 			ui_.manaCurveLayout->addWidget(w);
 		}
+		ManaCurveLineWidget* w = new ManaCurveLineWidget(this);
+		w->setCmc("{X}");
+		w->setMax(maxCmcCount);
+		w->setCount(xCmcCount);
+		ui_.manaCurveLayout->addWidget(w);
 	}
 
 	// mana colors
@@ -247,7 +264,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			QTextStream str(&text);
 			str.setRealNumberPrecision(2);
 			str.setRealNumberNotation(QTextStream::FixedNotation);
-			str << "{X} " << 1.0 * colorlessCost / totalCards;
+			str << "{1} " << 1.0 * colorlessCost / totalCards;
 			str << " (" << 1.0 * colorlessCost * 100 / totalCmc << " %)";
 			addWidgetLambda(text);
 		}

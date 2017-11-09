@@ -180,13 +180,14 @@ void CollectionWindow::updateStatusBar()
 	for (int i = 0; i < collectionTableModel_.rowCount(); ++i)
 	{
 		QModelIndex sourceIndex = collectionTableModel_.mapToSource(collectionTableModel_.index(i, 0));
-		numCopies += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Quantity).toInt();
+		auto qty = mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Quantity).toInt();
+		numCopies += qty;
 		numUsed += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Used).toInt();
 
-		sumPriceLowest += getValue(i, mtg::ColumnType::PriceLowest).toDouble();
-		sumPriceLowestFoil += getValue(i, mtg::ColumnType::PriceLowestFoil).toDouble();
-		sumPriceAverage += getValue(i, mtg::ColumnType::PriceAverage).toDouble();
-		sumPriceTrend += getValue(i, mtg::ColumnType::PriceTrend).toDouble();
+		sumPriceLowest += qty * getValue(i, mtg::ColumnType::PriceLowest).toDouble();
+		sumPriceLowestFoil += qty * getValue(i, mtg::ColumnType::PriceLowestFoil).toDouble();
+		sumPriceAverage += qty * getValue(i, mtg::ColumnType::PriceAverage).toDouble();
+		sumPriceTrend += qty * getValue(i, mtg::ColumnType::PriceTrend).toDouble();
 	}
 	stream << " (" << numCopies << " copies, " << numUsed << " used)";
 	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowest)))
