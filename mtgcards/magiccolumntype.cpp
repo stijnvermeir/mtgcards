@@ -50,6 +50,7 @@ const QVector<QString> NAMES =
 	"MkmProductId",
 	"MkmMetaproductId",
 	"Tags",
+	"NotOwned",
 	"UserDefined"
 };
 
@@ -96,6 +97,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"MKM Product Id",
 	"MKM Metaproduct Id",
 	"Tags",
+	"Not Owned",
 	"User Defined"
 };
 

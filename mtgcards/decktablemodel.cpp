@@ -46,7 +46,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend,
 	mtg::ColumnType::Id,
-	mtg::ColumnType::Tags
+	mtg::ColumnType::Tags,
+	mtg::ColumnType::NotOwned
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -145,6 +146,16 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 							return tooltip.join("\n");
 						}
 						return mtg::Collection::instance().getQuantity(dataRowIndex);
+					}
+					if (GetColumns()[index.column()] == mtg::ColumnType::NotOwned)
+					{
+						auto dataRowIndex = deck_->getDataRowIndex(index.row());
+						auto rowIndex = mtg::Collection::instance().getRowIndex(dataRowIndex);
+						if (rowIndex == -1)
+						{
+							return deck_->getQuantity(dataRowIndex);
+						}
+						return mtg::Collection::instance().get(rowIndex, mtg::ColumnType::NotOwned);
 					}
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}

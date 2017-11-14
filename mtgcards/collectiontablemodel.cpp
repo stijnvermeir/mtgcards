@@ -45,7 +45,8 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
 	mtg::ColumnType::PriceAverage,
 	mtg::ColumnType::PriceTrend,
 	mtg::ColumnType::Id,
-	mtg::ColumnType::Tags
+	mtg::ColumnType::Tags,
+	mtg::ColumnType::NotOwned
 
 };
 

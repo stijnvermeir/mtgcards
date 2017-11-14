@@ -54,6 +54,7 @@ public:
 		MkmProductId,
 		MkmMetaproductId,
 		Tags,
+		NotOwned,
 		UserDefined,
 
 		COUNT,

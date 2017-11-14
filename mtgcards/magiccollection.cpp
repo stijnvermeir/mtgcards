@@ -190,6 +190,11 @@ struct Collection::Pimpl
 			{
 				return entry.used;
 			}
+			if (column == ColumnType::NotOwned)
+			{
+				auto notOwned = entry.used.toInt() - entry.quantity.toInt();
+				return ((notOwned > 0) ? notOwned : 0);
+			}
 			if (column == ColumnType::UserDefined)
 			{
 				auto it = entry.userData.find(column.userColumn().name_);
