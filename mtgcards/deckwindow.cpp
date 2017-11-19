@@ -501,6 +501,8 @@ void DeckWindow::createProxies()
 			return;
 		}
 
+		auto fullBorders = QMessageBox::question(this, "Borders cropped?", "Would you like to use cropped or full borders?", "Cropped", "Full");
+
 		auto pdfFile = QFileDialog::getSaveFileName(this, "Save to Pdf", QDir::homePath(), "Pdf (*.pdf)");
 		if (pdfFile.isNull())
 			return;
@@ -527,7 +529,7 @@ void DeckWindow::createProxies()
 		for (int index : indices)
 		{
 			auto quantity = deckWidget->deck().getQuantity(index);
-			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index, Settings::instance().getArtIsHighQuality());
+			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index, fullBorders);
 			if (pictureInfo.missing.empty())
 			{
 				for (int i = 0; i < quantity; ++i)

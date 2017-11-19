@@ -60,6 +60,7 @@ CollectionWindow::CollectionWindow(QWidget* parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(ui_.actionDownloadCardArt, SIGNAL(triggered()), this, SLOT(actionDownloadCardArt()));
 	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(actionFetchOnlineData()));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
@@ -338,6 +339,11 @@ void CollectionWindow::actionAddToDeck()
 void CollectionWindow::actionRemoveFromDeck()
 {
 	emit removeFromDeck(currentDataRowIndices());
+}
+
+void CollectionWindow::actionDownloadCardArt()
+{
+	collectionTableModel_.downloadCardArt(ui_.collectionTbl_->selectionModel()->selectedRows());
 }
 
 void CollectionWindow::actionFetchOnlineData()

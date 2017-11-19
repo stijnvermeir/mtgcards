@@ -15,6 +15,7 @@
 #include <QJsonArray>
 #include <QHash>
 #include <QDebug>
+#include <QThread>
 
 using namespace mtg;
 
@@ -120,23 +121,23 @@ bool downloadPicture(int multiverseId, const QString& filename, bool hq)
 {
 	 QNetworkAccessManager m;
 	 QNetworkRequest request;
-	 // request.setUrl(QString("http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%1&type=card").arg(multiverseId));
 	 auto url = QString("https://api.scryfall.com/cards/multiverse/%1?format=image&version=%2").arg(multiverseId).arg((hq ? QString("large") : QString("border_crop")));
-	 qDebug() << url;
 	 request.setUrl(url);
+	 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
 	 QScopedPointer<QNetworkReply> reply(m.get(request));
 	 QEventLoop loop;
 	 QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	 loop.exec();
+	 QThread::msleep(100); // Scryfall API asks to wait a bit between requests.
 	 if (reply->error())
 	 {
 		 qDebug() << reply->error() << reply->errorString();
 		 return false;
 	 }
-	 qDebug() << "No error?";
+	 auto rawData = reply->readAll();
 	 QFileInfo fi(filename);
 	 fi.absoluteDir().mkpath(fi.absolutePath());
-	 QImage picture = QImage::fromData(reply->readAll());
+	 QImage picture = QImage::fromData(rawData);
 	 return picture.save(filename);
 }
 

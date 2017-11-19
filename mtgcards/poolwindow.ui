@@ -72,6 +72,7 @@
    <addaction name="actionAddToDeck"/>
    <addaction name="actionRemoveFromDeck"/>
    <addaction name="separator"/>
+   <addaction name="actionDownloadCardArt"/>
    <addaction name="actionFetchOnlineData"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -161,6 +162,18 @@
    </property>
    <property name="toolTip">
     <string>Fetch online data for selection</string>
+   </property>
+  </action>
+  <action name="actionDownloadCardArt">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/paint-board-and-brush.svg</normaloff>:/resources/icons/paint-board-and-brush.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Download card art</string>
+   </property>
+   <property name="toolTip">
+    <string>Download card art for selection</string>
    </property>
   </action>
  </widget>

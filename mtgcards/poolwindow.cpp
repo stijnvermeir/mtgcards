@@ -56,6 +56,7 @@ PoolWindow::PoolWindow(QWidget *parent)
 	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
 	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
 	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
+	connect(ui_.actionDownloadCardArt, SIGNAL(triggered()), this, SLOT(actionDownloadCardArt()));
 	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(actionFetchOnlineData()));
 	connect(this, SIGNAL(fontChanged()), ui_.poolTbl_, SLOT(handleFontChanged()));
 
@@ -202,6 +203,11 @@ void PoolWindow::actionAddToDeck()
 void PoolWindow::actionRemoveFromDeck()
 {
 	emit removeFromDeck(currentDataRowIndices());
+}
+
+void PoolWindow::actionDownloadCardArt()
+{
+	poolTableModel_.downloadCardArt(ui_.poolTbl_->selectionModel()->selectedRows());
 }
 
 void PoolWindow::actionFetchOnlineData()
