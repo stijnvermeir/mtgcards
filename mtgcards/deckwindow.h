@@ -67,6 +67,7 @@ private slots:
 	void actionToggleDeckActive(bool);
 	void createProxies();
 	void showStatistics();
+	void downloadCardArt();
 	void fetchOnlineData();
 	void addToWantslist();
 	void deckEdited();

@@ -99,6 +99,7 @@
    <addaction name="separator"/>
    <addaction name="actionStats"/>
    <addaction name="separator"/>
+   <addaction name="actionDownloadCardArt"/>
    <addaction name="actionFetchOnlineData"/>
    <addaction name="actionAddToWantslist"/>
   </widget>
@@ -301,6 +302,18 @@
    </property>
    <property name="toolTip">
     <string>Add entire deck to collection</string>
+   </property>
+  </action>
+  <action name="actionDownloadCardArt">
+   <property name="icon">
+    <iconset resource="mtgcards.qrc">
+     <normaloff>:/resources/icons/paint-board-and-brush.svg</normaloff>:/resources/icons/paint-board-and-brush.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Download card art</string>
+   </property>
+   <property name="toolTip">
+    <string>Download card art for selection</string>
    </property>
   </action>
  </widget>

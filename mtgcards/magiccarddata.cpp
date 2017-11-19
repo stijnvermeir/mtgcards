@@ -116,11 +116,14 @@ QString removeAccents(QString s)
 	return output;
 }
 
-bool downloadPicture(int multiverseId, const QString& filename)
+bool downloadPicture(int multiverseId, const QString& filename, bool hq)
 {
 	 QNetworkAccessManager m;
 	 QNetworkRequest request;
-	 request.setUrl(QString("http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%1&type=card").arg(multiverseId));
+	 // request.setUrl(QString("http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%1&type=card").arg(multiverseId));
+	 auto url = QString("https://api.scryfall.com/cards/multiverse/%1?format=image&version=%2").arg(multiverseId).arg((hq ? QString("large") : QString("border_crop")));
+	 qDebug() << url;
+	 request.setUrl(url);
 	 QScopedPointer<QNetworkReply> reply(m.get(request));
 	 QEventLoop loop;
 	 QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -130,6 +133,7 @@ bool downloadPicture(int multiverseId, const QString& filename)
 		 qDebug() << reply->error() << reply->errorString();
 		 return false;
 	 }
+	 qDebug() << "No error?";
 	 QFileInfo fi(filename);
 	 fi.absoluteDir().mkpath(fi.absolutePath());
 	 QImage picture = QImage::fromData(reply->readAll());
@@ -500,7 +504,7 @@ int CardData::findRowFast(const QString& set, const QString& name, const QString
 	return pimpl_->findRowFast(set, name, imageName);
 }
 
-CardData::PictureInfo CardData::getPictureInfo(int row)
+CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload)
 {
 	PictureInfo picInfo;
 	picInfo.layout = mtg::LayoutType::Normal;
@@ -510,7 +514,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
 		QVariant multiverseId = get(row, mtg::ColumnType::MultiverseId);
-		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName](QString imageFile, const QVariant& multiverseId)
+		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName, &hq, &doDownload](QString imageFile, const QVariant& multiverseId)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -540,7 +544,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 				else
 				{
 					// try downloading
-					if (Settings::instance().getArtDownloadEnabled() && multiverseId.isValid() && downloadPicture(multiverseId.toInt(), imageFile))
+					if (doDownload && multiverseId.isValid() && downloadPicture(multiverseId.toInt(), imageFile, hq))
 					{
 						picInfo.filenames << imageFile;
 					}
@@ -553,6 +557,10 @@ CardData::PictureInfo CardData::getPictureInfo(int row)
 			}
 		};
 		prefix += QDir::separator() + get(row, mtg::ColumnType::Set).toString().replace(":", "") + QDir::separator();
+		if (hq)
+		{
+			prefix += QString("hq") + QDir::separator();
+		}
 		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
 		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
 		{

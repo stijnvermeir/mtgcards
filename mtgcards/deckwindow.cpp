@@ -54,6 +54,7 @@ DeckWindow::DeckWindow(QWidget* parent)
 	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
+	connect(ui_.actionDownloadCardArt, SIGNAL(triggered()), this, SLOT(downloadCardArt()));
 	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(fetchOnlineData()));
 	connect(ui_.actionAddToWantslist, SIGNAL(triggered()), this, SLOT(addToWantslist()));
 
@@ -526,7 +527,7 @@ void DeckWindow::createProxies()
 		for (int index : indices)
 		{
 			auto quantity = deckWidget->deck().getQuantity(index);
-			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index);
+			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index, Settings::instance().getArtIsHighQuality());
 			if (pictureInfo.missing.empty())
 			{
 				for (int i = 0; i < quantity; ++i)
@@ -571,6 +572,15 @@ void DeckWindow::showStatistics()
 	{
 		DeckStatisticsDialog dlg(deckWidget->deck(), this);
 		dlg.exec();
+	}
+}
+
+void DeckWindow::downloadCardArt()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		deckWidget->downloadCardArt();
 	}
 }
 

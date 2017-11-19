@@ -1,4 +1,5 @@
 #include "cardwindow.h"
+#include "settings.h"
 
 #include "magiccarddata.h"
 
@@ -78,7 +79,7 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 
 void CardWindow::changeCardPicture(int row)
 {
-	auto picInfo = mtg::CardData::instance().getPictureInfo(row);
+	auto picInfo = mtg::CardData::instance().getPictureInfo(row, Settings::instance().getArtIsHighQuality());
 	imageFiles_ = picInfo.filenames;
 	layoutType_ = picInfo.layout;
 	secondViewActive_ = false;

@@ -334,6 +334,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.tagsList->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	connect(ui_.addTagBtn, SIGNAL(clicked()), this, SLOT(addTagClicked()));
 	connect(ui_.removeTagsBtn, SIGNAL(clicked()), this, SLOT(removeTagsClicked()));
+	ui_.ultraHQArtChk->setChecked(Settings::instance().getArtIsHighQuality());
+	connect(ui_.ultraHQArtChk, SIGNAL(clicked(bool)), this, SLOT(ultraHighQualityArtClicked(bool)));
 
 	// shortcuts tab
 	ui_.shortcutsTbl->setModel(shortcutsModel_.data());
@@ -385,8 +387,6 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
 	connect(ui_.fontBtn, SIGNAL(clicked()), this, SLOT(changeFontBtnClicked()));
 	ui_.fontTxt->setText(Settings::instance().getFont().toString());
-	ui_.artDownloadEnabledChk->setChecked(Settings::instance().getArtDownloadEnabled());
-	connect(ui_.artDownloadEnabledChk, SIGNAL(clicked(bool)), this, SLOT(automaticArtDownloadClicked(bool)));
 }
 
 OptionsDialog::~OptionsDialog()
@@ -453,6 +453,11 @@ void OptionsDialog::browseCardPictureDirBtnClicked()
 		ui_.cardPictureDirTxt->setText(dir);
 		Settings::instance().setCardImageDir(dir);
 	}
+}
+
+void OptionsDialog::ultraHighQualityArtClicked(bool enabled)
+{
+	Settings::instance().setArtIsHighQuality(enabled);
 }
 
 void OptionsDialog::addTagClicked()
@@ -579,9 +584,4 @@ void OptionsDialog::changeFontBtnClicked()
 		ui_.fontTxt->setText(Settings::instance().getFont().toString());
 		emit fontChanged();
 	}
-}
-
-void OptionsDialog::automaticArtDownloadClicked(bool enabled)
-{
-	Settings::instance().setArtDownloadEnabled(enabled);
 }

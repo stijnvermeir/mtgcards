@@ -48,6 +48,7 @@ public slots:
 	void resetSearchString();
 	void addToDeck(const QVector<int>&);
 	void removeFromDeck(const QVector<int>&);
+	void downloadCardArt();
 	void fetchOnlineData();
 	void addSelectionToWantslist();
 

@@ -11,6 +11,7 @@ public:
 	const FilterNode::Ptr& getFilterRootNode() const;
 	void setFilterRootNode(const FilterNode::Ptr& node);
 
+	void downloadCardArt(const QModelIndexList& selectedRows);
 	void fetchOnlineData(const QModelIndexList& selectedRows);
 
 	virtual int columnToIndex(const mtg::ColumnType& column) const = 0;

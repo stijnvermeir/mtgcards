@@ -31,6 +31,7 @@ private slots:
 	void downloadLatestAllSetsJsonBtnClicked();
 	bool confirmRestart();
 	void browseCardPictureDirBtnClicked();
+	void ultraHighQualityArtClicked(bool enabled);
 
 	// tags tab
 	void addTagClicked();
@@ -52,5 +53,4 @@ private slots:
 	// misc tab
 	void browseAppDataDirBtnClicked();
 	void changeFontBtnClicked();
-	void automaticArtDownloadClicked(bool enabled);
 };

@@ -175,6 +175,11 @@ void DeckWidget::removeFromDeck(const QVector<int>& dataRowIndices)
 	}
 }
 
+void DeckWidget::downloadCardArt()
+{
+	deckTableModel_.downloadCardArt(ui_.tableView->selectionModel()->selectedRows());
+}
+
 void DeckWidget::fetchOnlineData()
 {
 	deckTableModel_.fetchOnlineData(ui_.tableView->selectionModel()->selectedRows());

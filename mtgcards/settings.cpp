@@ -25,12 +25,12 @@ struct Settings::Pimpl
 	QString decksDir_;
 	QString poolDataFile_;
 	QString cardImageDir_;
+	bool ultraHighQualityArt_;
 	QMap<ShortcutType, QKeySequence> shortcuts_;
 	QVector<UserColumn> userColumns_;
 	FilterNode::Ptr globalFilter_;
 	QFont font_;
 	Mkm mkm_;
-	bool artDownloadEnabled_;
 	QVector<mtg::ColumnType> copyColumns_;
 
 	Pimpl()
@@ -39,6 +39,7 @@ struct Settings::Pimpl
 		setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::DataLocation)).toString());
 		poolDataFile_ = settings.value("options/datasources/allsetsjson", appDataDir_ + QDir::separator() + "AllSets.json").toString();
 		cardImageDir_ = settings.value("options/datasources/cardpicturedir", appDataDir_ + QDir::separator() + "cardart").toString();
+		ultraHighQualityArt_ = settings.value("options/misc/ultraHighQualityArtEnabled", false).toBool();
 
 		for (const ShortcutType& shortcut : ShortcutType::list())
 		{
@@ -81,8 +82,6 @@ struct Settings::Pimpl
 		mkm_.appSecret = settings.value("options/mkm/appSecret").toString();
 		mkm_.accessToken = settings.value("options/mkm/accessToken").toString();
 		mkm_.accessTokenSecret = settings.value("options/mkm/accessTokenSecret").toString();
-
-		artDownloadEnabled_ = settings.value("options/misc/artDownloadEnabled", true).toBool();
 
 		if (settings.contains("options/copyColumns"))
 		{
@@ -202,12 +201,12 @@ struct Settings::Pimpl
 		settings.setValue("options/mkm/accessTokenSecret", mkm_.accessTokenSecret);
 	}
 
-	void setArtDownloadEnabled(bool enabled)
+	void setUltraHighQualityArtEnabled(bool enabled)
 	{
-		artDownloadEnabled_ = enabled;
+		ultraHighQualityArt_ = enabled;
 
 		QSettings settings;
-		settings.setValue("options/misc/artDownloadEnabled", artDownloadEnabled_);
+		settings.setValue("options/misc/ultraHighQualityArtEnabled", ultraHighQualityArt_);
 	}
 
 	void setCopyColumns(const QVector<mtg::ColumnType>& copyColumns)
@@ -350,14 +349,14 @@ void Settings::setMkm(const Mkm& mkm)
 	pimpl_->setMkm(mkm);
 }
 
-bool Settings::getArtDownloadEnabled() const
+bool Settings::getArtIsHighQuality() const
 {
-	return pimpl_->artDownloadEnabled_;
+	return pimpl_->ultraHighQualityArt_;
 }
 
-void Settings::setArtDownloadEnabled(bool enabled)
+void Settings::setArtIsHighQuality(bool enabled)
 {
-	pimpl_->setArtDownloadEnabled(enabled);
+	pimpl_->setUltraHighQualityArtEnabled(enabled);
 }
 
 const QVector<mtg::ColumnType>& Settings::getCopyColumns() const

@@ -28,7 +28,7 @@ public:
 	QVariant get(const int row, const ColumnType& column) const;
 	int findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) const;
 	int findRowFast(const QString& set, const QString& name, const QString& imageName = QString::null) const;
-	PictureInfo getPictureInfo(int row);
+	PictureInfo getPictureInfo(int row, bool hq = false, bool doDownload = false);
 	const QVector<mtg::Ruling>& getRulings(int row);
 	void fetchOnlineData(const int row);
 	QStringList getCardTagCompletions(const int row);

@@ -11,6 +11,7 @@
 #include <QUrl>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QThread>
 
 #include <functional>
 
@@ -25,6 +26,25 @@ void MagicSortFilterProxyModel::setFilterRootNode(const FilterNode::Ptr& rootNod
 {
 	filterRootNode_ = rootNode;
 	invalidateFilter();
+}
+
+void MagicSortFilterProxyModel::downloadCardArt(const QModelIndexList& selectedRows)
+{
+	QProgressDialog progress("Downloading card art ...", "Cancel", 0, selectedRows.size());
+	progress.setWindowModality(Qt::WindowModal);
+	int i = 0;
+	for (const QModelIndex& row : selectedRows)
+	{
+		int dataRowIndex = getDataRowIndex(row);
+		mtg::CardData::instance().getPictureInfo(dataRowIndex, Settings::instance().getArtIsHighQuality(), true);
+		progress.setValue(i++);
+		if (progress.wasCanceled())
+		{
+			break;
+		}
+		QThread::msleep(100); // Scryfall API asks to wait a bit between requests.
+	}
+	progress.setValue(selectedRows.size());
 }
 
 void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedRows)

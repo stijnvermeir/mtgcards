@@ -23,5 +23,6 @@
         <file>resources/icons/add185.svg</file>
         <file>resources/icons/printer11.svg</file>
         <file>resources/icons/document24.svg</file>
+        <file>resources/icons/paint-board-and-brush.svg</file>
     </qresource>
 </RCC>

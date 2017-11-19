@@ -69,6 +69,9 @@ int main(int argc, char *argv[])
 	QCoreApplication::setApplicationVersion(MTGCARDS_VERSION);
 	QGuiApplication::setQuitOnLastWindowClosed(false);
 
+	qDebug() << "SSL runtime: " << QSslSocket::sslLibraryVersionString();
+	qDebug() << "SSL build:   " << QSslSocket::sslLibraryBuildVersionString();
+
 	MyApplication a(argc, argv);
 	if (!QFile(Settings::instance().getPoolDataFile()).exists())
 	{
