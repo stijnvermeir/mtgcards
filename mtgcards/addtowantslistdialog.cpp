@@ -1,9 +1,11 @@
 #include "addtowantslistdialog.h"
 #include "ui_addtowantslistdialog.h"
 #include "magiccarddata.h"
+#include "mkm/exception.h"
 
 #include <QInputDialog>
 #include <QProgressDialog>
+#include <QMessageBox>
 
 AddToWantslistDialog::AddToWantslistDialog(const QVector<int>& selection, QWidget* parent)
 	: QDialog(parent)
@@ -55,49 +57,58 @@ void AddToWantslistDialog::addWantslistClicked()
 
 void AddToWantslistDialog::addWants()
 {
-	int wantsListId = ui_->wantslistCbx->currentData().toInt();
-	QVector<mkm::Want> wants;
-	QProgressDialog progress("Fetching online data ...", "Cancel", 0, selection_.size());
-	progress.setWindowModality(Qt::WindowModal);
-	int i = 0;
-	for (int dataRowIndex : selection_)
+	try
 	{
-		QVariant metaProductid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmMetaproductId);
-		QVariant productid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmProductId);
-		if (metaProductid.isNull() || productid.isNull()) // not known -> try fetching
+		int wantsListId = ui_->wantslistCbx->currentData().toInt();
+		QVector<mkm::Want> wants;
+		QProgressDialog progress("Fetching online data ...", "Cancel", 0, selection_.size());
+		progress.setWindowModality(Qt::WindowModal);
+		int i = 0;
+		for (int dataRowIndex : selection_)
 		{
-			mtg::CardData::instance().fetchOnlineData(dataRowIndex);
-			metaProductid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmMetaproductId);
-			productid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmProductId);
+			QVariant metaProductid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmMetaproductId);
+			QVariant productid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmProductId);
+			if (metaProductid.isNull() || productid.isNull()) // not known -> try fetching
+			{
+				mtg::CardData::instance().fetchOnlineData(dataRowIndex);
+				metaProductid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmMetaproductId);
+				productid = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::MkmProductId);
+			}
+			if (metaProductid.isNull() || productid.isNull()) // still not known -> skip
+			{
+				continue;
+			}
+			mkm::Want w;
+			if (ui_->fromAnySetChk->isChecked())
+			{
+				w.metaProductId = metaProductid.toInt();
+			}
+			else
+			{
+				w.productId = productid.toInt();
+			}
+			w.amount = ui_->countSbx->value();
+			w.minCondition = static_cast<mkm::Want::Condition>(ui_->minConditionCbx->currentData().toInt());
+			w.buyPrice = ui_->wishPriceSbx->value();
+			w.languageIds.push_back(1);
+			wants.push_back(w);
+			progress.setValue(i++);
+			if (progress.wasCanceled())
+			{
+				break;
+			}
 		}
-		if (metaProductid.isNull() || productid.isNull()) // still not known -> skip
+		progress.setValue(selection_.size());
+		if (!progress.wasCanceled())
 		{
-			continue;
-		}
-		mkm::Want w;
-		if (ui_->fromAnySetChk->isChecked())
-		{
-			w.metaProductId = metaProductid.toInt();
-		}
-		else
-		{
-			w.productId = productid.toInt();
-		}
-		w.amount = ui_->countSbx->value();
-		w.minCondition = static_cast<mkm::Want::Condition>(ui_->minConditionCbx->currentData().toInt());
-		w.buyPrice = ui_->wishPriceSbx->value();
-		w.languageIds.push_back(1);
-		wants.push_back(w);
-		progress.setValue(i++);
-		if (progress.wasCanceled())
-		{
-			break;
+			Util::mkmClient()->addWants(wantsListId, wants);
+			accept();
 		}
 	}
-	progress.setValue(selection_.size());
-	if (!progress.wasCanceled())
+	catch (const mkm::MkmException& e)
 	{
-		Util::mkmClient()->addWants(wantsListId, wants);
-		accept();
+		QMessageBox msg(QMessageBox::Critical, "Error", e.getErrorMessage());
+		msg.setDetailedText(e.getErrorDetails());
+		msg.exec();
 	}
 }
