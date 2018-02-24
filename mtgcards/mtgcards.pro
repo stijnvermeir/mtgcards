@@ -129,8 +129,8 @@ RESOURCES += \
 
 MKMLIB_PATH = $$PWD/../../mkmlib
 
-CONFIG(release, debug|release): LIBS += -L$$MKMLIB_PATH/build/release/
-else:CONFIG(debug, debug|release): LIBS += -L$$MKMLIB_PATH/build/debug/
+CONFIG(release, debug|release): LIBS += -L$$MKMLIB_PATH/build-release/
+else:CONFIG(debug, debug|release): LIBS += -L$$MKMLIB_PATH/build-debug/
 
 LIBS += -lmkm
 

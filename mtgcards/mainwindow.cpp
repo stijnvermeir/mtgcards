@@ -402,7 +402,7 @@ void MainWindow::importDeckFromXML()
 				while (!xml.atEnd())
 				{
 					xml.readNext();
-					if (xml.isStartElement() && xml.name().compare("card") == 0)
+                    if (xml.isStartElement() && xml.name().compare(QString("card")) == 0)
 					{
 						QString set = xml.attributes().value("edition").toString();
 						int qty = xml.attributes().value("deck").toInt();
