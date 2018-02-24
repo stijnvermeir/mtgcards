@@ -77,6 +77,10 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{
+                    if (POOLTABLE_COLUMNS[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
+                    {
+                        return mtg::CardData::instance().get(index.row(), mtg::ColumnType::Set);
+                    }
 					return mtg::CardData::instance().get(index.row(), POOLTABLE_COLUMNS[index.column()]);
 				}
 			}

@@ -137,6 +137,10 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						}
 						return tooltip.join("\n");
 					}
+                    if (GetColumns()[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
+                    {
+                        return mtg::Collection::instance().get(index.row(), mtg::ColumnType::Set);
+                    }
 					return mtg::Collection::instance().get(index.row(), GetColumns()[index.column()]);
 				}
 			}

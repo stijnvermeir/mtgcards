@@ -163,6 +163,10 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						}
 						return mtg::Collection::instance().get(rowIndex, mtg::ColumnType::NotOwned);
 					}
+                    if (GetColumns()[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
+                    {
+                        return deck_->get(index.row(), mtg::ColumnType::Set);
+                    }
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
 			}
