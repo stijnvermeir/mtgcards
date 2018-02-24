@@ -52,6 +52,11 @@ const QVector<QString> NAMES =
 	"Tags",
 	"NotOwned",
     "ColorIdentity",
+    "LegalityStandard",
+    "LegalityModern",
+    "LegalityLegacy",
+    "LegalityVintage",
+    "LegalityCommander",
 	"UserDefined"
 };
 
@@ -100,6 +105,11 @@ const QVector<QString> DISPLAY_NAMES =
 	"Tags",
 	"Not Owned",
     "Color Identity",
+    "Standard",
+    "Modern",
+    "Legacy",
+    "Vintage",
+    "Commander",
 	"User Defined"
 };
 

@@ -56,6 +56,11 @@ public:
 		Tags,
 		NotOwned,
         ColorIdentity,
+        LegalityStandard,
+        LegalityModern,
+        LegalityLegacy,
+        LegalityVintage,
+        LegalityCommander,
 		UserDefined,
 
 		COUNT,

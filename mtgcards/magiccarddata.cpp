@@ -53,7 +53,12 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::ImageName,
 	ColumnType::IsLatestPrint,
     ColumnType::MultiverseId,
-    ColumnType::ColorIdentity
+    ColumnType::ColorIdentity,
+    mtg::ColumnType::LegalityStandard,
+    mtg::ColumnType::LegalityModern,
+    mtg::ColumnType::LegalityLegacy,
+    mtg::ColumnType::LegalityVintage,
+    mtg::ColumnType::LegalityCommander
 };
 
 QVector<int> generateColumnIndices()
@@ -304,6 +309,37 @@ struct CardData::Pimpl
 					{
 						rulings_.push_back(QVector<mtg::Ruling>());
 					}
+
+                    // Legalities
+                    if (card.contains("legalities"))
+                    {
+                        for (const QJsonValue& lv : card["legalities"].toArray())
+                        {
+                            QJsonObject l = lv.toObject();
+                            auto format = l["format"].toString();
+                            auto legality = l["legality"].toString();
+                            if (format == "Standard")
+                            {
+                                r[columnToIndex(ColumnType::LegalityStandard)] = legality;
+                            }
+                            else if (format == "Modern")
+                            {
+                                r[columnToIndex(ColumnType::LegalityModern)] = legality;
+                            }
+                            else if (format == "Legacy")
+                            {
+                                r[columnToIndex(ColumnType::LegalityLegacy)] = legality;
+                            }
+                            else if (format == "Vintage")
+                            {
+                                r[columnToIndex(ColumnType::LegalityVintage)] = legality;
+                            }
+                            else if (format == "Commander")
+                            {
+                                r[columnToIndex(ColumnType::LegalityCommander)] = legality;
+                            }
+                        }
+                    }
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
 					data_.push_back(r);
