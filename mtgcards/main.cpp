@@ -27,6 +27,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& /*context*/, cons
 	switch (type)
 	{
 		case QtDebugMsg:	cout << "(DBG)"; break;
+        case QtInfoMsg:     cout << "(DBG)"; break;
 		case QtWarningMsg:	cout << "(WRN)"; break;
 		case QtCriticalMsg:	cout << "(ERR)"; break;
 		case QtFatalMsg:	cout << "(FAT)"; break;

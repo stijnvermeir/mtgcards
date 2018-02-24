@@ -52,7 +52,8 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::Layout,
 	ColumnType::ImageName,
 	ColumnType::IsLatestPrint,
-	ColumnType::MultiverseId
+    ColumnType::MultiverseId,
+    ColumnType::ColorIdentity
 };
 
 QVector<int> generateColumnIndices()
@@ -239,6 +240,20 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::Power)] = card["power"].toString();
 					r[columnToIndex(ColumnType::Toughness)] = card["toughness"].toString();
 					r[columnToIndex(ColumnType::Loyalty)] = card["loyalty"].toInt();
+                    auto colorIdentities = jsonArrayToStringList(card["colorIdentity"].toArray());
+                    QString colorIdentityStr;
+                    for (const auto& c : QString("WUBRG"))
+                    {
+                        if (colorIdentities.contains(c))
+                        {
+                            colorIdentityStr += QString{"{"} + c + "}";
+                        }
+                    }
+                    if (colorIdentityStr.isEmpty())
+                    {
+                        colorIdentityStr = "{C}";
+                    }
+                    r[columnToIndex(ColumnType::ColorIdentity)] = QVariant::fromValue(ManaCost(colorIdentityStr, 0));
 
 					// misc
 					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();

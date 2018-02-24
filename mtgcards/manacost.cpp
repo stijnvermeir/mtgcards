@@ -46,7 +46,8 @@ const QMap<QString, QPair<QChar, QString>> simpleSymbolMap =
 	{"17", {'N', "gray"}},
 	{"18", {'V', "gray"}},
 	{"19", {'Y', "gray"}},
-	{"20", {'Z', "gray"}}
+    {"20", {'Z', "gray"}},
+    {"C",  {'e', "gray"}}
 };
 
 QString convertSimpleSymbol(const QString& symbol)
@@ -148,7 +149,7 @@ QMap<QString, QString> tagToRichTextMap;
 void initializeTagToRichTextMap()
 {
 	// simple symbols
-	for (const auto& c : QString("WUBRGSXYZ"))
+    for (const auto& c : QString("WUBRGSXYZC"))
 	{
 		tagToRichTextMap[QString("{%1}").arg(c)] = convertSimpleSymbol(c);
 	}
