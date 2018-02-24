@@ -57,6 +57,9 @@ const QVector<QString> NAMES =
     "LegalityLegacy",
     "LegalityVintage",
     "LegalityCommander",
+    "QuantityAll",
+    "OwnedAll",
+    "UsedAll",
 	"UserDefined"
 };
 
@@ -93,7 +96,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Qty",
 	"Used",
 	"SB",
-	"Owned",
+    "Own",
 	"Is latest print",
 	"Multiverse Id",
 	"Lowest Price (EX+)",
@@ -103,13 +106,16 @@ const QVector<QString> DISPLAY_NAMES =
 	"MKM Product Id",
 	"MKM Metaproduct Id",
 	"Tags",
-	"Not Owned",
+    "OwnNot",
     "Color Identity",
     "Standard",
     "Modern",
     "Legacy",
     "Vintage",
     "Commander",
+    "QtyAll",
+    "OwnAll",
+    "UsedAll",
 	"User Defined"
 };
 

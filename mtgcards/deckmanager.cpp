@@ -1,4 +1,5 @@
 #include "deckmanager.h"
+#include "magiccarddata.h"
 
 #include "settings.h"
 
@@ -97,6 +98,23 @@ struct DeckManager::Pimpl
 		return usedCount;
 	}
 
+    int getUsedAllCount(const int dataRowIndex) const
+    {
+        const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(dataRowIndex);
+        int usedCount = 0;
+        for (const auto& i : reprintRowIndicesInData)
+        {
+            for (const QSharedPointer<Deck>& deck : decks_)
+            {
+                if (deck->isActive())
+                {
+                    usedCount += deck->getQuantity(i);
+                }
+            }
+        }
+        return usedCount;
+    }
+
 	QVector<QSharedPointer<Deck>> getDecksUsedIn(const int dataRowIndex) const
 	{
 		QVector<QSharedPointer<Deck>> decks;
@@ -143,6 +161,11 @@ void DeckManager::closeDeck(const QSharedPointer<Deck>& deck)
 int DeckManager::getUsedCount(const int dataRowIndex) const
 {
 	return pimpl_->getUsedCount(dataRowIndex);
+}
+
+int DeckManager::getUsedAllCount(const int dataRowIndex) const
+{
+    return pimpl_->getUsedAllCount(dataRowIndex);
 }
 
 QVector<QSharedPointer<Deck>> DeckManager::getDecksUsedIn(const int dataRowIndex) const

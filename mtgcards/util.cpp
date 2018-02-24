@@ -1,4 +1,7 @@
 #include "util.h"
+#include "magiccarddata.h"
+#include "magiccollection.h"
+#include "deckmanager.h"
 #include "settings.h"
 
 #include <QHeaderView>
@@ -48,14 +51,14 @@ void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
 		{
 			int currentVisualIndex = headerView.visualIndex(logicalIndex);
 			int newVisualIndex = section["visualIndex"].toInt();
-			headerView.moveSection(currentVisualIndex, newVisualIndex);
+            headerView.swapSections(currentVisualIndex, newVisualIndex);
 			int size = section["size"].toInt();
 			if (size <= 0)
 			{
 				size = headerView.defaultSectionSize();
 			}
 			headerView.resizeSection(logicalIndex, size);
-			headerView.setSectionHidden(logicalIndex, section["hidden"].toBool());
+            headerView.setSectionHidden(logicalIndex, section["hidden"].toBool());
 		}
 	}
 	int sortSection = headerState["sortIndicatorSection"].toInt();
@@ -123,4 +126,66 @@ bool Util::downloadPoolDataFile()
 	file.open(QIODevice::WriteOnly);
 	file.write(reply->readAll());
 	return true;
+}
+
+QString Util::getOwnedAllTooltip(const int dataRowIndex)
+{
+    const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(dataRowIndex);
+    QStringList tooltip;
+    for (const auto& i : reprintRowIndicesInData)
+    {
+        int qty = mtg::Collection::instance().getQuantity(i);
+        if (qty > 0)
+        {
+            QString tooltipLine;
+            QTextStream str(&tooltipLine);
+            str << qty << "x from " << mtg::CardData::instance().get(i, mtg::ColumnType::SetCode).toString();
+            tooltip << tooltipLine;
+        }
+    }
+    if (tooltip.empty())
+    {
+        return 0;
+    }
+    return tooltip.join("\n");
+}
+
+QString Util::getUsedTooltip(const int dataRowIndex)
+{
+    QStringList tooltip;
+    auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
+    for (const auto& deck : decks)
+    {
+        QString tooltipLine;
+        QTextStream str(&tooltipLine);
+        str << deck->getQuantity(dataRowIndex) << "x in " << deck->getDisplayName();
+        tooltip << tooltipLine;
+    }
+    if (tooltip.empty())
+    {
+        return "Not used.";
+    }
+    return tooltip.join("\n");
+}
+
+QString Util::getUsedAllTooltip(const int dataRowIndex)
+{
+    const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(dataRowIndex);
+    QStringList tooltip;
+    for (const auto& i : reprintRowIndicesInData)
+    {
+        auto decks = DeckManager::instance().getDecksUsedIn(i);
+        for (const auto& deck : decks)
+        {
+            QString tooltipLine;
+            QTextStream str(&tooltipLine);
+            str << deck->getQuantity(i) << "x from " << mtg::CardData::instance().get(i, mtg::ColumnType::SetCode).toString() << " in " << deck->getDisplayName();
+            tooltip << tooltipLine;
+        }
+    }
+    if (tooltip.empty())
+    {
+        return "Not used.";
+    }
+    return tooltip.join("\n");
 }

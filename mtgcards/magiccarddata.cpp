@@ -155,11 +155,13 @@ struct CardData::Pimpl
 	QVector<Row> data_;
 	QVector<QVector<mtg::Ruling>> rulings_;
 	QHash<QString, QHash<QString, int>> quickLookUpTable_;
+    QHash<QString, QVector<int>> quickLookUpTableByNameOnly_;
 
 	Pimpl()
 		: data_()
 		, rulings_()
 		, quickLookUpTable_()
+        , quickLookUpTableByNameOnly_()
 	{
 		load();
 	}
@@ -342,6 +344,7 @@ struct CardData::Pimpl
                     }
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
+                    quickLookUpTableByNameOnly_[cardName].push_back(data_.size());
 					data_.push_back(r);
 				}
 			}
@@ -429,6 +432,22 @@ struct CardData::Pimpl
 		return -1;
 	}
 
+    const QVector<int>& findRowsFast(const QString& name) const
+    {
+        auto it = quickLookUpTableByNameOnly_.find(name);
+        if (it != quickLookUpTableByNameOnly_.end())
+        {
+            return *it;
+        }
+        static const QVector<int> EMPTY;
+        return EMPTY;
+    }
+
+    const QVector<int>& findReprintRows(const int row) const
+    {
+        return findRowsFast(get(row, ColumnType::Name).toString());
+    }
+
 	const QVector<mtg::Ruling>& getRulings(int row)
 	{
 		if (row >= 0 && row < getNumRows())
@@ -514,22 +533,6 @@ CardData& CardData::instance()
 CardData::CardData()
 	: pimpl_(new Pimpl())
 {
-#if 0 // test card picture availability
-	for (int i = 0; i < getNumRows(); ++i)
-	{
-		if (!get(i, mtg::ColumnType::OnlineOnly).toBool() && get(i, mtg::ColumnType::SetType).toString() != "promo")
-		{
-			auto picInfo = getPictureInfo(i);
-			if (!picInfo.missing.empty())
-			{
-				for (const auto& missing : picInfo.missing)
-				{
-					qDebug() << missing;
-				}
-			}
-		}
-	}
-#endif
 }
 
 CardData::~CardData()
@@ -554,6 +557,16 @@ int CardData::findRow(const QVector<QPair<ColumnType, QVariant>>& criteria) cons
 int CardData::findRowFast(const QString& set, const QString& name, const QString& imageName) const
 {
 	return pimpl_->findRowFast(set, name, imageName);
+}
+
+const QVector<int>& CardData::findRowsFast(const QString& name) const
+{
+    return pimpl_->findRowsFast(name);
+}
+
+const QVector<int>& CardData::findReprintRows(const int row) const
+{
+    return pimpl_->findReprintRows(row);
 }
 
 CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload)

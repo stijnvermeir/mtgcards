@@ -17,4 +17,8 @@ public:
 	static std::unique_ptr<mkm::Mkm> mkmClient();
 
 	static bool downloadPoolDataFile();
+
+    static QString getOwnedAllTooltip(const int dataRowIndex);
+    static QString getUsedTooltip(const int dataRowIndex);
+    static QString getUsedAllTooltip(const int dataRowIndex);
 };

@@ -22,6 +22,7 @@ public:
 	void closeDeck(const QSharedPointer<Deck>& deck);
 
 	int getUsedCount(const int dataRowIndex) const;
+    int getUsedAllCount(const int dataRowIndex) const;
 	QVector<QSharedPointer<Deck>> getDecksUsedIn(const int dataRowIndex) const;
 
 signals:

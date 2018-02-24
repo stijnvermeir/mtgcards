@@ -61,6 +61,9 @@ public:
         LegalityLegacy,
         LegalityVintage,
         LegalityCommander,
+        QuantityAll,
+        OwnedAll,
+        UsedAll,
 		UserDefined,
 
 		COUNT,

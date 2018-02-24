@@ -117,7 +117,7 @@ struct Collection::Pimpl
 			, dbId(-1)
 			, quantity(0)
 			, used(0)
-			, userData() {}
+            , userData() {}
 	};
 	QVector<Row> data_;
 
@@ -186,10 +186,28 @@ struct Collection::Pimpl
 			{
 				return entry.quantity;
 			}
+            if (column == ColumnType::QuantityAll)
+            {
+                int total = 0;
+                const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(entry.rowIndexInData);
+                for (const auto& i : reprintRowIndicesInData)
+                {
+                    auto rr = findRow(i);
+                    if (rr)
+                    {
+                        total += rr->quantity.toInt();
+                    }
+                }
+                return total;
+            }
 			if (column == ColumnType::Used)
 			{
 				return entry.used;
 			}
+            if (column == ColumnType::UsedAll)
+            {
+                return DeckManager::instance().getUsedAllCount(entry.rowIndexInData);
+            }
 			if (column == ColumnType::NotOwned)
 			{
 				auto notOwned = entry.used.toInt() - entry.quantity.toInt();
@@ -206,6 +224,10 @@ struct Collection::Pimpl
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
+        if (column == ColumnType::Quantity || column == ColumnType::QuantityAll || column == ColumnType::Used || column == ColumnType::UsedAll)
+        {
+            return 0;
+        }
 		return QVariant();
 	}
 

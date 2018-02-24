@@ -2,6 +2,7 @@
 
 #include "deckmanager.h"
 #include "magiccollection.h"
+#include "util.h"
 #include "settings.h"
 
 #include <QAbstractTableModel>
@@ -53,7 +54,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::LegalityModern,
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander
+    mtg::ColumnType::LegalityCommander,
+    mtg::ColumnType::OwnedAll
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -136,23 +138,19 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						int dataRowIndex = deck_->getDataRowIndex(index.row());
 						if (role == Qt::ToolTipRole)
 						{
-							QStringList tooltip;
-							auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
-							for (const auto& deck : decks)
-							{
-								QString tooltipLine;
-								QTextStream str(&tooltipLine);
-								str << deck->getQuantity(dataRowIndex) << "x in " << deck->getDisplayName();
-								tooltip << tooltipLine;
-							}
-							if (tooltip.empty())
-							{
-								return "Not used.";
-							}
-							return tooltip.join("\n");
+                            return Util::getUsedTooltip(dataRowIndex);
 						}
 						return mtg::Collection::instance().getQuantity(dataRowIndex);
 					}
+                    if (GetColumns()[index.column()] == mtg::ColumnType::OwnedAll)
+                    {
+                        int dataRowIndex = deck_->getDataRowIndex(index.row());
+                        if (role == Qt::ToolTipRole)
+                        {
+                            return Util::getUsedAllTooltip(dataRowIndex);
+                        }
+                        return mtg::Collection::instance().get(mtg::Collection::instance().getRowIndex(dataRowIndex), mtg::ColumnType::QuantityAll);
+                    }
 					if (GetColumns()[index.column()] == mtg::ColumnType::NotOwned)
 					{
 						auto dataRowIndex = deck_->getDataRowIndex(index.row());

@@ -1,6 +1,9 @@
 #include "pooltablemodel.h"
 
 #include "magiccarddata.h"
+#include "magiccollection.h"
+#include "deckmanager.h"
+#include "util.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
@@ -48,7 +51,12 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
     mtg::ColumnType::LegalityModern,
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander
+    mtg::ColumnType::LegalityCommander,
+    mtg::ColumnType::Owned,
+    mtg::ColumnType::OwnedAll,
+    mtg::ColumnType::Used,
+    mtg::ColumnType::UsedAll,
+    mtg::ColumnType::NotOwned
 };
 
 } // namespace
@@ -77,11 +85,46 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{
-                    if (POOLTABLE_COLUMNS[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
+                    int dataRowIndex = index.row();
+                    auto columnType = POOLTABLE_COLUMNS[index.column()];
+                    if (columnType == mtg::ColumnType::Owned)
                     {
-                        return mtg::CardData::instance().get(index.row(), mtg::ColumnType::Set);
+                        return mtg::Collection::instance().getQuantity(dataRowIndex);
                     }
-					return mtg::CardData::instance().get(index.row(), POOLTABLE_COLUMNS[index.column()]);
+                    if (columnType == mtg::ColumnType::OwnedAll)
+                    {
+                        if (role == Qt::ToolTipRole)
+                        {
+                            return Util::getOwnedAllTooltip(dataRowIndex);
+                        }
+                        return mtg::Collection::instance().get(mtg::Collection::instance().getRowIndex(dataRowIndex), mtg::ColumnType::QuantityAll);
+                    }
+                    if (columnType == mtg::ColumnType::Used)
+                    {
+                        if (role == Qt::ToolTipRole)
+                        {
+                            return Util::getUsedTooltip(dataRowIndex);
+                        }
+                        return DeckManager::instance().getUsedCount(dataRowIndex);
+                    }
+                    if (columnType == mtg::ColumnType::UsedAll)
+                    {
+                        if (role == Qt::ToolTipRole)
+                        {
+                            return Util::getUsedAllTooltip(dataRowIndex);
+                        }
+                        return DeckManager::instance().getUsedAllCount(dataRowIndex);
+                    }
+                    if (columnType == mtg::ColumnType::NotOwned)
+                    {
+                        auto notOwned = DeckManager::instance().getUsedCount(dataRowIndex) - mtg::Collection::instance().getQuantity(dataRowIndex);
+                        return ((notOwned > 0) ? notOwned : 0);
+                    }
+                    if (columnType == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
+                    {
+                        return mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Set);
+                    }
+                    return mtg::CardData::instance().get(dataRowIndex, columnType);
 				}
 			}
 		}

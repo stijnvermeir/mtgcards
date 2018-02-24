@@ -2,6 +2,7 @@
 
 #include "magiccollection.h"
 #include "deckmanager.h"
+#include "util.h"
 #include "settings.h"
 
 #include <QAbstractTableModel>
@@ -52,7 +53,9 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
     mtg::ColumnType::LegalityModern,
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander
+    mtg::ColumnType::LegalityCommander,
+    mtg::ColumnType::QuantityAll,
+    mtg::ColumnType::UsedAll
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -123,20 +126,18 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				if (index.row() < rowCount() && index.column() < columnCount())
 				{
+                    if (role == Qt::ToolTipRole && GetColumns()[index.column()] == mtg::ColumnType::QuantityAll)
+                    {
+                        return Util::getOwnedAllTooltip(mtg::Collection::instance().getDataRowIndex(index.row()));
+                    }
 					if (role == Qt::ToolTipRole && GetColumns()[index.column()] == mtg::ColumnType::Used)
 					{
-						int dataRowIndex = mtg::Collection::instance().getDataRowIndex(index.row());
-						QStringList tooltip;
-						auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
-						for (const auto& deck : decks)
-						{
-							QString tooltipLine;
-							QTextStream str(&tooltipLine);
-							str << deck->getQuantity(dataRowIndex) << "x in " << deck->getDisplayName();
-							tooltip << tooltipLine;
-						}
-						return tooltip.join("\n");
+                        return Util::getUsedTooltip(mtg::Collection::instance().getDataRowIndex(index.row()));
 					}
+                    if (role == Qt::ToolTipRole && GetColumns()[index.column()] == mtg::ColumnType::UsedAll)
+                    {
+                        return Util::getUsedAllTooltip(mtg::Collection::instance().getDataRowIndex(index.row()));
+                    }
                     if (GetColumns()[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
                     {
                         return mtg::Collection::instance().get(index.row(), mtg::ColumnType::Set);
