@@ -344,7 +344,7 @@ struct CardData::Pimpl
                     }
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
-                    quickLookUpTableByNameOnly_[cardName].push_back(data_.size());
+                    quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
 					data_.push_back(r);
 				}
 			}
@@ -416,6 +416,17 @@ struct CardData::Pimpl
 
 	int findRowFast(const QString& set, const QString& name, const QString& imageName) const
 	{
+        if (set.isEmpty())
+        {
+            const auto& rows = findRowsFast(name);
+            for (const auto& row : rows)
+            {
+                if (get(row, ColumnType::IsLatestPrint).toBool())
+                {
+                    return row;
+                }
+            }
+        }
 		QString key = set + name;
 		if (quickLookUpTable_.contains(key))
 		{
@@ -434,7 +445,7 @@ struct CardData::Pimpl
 
     const QVector<int>& findRowsFast(const QString& name) const
     {
-        auto it = quickLookUpTableByNameOnly_.find(name);
+        auto it = quickLookUpTableByNameOnly_.find(name.toLower());
         if (it != quickLookUpTableByNameOnly_.end())
         {
             return *it;
