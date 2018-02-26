@@ -97,13 +97,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
                         {
                             return Util::getOwnedAllTooltip(dataRowIndex);
                         }
-                        const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(dataRowIndex);
-                        int total = 0;
-                        for (const auto& i : reprintRowIndicesInData)
-                        {
-                            total += mtg::Collection::instance().getQuantity(i);
-                        }
-                        return total;
+                        return mtg::Collection::instance().getQuantityAll(dataRowIndex);
                     }
                     if (columnType == mtg::ColumnType::Used)
                     {

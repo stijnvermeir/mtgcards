@@ -149,7 +149,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
                         {
                             return Util::getUsedAllTooltip(dataRowIndex);
                         }
-                        return mtg::Collection::instance().get(mtg::Collection::instance().getRowIndex(dataRowIndex), mtg::ColumnType::QuantityAll);
+                        return mtg::Collection::instance().getQuantityAll(dataRowIndex);
                     }
 					if (GetColumns()[index.column()] == mtg::ColumnType::NotOwned)
 					{

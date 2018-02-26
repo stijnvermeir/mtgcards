@@ -284,6 +284,17 @@ struct Collection::Pimpl
 		return 0;
 	}
 
+    int getQuantityAll(const int dataRowIndex) const
+    {
+        const auto& reprintRowIndicesInData = mtg::CardData::instance().findReprintRows(dataRowIndex);
+        int total = 0;
+        for (const auto& i : reprintRowIndicesInData)
+        {
+            total += getQuantity(i);
+        }
+        return total;
+    }
+
 	void setQuantity(const int dataRowIndex, const int newQuantity)
 	{
 		auto row = findRow(dataRowIndex);
@@ -440,6 +451,11 @@ int Collection::getRowIndex(const int dataRowIndex) const
 int Collection::getQuantity(const int dataRowIndex) const
 {
 	return pimpl_->getQuantity(dataRowIndex);
+}
+
+int Collection::getQuantityAll(const int dataRowIndex) const
+{
+    return pimpl_->getQuantityAll(dataRowIndex);
 }
 
 void Collection::setQuantity(const int dataRowIndex, const int newQuantity)

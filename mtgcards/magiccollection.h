@@ -24,6 +24,7 @@ public:
 	int getRowIndex(const int dataRowIndex) const;
 
 	int getQuantity(const int dataRowIndex) const;
+    int getQuantityAll(const int dataRowIndex) const;
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 
 	void setUsedCount(const int dataRowIndex, const int usedCount);
