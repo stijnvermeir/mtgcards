@@ -119,7 +119,9 @@ struct Tags::Pimpl
 
 	QStringList getTags() const
 	{
-		return tags_.keys();
+        auto tags = tags_.keys();
+        tags.sort(Qt::CaseInsensitive);
+        return tags;
 	}
 
 	void addTag(const QString& tag)
