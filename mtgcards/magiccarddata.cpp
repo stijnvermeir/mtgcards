@@ -648,7 +648,6 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			prefix += QString("hq") + QDir::separator();
 		}
 		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
-		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
 		if (/*picInfo.layout == mtg::LayoutType::Split ||*/ picInfo.layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
