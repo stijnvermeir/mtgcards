@@ -60,6 +60,7 @@ const QVector<QString> NAMES =
     "QuantityAll",
     "OwnedAll",
     "UsedAll",
+	"Uuid",
 	"UserDefined"
 };
 
@@ -116,6 +117,7 @@ const QVector<QString> DISPLAY_NAMES =
     "QtyAll",
     "OwnAll",
     "UsedAll",
+	"Uuid",
 	"User Defined"
 };
 

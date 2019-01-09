@@ -149,14 +149,27 @@ struct Collection::Pimpl
 			auto name = q.value(2).toString();
 			auto imageName = q.value(3).toString();
 
-			Row r;
-			r.rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
-			r.dbId = q.value(0).toInt();
-			r.quantity = q.value(4).toInt();
-			r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
-			QJsonDocument userDataDoc = QJsonDocument::fromJson(q.value(5).toByteArray());
-			r.userData = UserColumn::loadFromJson(userDataDoc.object());
-			data_.push_back(r);
+			auto rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
+			if (rowIndexInData == -1)
+			{
+				qDebug() << "Could not find" << set << name << imageName;
+				rowIndexInData = mtg::CardData::instance().findRowFast(set, name);
+				if (rowIndexInData == -1)
+				{
+					qDebug() << "Really could not find" << set << name;
+				}
+			}
+			if (rowIndexInData != -1)
+			{
+				Row r;
+				r.rowIndexInData = rowIndexInData;
+				r.dbId = q.value(0).toInt();
+				r.quantity = q.value(4).toInt();
+				r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
+				QJsonDocument userDataDoc = QJsonDocument::fromJson(q.value(5).toByteArray());
+				r.userData = UserColumn::loadFromJson(userDataDoc.object());
+				data_.push_back(r);
+			}
 		}
 
 		return QSqlError();

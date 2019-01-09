@@ -58,7 +58,8 @@ const QVector<ColumnType> COLUMNS =
     mtg::ColumnType::LegalityModern,
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander
+	mtg::ColumnType::LegalityCommander,
+	ColumnType::Uuid
 };
 
 QVector<int> generateColumnIndices()
@@ -174,7 +175,12 @@ struct CardData::Pimpl
 		QFile file(Settings::instance().getPoolDataFile());
 		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
-			QJsonDocument d = QJsonDocument::fromJson(file.readAll());
+			QJsonParseError parseError;
+			QJsonDocument d = QJsonDocument::fromJson(file.readAll(), &parseError);
+			if (d.isNull())
+			{
+				qDebug() << parseError.errorString();
+			}
 			QJsonObject obj = d.object();
 			int numCards = 0;
 			for (const auto& set : obj)
@@ -192,26 +198,15 @@ struct CardData::Pimpl
 			{
 				auto set = s.toObject();
 				auto setName = set["name"].toString();
-				auto setCode = set["code"].toString();
-				auto setGathererCode = setCode;
-				if (set.contains("gathererCode"))
-				{
-					setGathererCode = set["gathererCode"].toString();
-				}
-				auto setOldCode = setCode;
-				if (set.contains("oldCode"))
-				{
-					setOldCode = set["oldCode"].toString();
-				}
+				auto setCode = set["code"].toString().toUpper();
 				auto setReleaseDate = QDate::fromString(set["releaseDate"].toString(), "yyyy-MM-dd");
 				auto setType = set["type"].toString();
 				auto block = set["block"].toString();
 				bool onlineOnly = false;
-				if (set.contains("onlineOnly"))
+				if (set.contains("isOnlineOnly"))
 				{
-					onlineOnly = set["onlineOnly"].toBool();
+					onlineOnly = set["isOnlineOnly"].toBool();
 				}
-				auto border = set["border"].toString();
 				bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
 				for (const auto& c : set["cards"].toArray())
 				{
@@ -221,20 +216,21 @@ struct CardData::Pimpl
 					// set
 					r[columnToIndex(ColumnType::Set)] = setName;
 					r[columnToIndex(ColumnType::SetCode)] = setCode;
-					r[columnToIndex(ColumnType::SetGathererCode)] = setGathererCode;
-					r[columnToIndex(ColumnType::SetOldCode)] = setOldCode;
+					r[columnToIndex(ColumnType::SetGathererCode)] = setCode;
+					r[columnToIndex(ColumnType::SetOldCode)] = setCode;
 					r[columnToIndex(ColumnType::SetReleaseDate)] = setReleaseDate;
 					r[columnToIndex(ColumnType::SetType)] = setType;
 					r[columnToIndex(ColumnType::Block)] = block;
 					r[columnToIndex(ColumnType::OnlineOnly)] = onlineOnly;
-					r[columnToIndex(ColumnType::Border)] = border;
 
 					// card
+					double cmc = card["convertedManaCost"].toDouble();
+					r[columnToIndex(ColumnType::Border)] = card["borderColor"].toString();
 					QString cardName = card["name"].toString();
 					r[columnToIndex(ColumnType::Name)] = cardName;
 					r[columnToIndex(ColumnType::Names)] = jsonArrayToStringList(card["names"].toArray());
-					r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), card["cmc"].toDouble()));
-					r[columnToIndex(ColumnType::CMC)] = card["cmc"].toDouble();
+					r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), cmc));
+					r[columnToIndex(ColumnType::CMC)] = cmc;
 					r[columnToIndex(ColumnType::Color)] = jsonArrayToStringList(card["colors"].toArray());
 					r[columnToIndex(ColumnType::Type)] = card["type"].toString();
 					r[columnToIndex(ColumnType::SuperTypes)] = jsonArrayToStringList(card["supertypes"].toArray());
@@ -242,11 +238,11 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::SubTypes)] = jsonArrayToStringList(card["subtypes"].toArray());
 					r[columnToIndex(ColumnType::Rarity)] = card["rarity"].toString();
 					r[columnToIndex(ColumnType::Text)] = card["text"].toString();
-					r[columnToIndex(ColumnType::Flavor)] = card["flavor"].toString();
+					r[columnToIndex(ColumnType::Flavor)] = card["flavorText"].toString();
 					r[columnToIndex(ColumnType::Artist)] = card["artist"].toString();
 					r[columnToIndex(ColumnType::Power)] = card["power"].toString();
 					r[columnToIndex(ColumnType::Toughness)] = card["toughness"].toString();
-					r[columnToIndex(ColumnType::Loyalty)] = card["loyalty"].toInt();
+					r[columnToIndex(ColumnType::Loyalty)] = card["loyalty"].toString();
                     auto colorIdentities = jsonArrayToStringList(card["colorIdentity"].toArray());
                     QString colorIdentityStr;
                     for (const auto& c : QString("WUBRG"))
@@ -263,15 +259,34 @@ struct CardData::Pimpl
                     r[columnToIndex(ColumnType::ColorIdentity)] = QVariant::fromValue(ManaCost(colorIdentityStr, 0));
 
 					// misc
-					r[columnToIndex(ColumnType::Layout)] = card["layout"].toString();
-					QString imageName = card["imageName"].toString();
-					r[columnToIndex(ColumnType::ImageName)] = imageName;
-					if (card.contains("multiverseid"))
-					{
-						r[columnToIndex(ColumnType::MultiverseId)] = card["multiverseid"].toInt();
-					}
-					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
+					r[columnToIndex(ColumnType::Layout)] = card.contains("layout") ? card["layout"].toString() : QString("normal");
 
+					QString uuid = card["uuid"].toString();
+					r[columnToIndex(ColumnType::Uuid)] = uuid;
+
+					// Generate image name
+					auto imageName = removeAccents(cardName.toLower());
+					if (card.contains("variations"))
+					{
+						auto variationArray = card["variations"].toArray();
+						QStringList variations;
+						variations.push_back(uuid);
+						for (const auto& var : variationArray)
+						{
+							variations.push_back(var.toString());
+						}
+						variations.sort();
+						auto index = variations.indexOf(uuid);
+						imageName = imageName + QString::number(index+1);
+					}
+					r[columnToIndex(ColumnType::ImageName)] = imageName;
+
+					if (card.contains("multiverseId"))
+					{
+						r[columnToIndex(ColumnType::MultiverseId)] = card["multiverseId"].toInt();
+					}
+
+					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
 					if (includeInLatestPrintCheck)
 					{
 						if (latestPrintHash.contains(cardName))
@@ -315,32 +330,27 @@ struct CardData::Pimpl
                     // Legalities
                     if (card.contains("legalities"))
                     {
-                        for (const QJsonValue& lv : card["legalities"].toArray())
-                        {
-                            QJsonObject l = lv.toObject();
-                            auto format = l["format"].toString();
-                            auto legality = l["legality"].toString();
-                            if (format == "Standard")
-                            {
-                                r[columnToIndex(ColumnType::LegalityStandard)] = legality;
-                            }
-                            else if (format == "Modern")
-                            {
-                                r[columnToIndex(ColumnType::LegalityModern)] = legality;
-                            }
-                            else if (format == "Legacy")
-                            {
-                                r[columnToIndex(ColumnType::LegalityLegacy)] = legality;
-                            }
-                            else if (format == "Vintage")
-                            {
-                                r[columnToIndex(ColumnType::LegalityVintage)] = legality;
-                            }
-                            else if (format == "Commander")
-                            {
-                                r[columnToIndex(ColumnType::LegalityCommander)] = legality;
-                            }
-                        }
+						QJsonObject legalities = card["legalities"].toObject();
+						if (legalities.contains("standard"))
+						{
+							r[columnToIndex(ColumnType::LegalityStandard)] = legalities["standard"].toString();
+						}
+						if (legalities.contains("modern"))
+						{
+							r[columnToIndex(ColumnType::LegalityModern)] = legalities["modern"].toString();
+						}
+						if (legalities.contains("legacy"))
+						{
+							r[columnToIndex(ColumnType::LegalityLegacy)] = legalities["legacy"].toString();
+						}
+						if (legalities.contains("vintage"))
+						{
+							r[columnToIndex(ColumnType::LegalityVintage)] = legalities["vintage"].toString();
+						}
+						if (legalities.contains("commander"))
+						{
+							r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"].toString();
+						}
                     }
 
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
@@ -639,6 +649,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 		}
 		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
 		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
+		if (/*picInfo.layout == mtg::LayoutType::Split ||*/ picInfo.layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";

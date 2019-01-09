@@ -64,6 +64,7 @@ public:
         QuantityAll,
         OwnedAll,
         UsedAll,
+		Uuid,
 		UserDefined,
 
 		COUNT,

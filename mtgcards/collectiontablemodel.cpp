@@ -55,7 +55,8 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
     mtg::ColumnType::LegalityVintage,
     mtg::ColumnType::LegalityCommander,
     mtg::ColumnType::QuantityAll,
-    mtg::ColumnType::UsedAll
+	mtg::ColumnType::UsedAll,
+	mtg::ColumnType::Uuid
 };
 
 const QVector<mtg::ColumnType>& GetColumns()

@@ -56,7 +56,8 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
     mtg::ColumnType::OwnedAll,
     mtg::ColumnType::Used,
     mtg::ColumnType::UsedAll,
-    mtg::ColumnType::NotOwned
+	mtg::ColumnType::NotOwned,
+	mtg::ColumnType::Uuid
 };
 
 } // namespace
