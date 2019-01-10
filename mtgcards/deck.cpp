@@ -68,14 +68,31 @@ struct Deck::Pimpl
 			{
 				QJsonObject card = c.toObject();
 				auto set = card["Set"].toString();
+				if (set == "NMS")
+				{
+					set = "NEM";
+				}
 				auto name = card["Name"].toString();
 				auto imageName = card["ImageName"].toString();
-				Row r;
-				r.rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
-				r.quantity = card["Quantity"].toInt();
-				r.sideboard = card["Sideboard"].toInt();
-				r.userData = UserColumn::loadFromJson(card);
-				data_.push_back(r);
+
+				auto rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
+				if (rowIndexInData == -1)
+				{
+					rowIndexInData = mtg::CardData::instance().findRowFast(set, name);
+					if (rowIndexInData == -1)
+					{
+						qDebug() << "Could not find" << set << name << "for deck " << filename << (active_ ? "(active)" : "");
+					}
+				}
+				if (rowIndexInData != -1)
+				{
+					Row r;
+					r.rowIndexInData = rowIndexInData;
+					r.quantity = card["Quantity"].toInt();
+					r.sideboard = card["Sideboard"].toInt();
+					r.userData = UserColumn::loadFromJson(card);
+					data_.push_back(r);
+				}
 			}
 		}
 

@@ -59,7 +59,8 @@ const QVector<ColumnType> COLUMNS =
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
 	mtg::ColumnType::LegalityCommander,
-	ColumnType::Uuid
+	ColumnType::Uuid,
+	ColumnType::ScryfallId
 };
 
 QVector<int> generateColumnIndices()
@@ -124,11 +125,11 @@ QString removeAccents(QString s)
 	return output;
 }
 
-bool downloadPicture(int multiverseId, const QString& filename, bool hq)
+bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq)
 {
 	 QNetworkAccessManager m;
 	 QNetworkRequest request;
-	 auto url = QString("https://api.scryfall.com/cards/multiverse/%1?format=image&version=%2").arg(multiverseId).arg((hq ? QString("large") : QString("border_crop")));
+	 auto url = QString("https://api.scryfall.com/cards/%1?format=image&version=%2").arg(scryfallId).arg((hq ? QString("large") : QString("border_crop")));
 	 request.setUrl(url);
 	 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
 	 QScopedPointer<QNetworkReply> reply(m.get(request));
@@ -194,6 +195,13 @@ struct CardData::Pimpl
 
 			QHash<QString, QPair<int, QDate>> latestPrintHash;
 
+			struct RenameTask
+			{
+				QString setName;
+				QString setCode;
+			};
+			QVector<RenameTask> renameTasks;
+
 			for (const auto& s : obj)
 			{
 				auto set = s.toObject();
@@ -208,6 +216,12 @@ struct CardData::Pimpl
 					onlineOnly = set["isOnlineOnly"].toBool();
 				}
 				bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
+
+				RenameTask renameTask;
+				renameTask.setName = setName;
+				renameTask.setCode = setCode;
+				renameTasks.push_back(renameTask);
+
 				for (const auto& c : set["cards"].toArray())
 				{
 					auto card = c.toObject();
@@ -286,6 +300,8 @@ struct CardData::Pimpl
 						r[columnToIndex(ColumnType::MultiverseId)] = card["multiverseId"].toInt();
 					}
 
+					r[columnToIndex(ColumnType::ScryfallId)] = card["scryfallId"].toString();
+
 					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
 					if (includeInLatestPrintCheck)
 					{
@@ -356,6 +372,54 @@ struct CardData::Pimpl
 					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
                     quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
 					data_.push_back(r);
+				}
+			}
+
+			QVector<RenameTask> additionalRenameTasks(
+			{
+				{"3rd Revised Edition (Summer Magic)", "SUM"},
+				{"Arena League", "PAL02"},
+				{"Book Inserts", "PHPR"},
+				{"Comic Inserts", "PI14"},
+				{"Commander 2013 Edition", "C13"},
+				{"Commander Anthology 2018", "CM2"},
+				{"Convention Promos", "PSDC"},
+				{"Duel Decks Anthology, Divine vs. Demonic", "DVD"},
+				{"Duel Decks Anthology, Elves vs. Goblins", "EVG"},
+				{"Duel Decks Anthology, Garruk vs. Liliana", "GVL"},
+				{"Duel Decks Anthology, Jace vs. Chandra", "JVC"},
+				{"From the Vault Annihilation (2014)", "V14"},
+				{"Global Series Jiang Yanggu and Mu Yanling", "GS1"},
+				{"Grand Prix", "PGPX"},
+				{"Magic 2014 Core Set", "M14"},
+				{"Magic 2015 Core Set", "M15"},
+				{"Magic Player Rewards", "P11"},
+				{"Magic The Gathering-Commander", "CMD"},
+				{"Magic The Gathering—Conspiracy", "CNS"},
+				{"Masterpiece Series Amonkhet Invocations", "MP2"},
+				{"Masterpiece Series Kaladesh Inventions", "MPS"},
+				{"Modern Masters 2015 Edition", "MM2"},
+				{"Modern Masters 2017 Edition", "MM3"},
+				{"Planechase 2012 Edition", "PC2"},
+				{"Vanguard", "PVAN"}
+			});
+
+			renameTasks += additionalRenameTasks;
+
+			// Rename card art folders
+			for (const auto& rt : renameTasks)
+			{
+				auto setNameCopy = rt.setName;
+				setNameCopy.replace(":", "");
+				auto oldArtDir = Settings::instance().getCardImageDir() + QDir::separator() + setNameCopy + QDir::separator();
+				auto newArtDir = Settings::instance().getCardImageDir() + QDir::separator() + rt.setCode + QDir::separator();
+				if (QFileInfo::exists(oldArtDir))
+				{
+					QFile old(oldArtDir);
+					if (!old.rename(newArtDir))
+					{
+						qDebug() << "Rename" << oldArtDir << "to" << newArtDir << "failed";
+					}
 				}
 			}
 		}
@@ -599,8 +663,8 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 		QString prefix = Settings::instance().getCardImageDir();
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
-		QVariant multiverseId = get(row, mtg::ColumnType::MultiverseId);
-		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName, &hq, &doDownload](QString imageFile, const QVariant& multiverseId)
+		QVariant scryfallId = get(row, mtg::ColumnType::ScryfallId);
+		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName, &hq, &doDownload](QString imageFile, const QVariant& scryfallId)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -630,7 +694,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 				else
 				{
 					// try downloading
-					if (doDownload && multiverseId.isValid() && downloadPicture(multiverseId.toInt(), imageFile, hq))
+					if (doDownload && scryfallId.isValid() && downloadPicture(scryfallId.toString(), imageFile, hq))
 					{
 						picInfo.filenames << imageFile;
 					}
@@ -642,7 +706,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 				}
 			}
 		};
-		prefix += QDir::separator() + get(row, mtg::ColumnType::Set).toString().replace(":", "") + QDir::separator();
+		prefix += QDir::separator() + get(row, mtg::ColumnType::SetCode).toString() + QDir::separator();
 		if (hq)
 		{
 			prefix += QString("hq") + QDir::separator();
@@ -652,7 +716,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
-			addToListLambda(imageFile, multiverseId);
+			addToListLambda(imageFile, scryfallId);
 		}
 		else
 		if (picInfo.layout == mtg::LayoutType::DoubleFaced)
@@ -662,7 +726,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			{
 				QString imageFile = prefix + n.replace(":", "") + ".jpg";
 				int dataRowIndex = findRowFast(get(row, mtg::ColumnType::SetCode).toString(), n);
-				addToListLambda(imageFile, get(dataRowIndex, mtg::ColumnType::MultiverseId));
+				addToListLambda(imageFile, get(dataRowIndex, mtg::ColumnType::ScryfallId));
 			}
 		}
 		else
@@ -672,12 +736,12 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			QString tokenName = get(row, mtg::ColumnType::ImageName).toString();
 			tokenName[0] = tokenName[0].toUpper();
 			QString imageFile = prefix + tokenName.replace(":", "") + ".jpg";
-			addToListLambda(imageFile, multiverseId);
+			addToListLambda(imageFile, scryfallId);
 		}
 		else
 		{
 			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
-			addToListLambda(imageFile, multiverseId);
+			addToListLambda(imageFile, scryfallId);
 		}
 	}
 	return picInfo;

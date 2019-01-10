@@ -146,17 +146,20 @@ struct Collection::Pimpl
 		while (q.next())
 		{
 			auto set = q.value(1).toString();
+			if (set == "NMS")
+			{
+				set = "NEM";
+			}
 			auto name = q.value(2).toString();
 			auto imageName = q.value(3).toString();
 
 			auto rowIndexInData = mtg::CardData::instance().findRowFast(set, name, imageName);
 			if (rowIndexInData == -1)
 			{
-				qDebug() << "Could not find" << set << name << imageName;
 				rowIndexInData = mtg::CardData::instance().findRowFast(set, name);
 				if (rowIndexInData == -1)
 				{
-					qDebug() << "Really could not find" << set << name;
+					qDebug() << "Could not find" << set << name << "from collection";
 				}
 			}
 			if (rowIndexInData != -1)

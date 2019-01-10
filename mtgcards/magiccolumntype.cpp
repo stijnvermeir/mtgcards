@@ -61,6 +61,7 @@ const QVector<QString> NAMES =
     "OwnedAll",
     "UsedAll",
 	"Uuid",
+	"ScryfallId",
 	"UserDefined"
 };
 
@@ -118,6 +119,7 @@ const QVector<QString> DISPLAY_NAMES =
     "OwnAll",
     "UsedAll",
 	"Uuid",
+	"ScryfallId",
 	"User Defined"
 };
 

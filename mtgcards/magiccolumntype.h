@@ -65,6 +65,7 @@ public:
         OwnedAll,
         UsedAll,
 		Uuid,
+		ScryfallId,
 		UserDefined,
 
 		COUNT,
