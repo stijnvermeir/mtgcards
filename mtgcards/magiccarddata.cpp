@@ -375,6 +375,21 @@ struct CardData::Pimpl
 				}
 			}
 
+			// Fix 'aftermath' layout
+			for (Row& r : data_)
+			{
+				if (r[columnToIndex(ColumnType::Layout)].toString() == "split")
+				{
+					auto rightName = r[columnToIndex(ColumnType::Names)].toStringList()[1];
+					auto set = r[columnToIndex(ColumnType::SetCode)].toString();
+					int index = findRowFast(set, rightName, "");
+					if (index >= 0 && data_[index][columnToIndex(ColumnType::Text)].toString().contains("Aftermath"))
+					{
+						r[columnToIndex(ColumnType::Layout)] = "aftermath";
+					}
+				}
+			}
+
 			QVector<RenameTask> additionalRenameTasks(
 			{
 				{"3rd Revised Edition (Summer Magic)", "SUM"},
@@ -549,7 +564,7 @@ struct CardData::Pimpl
 		QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
 		mtg::LayoutType layout = mtg::LayoutType(data_[row][columnToIndex(ColumnType::Layout)].toString());
 		QString search;
-		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::AfterMath || layout == mtg::LayoutType::DoubleFaced || layout == mtg::LayoutType::Flip)
+		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Aftermath || layout == mtg::LayoutType::Transform || layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
 			search = removeAccents(names.join(""));
@@ -712,14 +727,14 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			prefix += QString("hq") + QDir::separator();
 		}
 		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
-		if (/*picInfo.layout == mtg::LayoutType::Split ||*/ picInfo.layout == mtg::LayoutType::Flip)
+		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
 			addToListLambda(imageFile, scryfallId);
 		}
 		else
-		if (picInfo.layout == mtg::LayoutType::DoubleFaced)
+		if (picInfo.layout == mtg::LayoutType::Transform)
 		{
 			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
 			for (auto& n : names)

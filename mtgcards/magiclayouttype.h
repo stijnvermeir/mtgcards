@@ -10,11 +10,21 @@ public:
 	enum type_t
 	{
 		Normal,
-		DoubleFaced,
-		Flip,
 		Split,
+		Aftermath,
+		Flip,
+		Transform,
+		Meld,
+		Leveler,
+		Saga,
+		Planar,
+		Scheme,
+		Vanguard,
 		Token,
-		AfterMath,
+		DoubleFacedToken,
+		Emblem,
+		Augment,
+		Host,
 
 		COUNT
 	};

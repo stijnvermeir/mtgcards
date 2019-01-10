@@ -535,7 +535,7 @@ void DeckWindow::createProxies()
 				for (int i = 0; i < quantity; ++i)
 				{
 					printCardLambda(pictureInfo.filenames.first());
-					if (pictureInfo.layout == mtg::LayoutType::DoubleFaced)
+					if (pictureInfo.layout == mtg::LayoutType::Transform)
 					{
 						printCardLambda(pictureInfo.filenames.last());
 					}

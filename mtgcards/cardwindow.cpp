@@ -122,12 +122,12 @@ void CardWindow::switchPicture()
 			setCardPicture(imageFiles_.front(), 90);
 		}
 		else
-		if (layoutType_ == mtg::LayoutType::AfterMath)
+		if (layoutType_ == mtg::LayoutType::Aftermath)
 		{
 			setCardPicture(imageFiles_.front(), -90);
 		}
 		else
-		if (layoutType_ == mtg::LayoutType::DoubleFaced)
+		if (layoutType_ == mtg::LayoutType::Transform)
 		{
 			setCardPicture(imageFiles_.back(), 0);
 		}

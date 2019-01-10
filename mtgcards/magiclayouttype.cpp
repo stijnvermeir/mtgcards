@@ -9,11 +9,21 @@ namespace {
 const QVector<QString> NAMES =
 {
 	"normal",
-	"double-faced",
-	"flip",
 	"split",
+	"aftermath",
+	"flip",
+	"transform",
+	"meld",
+	"leveler",
+	"saga",
+	"planar",
+	"scheme",
+	"vanguard",
 	"token",
-	"aftermath"
+	"double_faced_token",
+	"emblem",
+	"augment",
+	"host"
 };
 
 } // namespace
