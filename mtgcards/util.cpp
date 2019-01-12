@@ -77,27 +77,10 @@ std::unique_ptr<mkm::Mkm> Util::mkmClient()
 
 bool Util::downloadPoolDataFile()
 {
-	int rv = QMessageBox::question(nullptr, "Pool data", "<p style=\"font-weight: normal;\"><b>MTGCards uses <a href=\"http://mtgjson.com\">mtgjson.com</a> for its card database. "
-														 "Do you want to download the latest Allsets.json (without rulings) or AllSets-x.json (with rulings) file now?</b> "
-														 "<i>You can also skip this step and download the file yourself. You can point to it in the MTGCards Options.</i></p>",
-								   "Skip", "Download without rulings", "Download with rulings", 2, 0);
-	if (rv == 0)
-	{
-		return false;
-	}
-
 	QNetworkAccessManager network;
 	QNetworkRequest request;
-	QString whichFile;
-	if (rv == 1)
-	{
-		whichFile = "AllSets.json";
-	}
-	else
-	{
-		whichFile = "AllSets-x.json";
-	}
-	request.setUrl(QString("http://mtgjson.com/json/%1").arg(whichFile));
+	QString whichFile = "AllSets.json";
+	request.setUrl(QString("https://mtgcards.stijn-v.be/json/%1").arg(whichFile));
 	QScopedPointer<QNetworkReply> reply(network.get(request));
 	QEventLoop loop;
 	QProgressDialog progress("Downloading ...", "Cancel", 0, 0);
