@@ -16,6 +16,7 @@
 #include <QHash>
 #include <QDebug>
 #include <QThread>
+#include <QtSql>
 
 using namespace mtg;
 
@@ -130,6 +131,7 @@ bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq
 	 QNetworkAccessManager m;
 	 QNetworkRequest request;
 	 auto url = QString("https://api.scryfall.com/cards/%1?format=image&version=%2").arg(scryfallId).arg((hq ? QString("large") : QString("border_crop")));
+	 qDebug() << url;
 	 request.setUrl(url);
 	 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
 	 QScopedPointer<QNetworkReply> reply(m.get(request));
@@ -149,6 +151,24 @@ bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq
 	 return picture.save(filename);
 }
 
+QSqlDatabase conn()
+{
+	return QSqlDatabase::database("allprintings");
+}
+
+QSqlError openDb()
+{
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "allprintings");
+	db.setDatabaseName(Settings::instance().getPoolDb());
+	if (!db.open()) return db.lastError();
+	return QSqlError();
+}
+
+void closeDb()
+{
+	QSqlDatabase::removeDatabase("allprintings");
+}
+
 } // namespace
 
 struct CardData::Pimpl
@@ -165,10 +185,253 @@ struct CardData::Pimpl
 		, quickLookUpTable_()
         , quickLookUpTableByNameOnly_()
 	{
-		load();
+		QSqlError err = openDb();
+		if (err.isValid())
+		{
+			qDebug() << err;
+		}
+		err = load();
+		if (err.isValid())
+		{
+			qDebug() << err;
+		}
+		closeDb();
 	}
 
-	void load()
+	QSqlError load()
+	{
+		data_.clear();
+		quickLookUpTable_.clear();
+
+		QHash<QString, QPair<int, QDate>> latestPrintHash;
+
+		QSqlDatabase db = conn();
+		QSqlQuery q(db);
+		QSqlQuery queryRulings(db);
+		queryRulings.prepare("SELECT date, text FROM rulings WHERE uuid = ?");
+		QSqlQuery queryLegalities(db);
+		queryRulings.prepare("SELECT format, status FROM legalities WHERE uuid = ?");
+		QString qs;
+		qs += "SELECT ";
+		qs += "s.name, ";
+		qs += "s.code, ";
+		qs += "s.releaseDate, ";
+		qs += "s.type, ";
+		qs += "s.block, ";
+		qs += "s.isOnlineOnly, ";
+		qs += "c.convertedManaCost, ";
+		qs += "c.borderColor, ";
+		qs += "c.name, ";
+		qs += "c.faceName, ";
+		qs += "c.manaCost, ";
+		qs += "c.colors, ";
+		qs += "c.type, ";
+		qs += "c.supertypes, ";
+		qs += "c.types, ";
+		qs += "c.subtypes, ";
+		qs += "c.rarity, ";
+		qs += "c.text, ";
+		qs += "c.flavorText, ";
+		qs += "c.artist, ";
+		qs += "c.power, ";
+		qs += "c.toughness, ";
+		qs += "c.loyalty, ";
+		qs += "c.colorIdentity, ";
+		qs += "c.layout, ";
+		qs += "c.uuid, ";
+		qs += "c.otherFaceIds, ";
+		qs += "c.multiverseId, ";
+		qs += "c.scryfallId, ";
+		qs += "c.scryfallIllustrationId ";
+		qs += "FROM ";
+		qs += "cards c ";
+		qs += "JOIN ";
+		qs += "sets s ";
+		qs += "ON c.setCode = s.code ";
+		qs += "ORDER BY ";
+		qs += "s.code, c.name ";
+		if (!q.exec(qs)) return q.lastError();
+		int numCards = q.size();
+		data_.reserve(numCards);
+		rulings_.reserve(numCards);
+		quickLookUpTable_.reserve(numCards);
+		while (q.next())
+		{
+			QString setName = q.value("sets.name").toString();
+			QString setCode = q.value("sets.code").toString().toUpper();
+			QDate setReleaseDate = QDate::fromString(q.value("sets.releaseDate").toString(), "yyyy-MM-dd");
+			QString setType = q.value("sets.type").toString();
+			QString block = q.value("sets.block").toString();
+			bool onlineOnly = q.value("sets.isOnlineOnly").toBool();
+			bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
+
+			Row r(COLUMNS.size());
+			r[columnToIndex(ColumnType::Id)] = data_.size();
+			// set
+			r[columnToIndex(ColumnType::Set)] = setName;
+			r[columnToIndex(ColumnType::SetCode)] = setCode;
+			r[columnToIndex(ColumnType::SetGathererCode)] = setCode;
+			r[columnToIndex(ColumnType::SetOldCode)] = setCode;
+			r[columnToIndex(ColumnType::SetReleaseDate)] = setReleaseDate;
+			r[columnToIndex(ColumnType::SetType)] = setType;
+			r[columnToIndex(ColumnType::Block)] = block;
+			r[columnToIndex(ColumnType::OnlineOnly)] = onlineOnly;
+
+			// card
+			double cmc = q.value("cards.convertedManaCost").toDouble();
+			r[columnToIndex(ColumnType::Border)] = q.value("cards.borderColor").toString();
+			QString cardName = q.value("cards.name").toString();
+			QStringList cardNames;
+			cardNames.push_back(cardName);
+			if (!q.value("cards.faceName").isNull())
+			{
+				cardName = q.value("cards.faceName").toString();
+				cardNames = cardName.split(" // ");
+			}
+			r[columnToIndex(ColumnType::Name)] = cardName;
+			r[columnToIndex(ColumnType::Names)] = cardNames;
+			r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(q.value("cards.manaCost").toString(), cmc));
+			r[columnToIndex(ColumnType::CMC)] = cmc;
+			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toStringList();
+			r[columnToIndex(ColumnType::Type)] = q.value("cards.type").toString();
+			r[columnToIndex(ColumnType::SuperTypes)] = q.value("cards.supertypes").toStringList();
+			r[columnToIndex(ColumnType::Types)] = q.value("cards.types").toStringList();
+			r[columnToIndex(ColumnType::SubTypes)] = q.value("cards.subtypes").toStringList();
+			r[columnToIndex(ColumnType::Rarity)] = q.value("cards.rarity").toString();
+			r[columnToIndex(ColumnType::Text)] = q.value("cards.text").toString();
+			r[columnToIndex(ColumnType::Flavor)] = q.value("cards.flavorText").toString();
+			r[columnToIndex(ColumnType::Artist)] = q.value("cards.artist").toString();
+			r[columnToIndex(ColumnType::Power)] = q.value("cards.power").toString();
+			r[columnToIndex(ColumnType::Toughness)] = q.value("cards.toughness").toString();
+			r[columnToIndex(ColumnType::Loyalty)] = q.value("cards.loyalty").toString();
+			auto colorIdentities = q.value("cards.colorIdentity").toStringList();
+			QString colorIdentityStr;
+			for (const auto& c : QString("WUBRG"))
+			{
+				if (colorIdentities.contains(c))
+				{
+					colorIdentityStr += QString{"{"} + c + "}";
+				}
+			}
+			if (colorIdentityStr.isEmpty())
+			{
+				colorIdentityStr = "{C}";
+			}
+			r[columnToIndex(ColumnType::ColorIdentity)] = QVariant::fromValue(ManaCost(colorIdentityStr, 0));
+
+			// misc
+			r[columnToIndex(ColumnType::Layout)] = q.value("cards.layout").toString();
+
+			QString uuid = q.value("cards.uuid").toString();
+			r[columnToIndex(ColumnType::Uuid)] = uuid;
+
+			// Generate image name
+			auto imageName = removeAccents(cardName.toLower());
+			if (!q.value("cards.otherFaceIds").isNull())
+			{
+				QStringList variations = q.value("cards.otherFaceIds").toStringList();
+				variations.push_back(uuid);
+				variations.sort();
+				auto index = variations.indexOf(uuid);
+				imageName = imageName + QString::number(index+1);
+			}
+			r[columnToIndex(ColumnType::ImageName)] = imageName;
+
+			if (!q.value("cards.multiverseId").isNull())
+			{
+				r[columnToIndex(ColumnType::MultiverseId)] = q.value("cards.multiverseId").toInt();
+			}
+
+			r[columnToIndex(ColumnType::ScryfallId)] = q.value("cards.scryfallId").toString();
+
+			r[columnToIndex(ColumnType::IsLatestPrint)] = false;
+			if (includeInLatestPrintCheck)
+			{
+				if (latestPrintHash.contains(cardName))
+				{
+					auto& entry = latestPrintHash[cardName];
+					if (setReleaseDate > entry.second)
+					{
+						// unflag the previous latest
+						data_[entry.first][columnToIndex(ColumnType::IsLatestPrint)] = false;
+						entry.first = data_.size();
+						entry.second = setReleaseDate;
+						r[columnToIndex(ColumnType::IsLatestPrint)] = true;
+					}
+				}
+				else
+				{
+					latestPrintHash[cardName] = qMakePair(data_.size(), setReleaseDate);
+					r[columnToIndex(ColumnType::IsLatestPrint)] = true;
+				}
+			}
+
+#if 0
+			// rulings
+			queryRulings.bindValue(0, uuid);
+			queryRulings.exec();
+			if (queryRulings.size() > 0)
+			{
+				QVector<mtg::Ruling> rulings;
+				while (queryRulings.next())
+				{
+					mtg::Ruling ruling;
+					ruling.date = queryRulings.value("date").toString();
+					ruling.text = queryRulings.value("text").toString();
+					rulings.push_back(ruling);
+				}
+				rulings_.push_back(rulings);
+			}
+			else
+			{
+				rulings_.push_back(QVector<mtg::Ruling>());
+			}
+
+			// Legalities
+			queryLegalities.bindValue(0, uuid);
+			queryLegalities.exec();
+			if (queryLegalities.size() > 0)
+			{
+				QMap<QString, QString> legalities;
+				while (queryLegalities.next())
+				{
+					QString format = queryLegalities.value("format").toString();
+					QString status = queryLegalities.value("status").toString();
+					legalities.insert(format, status);
+				}
+				if (legalities.contains("standard"))
+				{
+					r[columnToIndex(ColumnType::LegalityStandard)] = legalities["standard"];
+				}
+				if (legalities.contains("modern"))
+				{
+					r[columnToIndex(ColumnType::LegalityModern)] = legalities["modern"];
+				}
+				if (legalities.contains("legacy"))
+				{
+					r[columnToIndex(ColumnType::LegalityLegacy)] = legalities["legacy"];
+				}
+				if (legalities.contains("vintage"))
+				{
+					r[columnToIndex(ColumnType::LegalityVintage)] = legalities["vintage"];
+				}
+				if (legalities.contains("commander"))
+				{
+					r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"];
+				}
+			}
+#else
+			rulings_.push_back(QVector<mtg::Ruling>());
+#endif
+			quickLookUpTable_[setCode + cardName][imageName] = data_.size();
+			quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
+			data_.push_back(r);
+		}
+
+		return QSqlError();
+	}
+
+	void oldLoad()
 	{
 		data_.clear();
 		quickLookUpTable_.clear();

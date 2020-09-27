@@ -17,6 +17,7 @@ const QString& Settings::Mkm::getEndpoint() const
 struct Settings::Pimpl
 {
 	QString appDataDir_;
+	QString poolDb_;
 	QString collectionFile_;
     QString collectionDb_;
 	QString onlineDataCacheDb_;
@@ -111,6 +112,7 @@ struct Settings::Pimpl
 		QSettings settings;
 		settings.setValue("options/misc/appdatadir", appDataDir);
 		appDataDir_ = appDataDir;
+		poolDb_ = appDataDir_ + QDir::separator() + "AllPrintings.sqlite";
 		collectionFile_ = appDataDir_ + QDir::separator() + "collection.json";
         collectionDb_ = appDataDir_ + QDir::separator() + "collection.db";
 		onlineDataCacheDb_ = appDataDir_ + QDir::separator() + "onlinedatacache.db";
@@ -249,6 +251,11 @@ void Settings::setAppDataDir(const QString& appDataDir) const
 	pimpl_->setAppDataDir(appDataDir);
 }
 
+const QString& Settings::getPoolDb() const
+{
+	return pimpl_->poolDb_;
+}
+
 const QString& Settings::getCollectionFile() const
 {
     return pimpl_->collectionFile_;
@@ -264,7 +271,7 @@ const QString& Settings::getOnlineDataCacheDb() const
 	return pimpl_->onlineDataCacheDb_;
 }
 
-const QString&Settings::getTagsDb() const
+const QString& Settings::getTagsDb() const
 {
 	return pimpl_->tagsDb_;
 }

@@ -34,6 +34,7 @@ public:
 
 	const QString& getAppDataDir() const;
 	void setAppDataDir(const QString& appDataDir) const;
+	const QString& getPoolDb() const;
 	const QString& getCollectionFile() const;
 	const QString& getCollectionDb() const;
 	const QString& getOnlineDataCacheDb() const;
