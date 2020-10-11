@@ -62,6 +62,8 @@ const QVector<QString> NAMES =
     "UsedAll",
 	"Uuid",
 	"ScryfallId",
+    "OtherFaceIds",
+    "Side",
 	"UserDefined"
 };
 
@@ -120,6 +122,8 @@ const QVector<QString> DISPLAY_NAMES =
     "UsedAll",
 	"Uuid",
 	"ScryfallId",
+    "OtherFaceIds",
+    "Side",
 	"User Defined"
 };
 

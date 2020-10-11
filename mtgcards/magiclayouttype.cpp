@@ -23,7 +23,9 @@ const QVector<QString> NAMES =
 	"double_faced_token",
 	"emblem",
 	"augment",
-	"host"
+    "host",
+    "modal_dfc",
+    "adventure"
 };
 
 } // namespace

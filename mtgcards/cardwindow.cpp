@@ -127,7 +127,7 @@ void CardWindow::switchPicture()
 			setCardPicture(imageFiles_.front(), -90);
 		}
 		else
-		if (layoutType_ == mtg::LayoutType::Transform)
+		if (layoutType_ == mtg::LayoutType::Transform || layoutType_ == mtg::LayoutType::ModalDFC)
 		{
 			setCardPicture(imageFiles_.back(), 0);
 		}

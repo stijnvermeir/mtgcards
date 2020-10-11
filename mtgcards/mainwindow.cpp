@@ -238,7 +238,7 @@ bool MainWindow::toQuitOrNotToQuit(QEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 #ifdef __APPLE__
-	event->accept();
+    event->accept();
 #else
 	toQuitOrNotToQuit(event);
 #endif

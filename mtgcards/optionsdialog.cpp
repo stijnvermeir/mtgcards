@@ -409,7 +409,7 @@ void OptionsDialog::browseAllSetsJsonBtnClicked()
 	{
 		startDir = QDir::homePath();
 	}
-	auto filename = QFileDialog::getOpenFileName(this, "Locate AllSets.json", startDir, tr("AllSets (*AllSets.json)"));
+	auto filename = QFileDialog::getOpenFileName(this, "Locate AllPrintings.sqlite", startDir, tr("AllPrintings (*AllPrintings.sqlite)"));
 	if (!filename.isNull())
 	{
 		Settings::instance().setPoolDataFile(filename);
@@ -434,7 +434,7 @@ bool OptionsDialog::confirmRestart()
 {
 	int ret = QMessageBox::warning(this,
 									"Restart required",
-									"A restart is required when changing AllSets.json. All unsaved changes will be lost.",
+	                                "A restart is required when changing AllPrintings.sqlite. All unsaved changes will be lost.",
 									QMessageBox::Ok | QMessageBox::Cancel,
 									QMessageBox::Cancel);
 	return ret == QMessageBox::Ok;

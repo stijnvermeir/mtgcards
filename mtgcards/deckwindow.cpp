@@ -529,13 +529,13 @@ void DeckWindow::createProxies()
 		for (int index : indices)
 		{
 			auto quantity = deckWidget->deck().getQuantity(index);
-			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index, fullBorders);
+			auto pictureInfo = mtg::CardData::instance().getPictureInfo(index, fullBorders, true);
 			if (pictureInfo.missing.empty())
 			{
 				for (int i = 0; i < quantity; ++i)
 				{
 					printCardLambda(pictureInfo.filenames.first());
-					if (pictureInfo.layout == mtg::LayoutType::Transform)
+					if (pictureInfo.layout == mtg::LayoutType::Transform || pictureInfo.layout == mtg::LayoutType::ModalDFC)
 					{
 						printCardLambda(pictureInfo.filenames.last());
 					}

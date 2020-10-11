@@ -79,8 +79,8 @@ bool Util::downloadPoolDataFile()
 {
 	QNetworkAccessManager network;
 	QNetworkRequest request;
-	QString whichFile = "AllSets.json";
-	request.setUrl(QString("https://mtgcards.stijn-v.be/json/%1").arg(whichFile));
+	QString whichFile = "AllPrintings.sqlite";
+	request.setUrl(QString("https://mtgjson.com/api/v5/%1").arg(whichFile));
 	QScopedPointer<QNetworkReply> reply(network.get(request));
 	QEventLoop loop;
 	QProgressDialog progress("Downloading ...", "Cancel", 0, 0);

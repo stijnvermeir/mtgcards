@@ -61,7 +61,9 @@ const QVector<ColumnType> COLUMNS =
     mtg::ColumnType::LegalityVintage,
 	mtg::ColumnType::LegalityCommander,
 	ColumnType::Uuid,
-	ColumnType::ScryfallId
+    ColumnType::ScryfallId,
+    ColumnType::OtherFaceIds,
+    ColumnType::Side
 };
 
 QVector<int> generateColumnIndices()
@@ -78,16 +80,6 @@ int columnToIndex(const ColumnType::type_t column)
 {
 	static const QVector<int> COLUMN_INDICES = generateColumnIndices();
 	return COLUMN_INDICES[column];
-}
-
-QStringList jsonArrayToStringList(const QJsonArray& array)
-{
-	QStringList list;
-	for (const auto& n : array)
-	{
-		list.push_back(n.toString());
-	}
-	return list;
 }
 
 QString removeAccents(QString s)
@@ -126,11 +118,11 @@ QString removeAccents(QString s)
 	return output;
 }
 
-bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq)
+bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq, bool backFace)
 {
 	 QNetworkAccessManager m;
 	 QNetworkRequest request;
-	 auto url = QString("https://api.scryfall.com/cards/%1?format=image&version=%2").arg(scryfallId).arg((hq ? QString("large") : QString("border_crop")));
+	 auto url = QString("https://api.scryfall.com/cards/%1?format=image&version=%2&face=%3").arg(scryfallId).arg(hq ? QString("large") : QString("border_crop")).arg(backFace ? QString("back") : QString("front"));
 	 qDebug() << url;
 	 request.setUrl(url);
 	 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
@@ -159,7 +151,7 @@ QSqlDatabase conn()
 QSqlError openDb()
 {
 	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "allprintings");
-	db.setDatabaseName(Settings::instance().getPoolDb());
+	db.setDatabaseName(Settings::instance().getPoolDataFile());
 	if (!db.open()) return db.lastError();
 	return QSqlError();
 }
@@ -178,12 +170,14 @@ struct CardData::Pimpl
 	QVector<QVector<mtg::Ruling>> rulings_;
 	QHash<QString, QHash<QString, int>> quickLookUpTable_;
     QHash<QString, QVector<int>> quickLookUpTableByNameOnly_;
+	QHash<QString, int> quickLookUpTableByUuid_;
 
 	Pimpl()
 		: data_()
 		, rulings_()
 		, quickLookUpTable_()
         , quickLookUpTableByNameOnly_()
+	    , quickLookUpTableByUuid_()
 	{
 		QSqlError err = openDb();
 		if (err.isValid())
@@ -201,16 +195,41 @@ struct CardData::Pimpl
 	QSqlError load()
 	{
 		data_.clear();
+		rulings_.clear();
 		quickLookUpTable_.clear();
+		quickLookUpTableByNameOnly_.clear();
+		quickLookUpTableByUuid_.clear();
 
 		QHash<QString, QPair<int, QDate>> latestPrintHash;
 
 		QSqlDatabase db = conn();
-		QSqlQuery q(db);
+
+		QHash<QString, QVector<mtg::Ruling>> tempRulings;
 		QSqlQuery queryRulings(db);
-		queryRulings.prepare("SELECT date, text FROM rulings WHERE uuid = ?");
+		if (!queryRulings.exec("SELECT uuid, date, text FROM rulings")) return queryRulings.lastError();
+		tempRulings.reserve(queryRulings.size());
+		while (queryRulings.next())
+		{
+			QString uuid = queryRulings.value("uuid").toString();
+			mtg::Ruling ruling;
+			ruling.date = queryRulings.value("date").toString();
+			ruling.text = queryRulings.value("text").toString();
+			tempRulings[uuid].push_back(ruling);
+		}
+
+		QHash<QString, QMap<QString, QString>> tempLegalities;
 		QSqlQuery queryLegalities(db);
-		queryRulings.prepare("SELECT format, status FROM legalities WHERE uuid = ?");
+		if (!queryLegalities.exec("SELECT uuid, format, status FROM legalities")) return queryLegalities.lastError();
+		tempLegalities.reserve(queryLegalities.size());
+		while (queryLegalities.next())
+		{
+			QString uuid = queryLegalities.value("uuid").toString();
+			QString format = queryLegalities.value("format").toString();
+			QString status = queryLegalities.value("status").toString();
+			tempLegalities[uuid].insert(format, status);
+		}
+
+		QSqlQuery q(db);
 		QString qs;
 		qs += "SELECT ";
 		qs += "s.name, ";
@@ -240,9 +259,10 @@ struct CardData::Pimpl
 		qs += "c.layout, ";
 		qs += "c.uuid, ";
 		qs += "c.otherFaceIds, ";
+		qs += "c.side, ";
+		qs += "c.variations, ";
 		qs += "c.multiverseId, ";
-		qs += "c.scryfallId, ";
-		qs += "c.scryfallIllustrationId ";
+		qs += "c.scryfallId ";
 		qs += "FROM ";
 		qs += "cards c ";
 		qs += "JOIN ";
@@ -255,6 +275,7 @@ struct CardData::Pimpl
 		data_.reserve(numCards);
 		rulings_.reserve(numCards);
 		quickLookUpTable_.reserve(numCards);
+		quickLookUpTableByUuid_.reserve(numCards);
 		while (q.next())
 		{
 			QString setName = q.value("sets.name").toString();
@@ -285,18 +306,18 @@ struct CardData::Pimpl
 			cardNames.push_back(cardName);
 			if (!q.value("cards.faceName").isNull())
 			{
-				cardName = q.value("cards.faceName").toString();
 				cardNames = cardName.split(" // ");
+				cardName = q.value("cards.faceName").toString();
 			}
 			r[columnToIndex(ColumnType::Name)] = cardName;
 			r[columnToIndex(ColumnType::Names)] = cardNames;
 			r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(q.value("cards.manaCost").toString(), cmc));
 			r[columnToIndex(ColumnType::CMC)] = cmc;
-			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toStringList();
+			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
 			r[columnToIndex(ColumnType::Type)] = q.value("cards.type").toString();
-			r[columnToIndex(ColumnType::SuperTypes)] = q.value("cards.supertypes").toStringList();
-			r[columnToIndex(ColumnType::Types)] = q.value("cards.types").toStringList();
-			r[columnToIndex(ColumnType::SubTypes)] = q.value("cards.subtypes").toStringList();
+			r[columnToIndex(ColumnType::SuperTypes)] = q.value("cards.supertypes").toString().split(",");
+			r[columnToIndex(ColumnType::Types)] = q.value("cards.types").toString().split(",");
+			r[columnToIndex(ColumnType::SubTypes)] = q.value("cards.subtypes").toString().split(",");
 			r[columnToIndex(ColumnType::Rarity)] = q.value("cards.rarity").toString();
 			r[columnToIndex(ColumnType::Text)] = q.value("cards.text").toString();
 			r[columnToIndex(ColumnType::Flavor)] = q.value("cards.flavorText").toString();
@@ -304,7 +325,7 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::Power)] = q.value("cards.power").toString();
 			r[columnToIndex(ColumnType::Toughness)] = q.value("cards.toughness").toString();
 			r[columnToIndex(ColumnType::Loyalty)] = q.value("cards.loyalty").toString();
-			auto colorIdentities = q.value("cards.colorIdentity").toStringList();
+			auto colorIdentities = q.value("cards.colorIdentity").toString().split(",");
 			QString colorIdentityStr;
 			for (const auto& c : QString("WUBRG"))
 			{
@@ -325,11 +346,14 @@ struct CardData::Pimpl
 			QString uuid = q.value("cards.uuid").toString();
 			r[columnToIndex(ColumnType::Uuid)] = uuid;
 
+			r[columnToIndex(ColumnType::OtherFaceIds)] = q.value("cards.otherFaceIds").toString().split(",");
+			r[columnToIndex(ColumnType::Side)] = q.value("cards.side").toString();
+
 			// Generate image name
 			auto imageName = removeAccents(cardName.toLower());
-			if (!q.value("cards.otherFaceIds").isNull())
+			if (!q.value("cards.variations").isNull())
 			{
-				QStringList variations = q.value("cards.otherFaceIds").toStringList();
+				QStringList variations = q.value("cards.variations").toString().split(",");
 				variations.push_back(uuid);
 				variations.sort();
 				auto index = variations.indexOf(uuid);
@@ -366,39 +390,13 @@ struct CardData::Pimpl
 				}
 			}
 
-#if 0
 			// rulings
-			queryRulings.bindValue(0, uuid);
-			queryRulings.exec();
-			if (queryRulings.size() > 0)
-			{
-				QVector<mtg::Ruling> rulings;
-				while (queryRulings.next())
-				{
-					mtg::Ruling ruling;
-					ruling.date = queryRulings.value("date").toString();
-					ruling.text = queryRulings.value("text").toString();
-					rulings.push_back(ruling);
-				}
-				rulings_.push_back(rulings);
-			}
-			else
-			{
-				rulings_.push_back(QVector<mtg::Ruling>());
-			}
+			rulings_.push_back(tempRulings[uuid]);
 
 			// Legalities
-			queryLegalities.bindValue(0, uuid);
-			queryLegalities.exec();
-			if (queryLegalities.size() > 0)
+			const auto& legalities = tempLegalities[uuid];
+			if (!legalities.empty())
 			{
-				QMap<QString, QString> legalities;
-				while (queryLegalities.next())
-				{
-					QString format = queryLegalities.value("format").toString();
-					QString status = queryLegalities.value("status").toString();
-					legalities.insert(format, status);
-				}
 				if (legalities.contains("standard"))
 				{
 					r[columnToIndex(ColumnType::LegalityStandard)] = legalities["standard"];
@@ -420,287 +418,14 @@ struct CardData::Pimpl
 					r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"];
 				}
 			}
-#else
-			rulings_.push_back(QVector<mtg::Ruling>());
-#endif
+
 			quickLookUpTable_[setCode + cardName][imageName] = data_.size();
 			quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
+			quickLookUpTableByUuid_[uuid] = data_.size();
 			data_.push_back(r);
 		}
 
 		return QSqlError();
-	}
-
-	void oldLoad()
-	{
-		data_.clear();
-		quickLookUpTable_.clear();
-
-		QFile file(Settings::instance().getPoolDataFile());
-		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-		{
-			QJsonParseError parseError;
-			QJsonDocument d = QJsonDocument::fromJson(file.readAll(), &parseError);
-			if (d.isNull())
-			{
-				qDebug() << parseError.errorString();
-			}
-			QJsonObject obj = d.object();
-			int numCards = 0;
-			for (const auto& set : obj)
-			{
-				numCards += set.toObject()["cards"].toArray().size();
-			}
-
-			data_.reserve(numCards);
-			rulings_.reserve(numCards);
-			quickLookUpTable_.reserve(numCards);
-
-			QHash<QString, QPair<int, QDate>> latestPrintHash;
-
-			struct RenameTask
-			{
-				QString setName;
-				QString setCode;
-			};
-			QVector<RenameTask> renameTasks;
-
-			for (const auto& s : obj)
-			{
-				auto set = s.toObject();
-				auto setName = set["name"].toString();
-				auto setCode = set["code"].toString().toUpper();
-				auto setReleaseDate = QDate::fromString(set["releaseDate"].toString(), "yyyy-MM-dd");
-				auto setType = set["type"].toString();
-				auto block = set["block"].toString();
-				bool onlineOnly = false;
-				if (set.contains("isOnlineOnly"))
-				{
-					onlineOnly = set["isOnlineOnly"].toBool();
-				}
-				bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
-
-				RenameTask renameTask;
-				renameTask.setName = setName;
-				renameTask.setCode = setCode;
-				renameTasks.push_back(renameTask);
-
-				for (const auto& c : set["cards"].toArray())
-				{
-					auto card = c.toObject();
-					Row r(COLUMNS.size());
-					r[columnToIndex(ColumnType::Id)] = data_.size();
-					// set
-					r[columnToIndex(ColumnType::Set)] = setName;
-					r[columnToIndex(ColumnType::SetCode)] = setCode;
-					r[columnToIndex(ColumnType::SetGathererCode)] = setCode;
-					r[columnToIndex(ColumnType::SetOldCode)] = setCode;
-					r[columnToIndex(ColumnType::SetReleaseDate)] = setReleaseDate;
-					r[columnToIndex(ColumnType::SetType)] = setType;
-					r[columnToIndex(ColumnType::Block)] = block;
-					r[columnToIndex(ColumnType::OnlineOnly)] = onlineOnly;
-
-					// card
-					double cmc = card["convertedManaCost"].toDouble();
-					r[columnToIndex(ColumnType::Border)] = card["borderColor"].toString();
-					QString cardName = card["name"].toString();
-					r[columnToIndex(ColumnType::Name)] = cardName;
-					r[columnToIndex(ColumnType::Names)] = jsonArrayToStringList(card["names"].toArray());
-					r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(card["manaCost"].toString(), cmc));
-					r[columnToIndex(ColumnType::CMC)] = cmc;
-					r[columnToIndex(ColumnType::Color)] = jsonArrayToStringList(card["colors"].toArray());
-					r[columnToIndex(ColumnType::Type)] = card["type"].toString();
-					r[columnToIndex(ColumnType::SuperTypes)] = jsonArrayToStringList(card["supertypes"].toArray());
-					r[columnToIndex(ColumnType::Types)] = jsonArrayToStringList(card["types"].toArray());
-					r[columnToIndex(ColumnType::SubTypes)] = jsonArrayToStringList(card["subtypes"].toArray());
-					r[columnToIndex(ColumnType::Rarity)] = card["rarity"].toString();
-					r[columnToIndex(ColumnType::Text)] = card["text"].toString();
-					r[columnToIndex(ColumnType::Flavor)] = card["flavorText"].toString();
-					r[columnToIndex(ColumnType::Artist)] = card["artist"].toString();
-					r[columnToIndex(ColumnType::Power)] = card["power"].toString();
-					r[columnToIndex(ColumnType::Toughness)] = card["toughness"].toString();
-					r[columnToIndex(ColumnType::Loyalty)] = card["loyalty"].toString();
-                    auto colorIdentities = jsonArrayToStringList(card["colorIdentity"].toArray());
-                    QString colorIdentityStr;
-                    for (const auto& c : QString("WUBRG"))
-                    {
-                        if (colorIdentities.contains(c))
-                        {
-                            colorIdentityStr += QString{"{"} + c + "}";
-                        }
-                    }
-                    if (colorIdentityStr.isEmpty())
-                    {
-                        colorIdentityStr = "{C}";
-                    }
-                    r[columnToIndex(ColumnType::ColorIdentity)] = QVariant::fromValue(ManaCost(colorIdentityStr, 0));
-
-					// misc
-					r[columnToIndex(ColumnType::Layout)] = card.contains("layout") ? card["layout"].toString() : QString("normal");
-
-					QString uuid = card["uuid"].toString();
-					r[columnToIndex(ColumnType::Uuid)] = uuid;
-
-					// Generate image name
-					auto imageName = removeAccents(cardName.toLower());
-					if (card.contains("variations"))
-					{
-						auto variationArray = card["variations"].toArray();
-						QStringList variations;
-						variations.push_back(uuid);
-						for (const auto& var : variationArray)
-						{
-							variations.push_back(var.toString());
-						}
-						variations.sort();
-						auto index = variations.indexOf(uuid);
-						imageName = imageName + QString::number(index+1);
-					}
-					r[columnToIndex(ColumnType::ImageName)] = imageName;
-
-					if (card.contains("multiverseId"))
-					{
-						r[columnToIndex(ColumnType::MultiverseId)] = card["multiverseId"].toInt();
-					}
-
-					r[columnToIndex(ColumnType::ScryfallId)] = card["scryfallId"].toString();
-
-					r[columnToIndex(ColumnType::IsLatestPrint)] = false;
-					if (includeInLatestPrintCheck)
-					{
-						if (latestPrintHash.contains(cardName))
-						{
-							auto& entry = latestPrintHash[cardName];
-							if (setReleaseDate > entry.second)
-							{
-								// unflag the previous latest
-								data_[entry.first][columnToIndex(ColumnType::IsLatestPrint)] = false;
-								entry.first = data_.size();
-								entry.second = setReleaseDate;
-								r[columnToIndex(ColumnType::IsLatestPrint)] = true;
-							}
-						}
-						else
-						{
-							latestPrintHash[cardName] = qMakePair(data_.size(), setReleaseDate);
-							r[columnToIndex(ColumnType::IsLatestPrint)] = true;
-						}
-					}
-
-					// rulings
-					if (card.contains("rulings"))
-					{
-						QVector<mtg::Ruling> rulings;
-						for (const QJsonValue& rv : card["rulings"].toArray())
-						{
-							QJsonObject r = rv.toObject();
-							mtg::Ruling ruling;
-							ruling.date = r["date"].toString();
-							ruling.text = r["text"].toString();
-							rulings.push_back(ruling);
-						}
-						rulings_.push_back(rulings);
-					}
-					else
-					{
-						rulings_.push_back(QVector<mtg::Ruling>());
-					}
-
-                    // Legalities
-                    if (card.contains("legalities"))
-                    {
-						QJsonObject legalities = card["legalities"].toObject();
-						if (legalities.contains("standard"))
-						{
-							r[columnToIndex(ColumnType::LegalityStandard)] = legalities["standard"].toString();
-						}
-						if (legalities.contains("modern"))
-						{
-							r[columnToIndex(ColumnType::LegalityModern)] = legalities["modern"].toString();
-						}
-						if (legalities.contains("legacy"))
-						{
-							r[columnToIndex(ColumnType::LegalityLegacy)] = legalities["legacy"].toString();
-						}
-						if (legalities.contains("vintage"))
-						{
-							r[columnToIndex(ColumnType::LegalityVintage)] = legalities["vintage"].toString();
-						}
-						if (legalities.contains("commander"))
-						{
-							r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"].toString();
-						}
-                    }
-
-					quickLookUpTable_[setCode + cardName][imageName] = data_.size();
-                    quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
-					data_.push_back(r);
-				}
-			}
-
-			// Fix 'aftermath' layout
-			for (Row& r : data_)
-			{
-				if (r[columnToIndex(ColumnType::Layout)].toString() == "split")
-				{
-					auto rightName = r[columnToIndex(ColumnType::Names)].toStringList()[1];
-					auto set = r[columnToIndex(ColumnType::SetCode)].toString();
-					int index = findRowFast(set, rightName, "");
-					if (index >= 0 && data_[index][columnToIndex(ColumnType::Text)].toString().contains("Aftermath"))
-					{
-						r[columnToIndex(ColumnType::Layout)] = "aftermath";
-					}
-				}
-			}
-
-			QVector<RenameTask> additionalRenameTasks(
-			{
-				{"3rd Revised Edition (Summer Magic)", "SUM"},
-				{"Arena League", "PAL02"},
-				{"Book Inserts", "PHPR"},
-				{"Comic Inserts", "PI14"},
-				{"Commander 2013 Edition", "C13"},
-				{"Commander Anthology 2018", "CM2"},
-				{"Convention Promos", "PSDC"},
-				{"Duel Decks Anthology, Divine vs. Demonic", "DVD"},
-				{"Duel Decks Anthology, Elves vs. Goblins", "EVG"},
-				{"Duel Decks Anthology, Garruk vs. Liliana", "GVL"},
-				{"Duel Decks Anthology, Jace vs. Chandra", "JVC"},
-				{"From the Vault Annihilation (2014)", "V14"},
-				{"Global Series Jiang Yanggu and Mu Yanling", "GS1"},
-				{"Grand Prix", "PGPX"},
-				{"Magic 2014 Core Set", "M14"},
-				{"Magic 2015 Core Set", "M15"},
-				{"Magic Player Rewards", "P11"},
-				{"Magic The Gathering-Commander", "CMD"},
-				{"Magic The Gathering—Conspiracy", "CNS"},
-				{"Masterpiece Series Amonkhet Invocations", "MP2"},
-				{"Masterpiece Series Kaladesh Inventions", "MPS"},
-				{"Modern Masters 2015 Edition", "MM2"},
-				{"Modern Masters 2017 Edition", "MM3"},
-				{"Planechase 2012 Edition", "PC2"},
-				{"Vanguard", "PVAN"}
-			});
-
-			renameTasks += additionalRenameTasks;
-
-			// Rename card art folders
-			for (const auto& rt : renameTasks)
-			{
-				auto setNameCopy = rt.setName;
-				setNameCopy.replace(":", "");
-				auto oldArtDir = Settings::instance().getCardImageDir() + QDir::separator() + setNameCopy + QDir::separator();
-				auto newArtDir = Settings::instance().getCardImageDir() + QDir::separator() + rt.setCode + QDir::separator();
-				if (QFileInfo::exists(oldArtDir))
-				{
-					QFile old(oldArtDir);
-					if (!old.rename(newArtDir))
-					{
-						qDebug() << "Rename" << oldArtDir << "to" << newArtDir << "failed";
-					}
-				}
-			}
-		}
 	}
 
 	int getNumRows() const
@@ -795,6 +520,11 @@ struct CardData::Pimpl
 		return -1;
 	}
 
+	int findRowFastByUuid(const QString& uuid) const
+	{
+		return quickLookUpTableByUuid_.value(uuid, -1);
+	}
+
     const QVector<int>& findRowsFast(const QString& name) const
     {
         auto it = quickLookUpTableByNameOnly_.find(name.toLower());
@@ -827,7 +557,7 @@ struct CardData::Pimpl
 		QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
 		mtg::LayoutType layout = mtg::LayoutType(data_[row][columnToIndex(ColumnType::Layout)].toString());
 		QString search;
-		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Aftermath || layout == mtg::LayoutType::Transform || layout == mtg::LayoutType::Flip)
+		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Aftermath || layout == mtg::LayoutType::Transform || layout == mtg::LayoutType::ModalDFC || layout == mtg::LayoutType::Flip)
 		{
 			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
 			search = removeAccents(names.join(""));
@@ -922,6 +652,11 @@ int CardData::findRowFast(const QString& set, const QString& name, const QString
 	return pimpl_->findRowFast(set, name, imageName);
 }
 
+int CardData::findRowFastByUuid(const QString& uuid) const
+{
+	return pimpl_->findRowFastByUuid(uuid);
+}
+
 const QVector<int>& CardData::findRowsFast(const QString& name) const
 {
     return pimpl_->findRowsFast(name);
@@ -942,7 +677,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 		QString notFoundImageFile = prefix + QDir::separator() + "Back.jpg";
 		QString imageName = get(row, mtg::ColumnType::ImageName).toString();
 		QVariant scryfallId = get(row, mtg::ColumnType::ScryfallId);
-		auto addToListLambda = [&picInfo, &notFoundImageFile, &imageName, &hq, &doDownload](QString imageFile, const QVariant& scryfallId)
+		auto addToListLambda = [&picInfo, &notFoundImageFile, &hq, &doDownload](const QString& imageName, QString imageFile, const QVariant& scryfallId, bool backFace)
 		{
 			// replace special characters
 			imageFile.replace("\xc2\xae", ""); // (R)
@@ -972,7 +707,7 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 				else
 				{
 					// try downloading
-					if (doDownload && scryfallId.isValid() && downloadPicture(scryfallId.toString(), imageFile, hq))
+					if (doDownload && scryfallId.isValid() && downloadPicture(scryfallId.toString(), imageFile, hq, backFace))
 					{
 						picInfo.filenames << imageFile;
 					}
@@ -990,21 +725,48 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			prefix += QString("hq") + QDir::separator();
 		}
 		picInfo.layout = mtg::LayoutType(get(row, mtg::ColumnType::Layout).toString());
-		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip)
+		if (picInfo.layout == mtg::LayoutType::Split || picInfo.layout == mtg::LayoutType::Flip || picInfo.layout == mtg::LayoutType::Aftermath || picInfo.layout == mtg::LayoutType::Adventure)
 		{
-			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
-			QString imageFile = prefix + names.join("_").replace(":", "") + ".jpg";
-			addToListLambda(imageFile, scryfallId);
+			auto side = get(row, mtg::ColumnType::Side).toString();
+			if (side == "a")
+			{
+				QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
+				addToListLambda(imageName, imageFile, scryfallId, false);
+			}
+			else
+			{
+				auto otherFaceIds = get(row, mtg::ColumnType::OtherFaceIds).toStringList();
+				for(const auto& otherFaceId : otherFaceIds)
+				{
+					int otherFaceRowIndex = findRowFastByUuid(otherFaceId);
+					auto otherSide = get(otherFaceRowIndex, mtg::ColumnType::Side).toString();
+					if (otherSide == "a")
+					{
+						QString otherImageName = get(otherFaceRowIndex, mtg::ColumnType::ImageName).toString();
+						QString otherImageFile = prefix + get(otherFaceRowIndex, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
+						QVariant otherScryfallId = get(otherFaceRowIndex, mtg::ColumnType::ScryfallId);
+						addToListLambda(otherImageName, otherImageFile, otherScryfallId, false);
+						break;
+					}
+				}
+			}
 		}
 		else
-		if (picInfo.layout == mtg::LayoutType::Transform)
+		if (picInfo.layout == mtg::LayoutType::Transform || picInfo.layout == mtg::LayoutType::ModalDFC)
 		{
-			QStringList names = get(row, mtg::ColumnType::Names).toStringList();
-			for (auto& n : names)
+			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
+			auto side = get(row, mtg::ColumnType::Side).toString();
+			addToListLambda(imageName, imageFile, scryfallId, side == "b");
+
+			auto otherFaceIds = get(row, mtg::ColumnType::OtherFaceIds).toStringList();
+			for(const auto& otherFaceId : otherFaceIds)
 			{
-				QString imageFile = prefix + n.replace(":", "") + ".jpg";
-				int dataRowIndex = findRowFast(get(row, mtg::ColumnType::SetCode).toString(), n);
-				addToListLambda(imageFile, get(dataRowIndex, mtg::ColumnType::ScryfallId));
+				int otherFaceRowIndex = findRowFastByUuid(otherFaceId);
+				QString otherImageName = get(otherFaceRowIndex, mtg::ColumnType::ImageName).toString();
+				QString otherImageFile = prefix + get(otherFaceRowIndex, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
+				QVariant otherScryfallId = get(otherFaceRowIndex, mtg::ColumnType::ScryfallId);
+				auto otherSide = get(otherFaceRowIndex, mtg::ColumnType::Side).toString();
+				addToListLambda(otherImageName, otherImageFile, otherScryfallId, otherSide == "b");
 			}
 		}
 		else
@@ -1014,12 +776,12 @@ CardData::PictureInfo CardData::getPictureInfo(int row, bool hq, bool doDownload
 			QString tokenName = get(row, mtg::ColumnType::ImageName).toString();
 			tokenName[0] = tokenName[0].toUpper();
 			QString imageFile = prefix + tokenName.replace(":", "") + ".jpg";
-			addToListLambda(imageFile, scryfallId);
+			addToListLambda(imageName, imageFile, scryfallId, false);
 		}
 		else
 		{
 			QString imageFile = prefix + get(row, mtg::ColumnType::Name).toString().replace(":", "") + ".jpg";
-			addToListLambda(imageFile, scryfallId);
+			addToListLambda(imageName, imageFile, scryfallId, false);
 		}
 	}
 	return picInfo;

@@ -66,6 +66,8 @@ public:
         UsedAll,
 		Uuid,
 		ScryfallId,
+		OtherFaceIds,
+		Side,
 		UserDefined,
 
 		COUNT,

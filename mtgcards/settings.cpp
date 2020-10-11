@@ -17,7 +17,6 @@ const QString& Settings::Mkm::getEndpoint() const
 struct Settings::Pimpl
 {
 	QString appDataDir_;
-	QString poolDb_;
 	QString collectionFile_;
     QString collectionDb_;
 	QString onlineDataCacheDb_;
@@ -38,7 +37,7 @@ struct Settings::Pimpl
 	{
 		QSettings settings;
 		setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::DataLocation)).toString());
-		poolDataFile_ = settings.value("options/datasources/allsetsjson", appDataDir_ + QDir::separator() + "AllSets.json").toString();
+		poolDataFile_ = settings.value("options/datasources/allprintingssqlite", appDataDir_ + QDir::separator() + "AllPrintings.sqlite").toString();
 		cardImageDir_ = settings.value("options/datasources/cardpicturedir", appDataDir_ + QDir::separator() + "cardart").toString();
 		ultraHighQualityArt_ = settings.value("options/misc/ultraHighQualityArtEnabled", false).toBool();
 
@@ -112,7 +111,6 @@ struct Settings::Pimpl
 		QSettings settings;
 		settings.setValue("options/misc/appdatadir", appDataDir);
 		appDataDir_ = appDataDir;
-		poolDb_ = appDataDir_ + QDir::separator() + "AllPrintings.sqlite";
 		collectionFile_ = appDataDir_ + QDir::separator() + "collection.json";
         collectionDb_ = appDataDir_ + QDir::separator() + "collection.db";
 		onlineDataCacheDb_ = appDataDir_ + QDir::separator() + "onlinedatacache.db";
@@ -125,7 +123,7 @@ struct Settings::Pimpl
 	{
 		poolDataFile_ = poolDataFile;
 		QSettings settings;
-		settings.setValue("options/datasources/allsetsjson", poolDataFile_);
+		settings.setValue("options/datasources/allprintingssqlite", poolDataFile_);
 	}
 
 	void setCardImageDir(const QString& cardImageDir)
@@ -249,11 +247,6 @@ const QString& Settings::getAppDataDir() const
 void Settings::setAppDataDir(const QString& appDataDir) const
 {
 	pimpl_->setAppDataDir(appDataDir);
-}
-
-const QString& Settings::getPoolDb() const
-{
-	return pimpl_->poolDb_;
 }
 
 const QString& Settings::getCollectionFile() const

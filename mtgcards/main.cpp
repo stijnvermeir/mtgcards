@@ -48,12 +48,15 @@ public:
 	{
 	}
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 	virtual bool event(QEvent* e)
 	{
-		if (e->type() == QEvent::Close && mainWindow_)
+		if (e->type() == QEvent::Quit)
 		{
-			return mainWindow_->toQuitOrNotToQuit(e);
+			if (mainWindow_)
+			{
+				return mainWindow_->toQuitOrNotToQuit(e);
+			}
 		}
 		return QApplication::event(e);
 	}

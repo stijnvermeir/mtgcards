@@ -25,6 +25,8 @@ public:
 		Emblem,
 		Augment,
 		Host,
+		ModalDFC,
+		Adventure,
 
 		COUNT
 	};
