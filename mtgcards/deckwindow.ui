@@ -101,7 +101,6 @@
    <addaction name="separator"/>
    <addaction name="actionDownloadCardArt"/>
    <addaction name="actionFetchOnlineData"/>
-   <addaction name="actionAddToWantslist"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAdvancedFilter">
@@ -278,18 +277,6 @@
    </property>
    <property name="toolTip">
     <string>Fetch online data for selection</string>
-   </property>
-  </action>
-  <action name="actionAddToWantslist">
-   <property name="icon">
-    <iconset resource="mtgcards.qrc">
-     <normaloff>:/resources/icons/add185.svg</normaloff>:/resources/icons/add185.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Add to wantslist</string>
-   </property>
-   <property name="toolTip">
-    <string>Add selection to wantslist</string>
    </property>
   </action>
   <action name="actionAddDeckToCollection">

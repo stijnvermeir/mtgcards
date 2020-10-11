@@ -47,9 +47,6 @@ private slots:
 	void userColumnEdited();
 	void saveUserColumnsClicked();
 
-	// magiccardmarket.eu tab
-	void mkmEditFinished();
-
 	// misc tab
 	void browseAppDataDirBtnClicked();
 	void changeFontBtnClicked();

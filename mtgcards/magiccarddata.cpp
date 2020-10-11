@@ -17,6 +17,8 @@
 #include <QDebug>
 #include <QThread>
 #include <QtSql>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 using namespace mtg;
 
@@ -141,6 +143,35 @@ bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq
 	 fi.absoluteDir().mkpath(fi.absolutePath());
 	 QImage picture = QImage::fromData(rawData);
 	 return picture.save(filename);
+}
+
+double downloadPrice(const QString& scryfallId)
+{
+	QNetworkAccessManager m;
+	QNetworkRequest request;
+	auto url = QString("https://api.scryfall.com/cards/%1").arg(scryfallId);
+	qDebug() << url;
+	request.setUrl(url);
+	request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+	QScopedPointer<QNetworkReply> reply(m.get(request));
+	QEventLoop loop;
+	QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
+	QThread::msleep(100); // Scryfall API asks to wait a bit between requests.
+	if (reply->error())
+	{
+		qDebug() << reply->error() << reply->errorString();
+		return false;
+	}
+	auto rawData = reply->readAll();
+	QJsonParseError parseError;
+	auto json = QJsonDocument::fromJson(rawData, &parseError);
+	if (parseError.error != QJsonParseError::NoError)
+	{
+		qDebug() << parseError.errorString();
+		return 0;
+	}
+	return json["prices"]["eur"].toString().toDouble();
 }
 
 QSqlDatabase conn()
@@ -553,39 +584,14 @@ struct CardData::Pimpl
 
 	void fetchOnlineData(const int row)
 	{
-		QString set = data_[row][columnToIndex(ColumnType::SetCode)].toString();
-		QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
-		mtg::LayoutType layout = mtg::LayoutType(data_[row][columnToIndex(ColumnType::Layout)].toString());
-		QString search;
-		if (layout == mtg::LayoutType::Split || layout == mtg::LayoutType::Aftermath || layout == mtg::LayoutType::Transform || layout == mtg::LayoutType::ModalDFC || layout == mtg::LayoutType::Flip)
+		QString scryfallId = data_[row][columnToIndex(ColumnType::ScryfallId)].toString();
+		auto price = downloadPrice(scryfallId);
+		if (price > 0)
 		{
-			QStringList names = data_[row][columnToIndex(ColumnType::Names)].toStringList();
-			search = removeAccents(names.join(""));
-		}
-		else
-		{
-			search = removeAccents(name);
-		}
-		search.replace(" ", "");
-		search.replace(",", "");
-		search.replace("-", "");
-		search.replace("'", "");
-		search.replace("\"", "");
-		QString expansion = data_[row][columnToIndex(ColumnType::Set)].toString();
-		auto result = Util::mkmClient()->findProduct(search);
-		for (const mkm::Product& p : result)
-		{
-			if (expansion.contains(p.expansion, Qt::CaseInsensitive))
-			{
-				OnlineDataCache& cache = OnlineDataCache::instance();
-				cache.set(set, name, ColumnType::PriceLowest, p.priceGuide.lowExPlus);
-				cache.set(set, name, ColumnType::PriceLowestFoil, p.priceGuide.lowFoil);
-				cache.set(set, name, ColumnType::PriceAverage, p.priceGuide.avg);
-				cache.set(set, name, ColumnType::PriceTrend, p.priceGuide.trend);
-				cache.set(set, name, ColumnType::MkmProductId, p.idProduct);
-				cache.set(set, name, ColumnType::MkmMetaproductId, p.idMetaproduct);
-				return;
-			}
+			QString set = data_[row][columnToIndex(ColumnType::SetCode)].toString();
+			QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
+			OnlineDataCache& cache = OnlineDataCache::instance();
+			cache.set(set, name, ColumnType::PriceTrend, price);
 		}
 	}
 

@@ -41,7 +41,7 @@ private:
 	void closeEvent(QCloseEvent* event);
 	virtual bool event(QEvent* event);
 	void updateStatusBar();
-	DeckWidget* createDeckWidget(const QString& filename = QString::null);
+	DeckWidget* createDeckWidget(const QString& filename = QString());
 	void destroyDeckWidget(DeckWidget* deckWidget);
 	void saveDeck(DeckWidget* deckWidget, bool saveAs);
 
@@ -69,7 +69,6 @@ private slots:
 	void showStatistics();
 	void downloadCardArt();
 	void fetchOnlineData();
-	void addToWantslist();
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);

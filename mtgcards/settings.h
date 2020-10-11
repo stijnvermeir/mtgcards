@@ -19,17 +19,6 @@ private:
 	~Settings();
 
 public:
-
-	struct Mkm
-	{
-		QString appToken;
-		QString appSecret;
-		QString accessToken;
-		QString accessTokenSecret;
-
-		const QString& getEndpoint() const;
-	};
-
 	static Settings& instance();
 
 	const QString& getAppDataDir() const;
@@ -58,9 +47,6 @@ public:
 
 	const QFont& getFont() const;
 	void setFont(const QFont& font);
-
-	const Mkm& getMkm() const;
-	void setMkm(const Mkm& mkm);
 
 	bool getArtIsHighQuality() const;
 	void setArtIsHighQuality(bool enabled);

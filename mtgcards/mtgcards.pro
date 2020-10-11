@@ -54,7 +54,6 @@ SOURCES += main.cpp\
     manacurvelinewidget.cpp \
     onlinedatacache.cpp \
     splashscreen.cpp \
-    addtowantslistdialog.cpp \
     tags.cpp \
 	filters/comparetype.cpp \
 	filters/containsfilterfunction.cpp \
@@ -106,7 +105,6 @@ HEADERS  += mainwindow.h \
     onlinedatacache.h \
     magicruling.h \
     splashscreen.h \
-    addtowantslistdialog.h \
     tags.h \
     filters/containsfilterfunction.h \
     filters/tagfilterfunction.h
@@ -121,21 +119,10 @@ FORMS    += mainwindow.ui \
     aboutdialog.ui \
     filtereditordialog.ui \
     deckstatisticsdialog.ui \
-    manacurvelinewidget.ui \
-    addtowantslistdialog.ui
+    manacurvelinewidget.ui
 
 RESOURCES += \
     mtgcards.qrc
-
-MKMLIB_PATH = $$PWD/../../mkmlib
-
-CONFIG(release, debug|release): LIBS += -L$$MKMLIB_PATH/build-release -L$$MKMLIB_PATH/build-release/release
-else:CONFIG(debug, debug|release): LIBS += -L$$MKMLIB_PATH/build-debug -L$$MKMLIB_PATH/build-debug/debug
-
-LIBS += -lmkm
-
-INCLUDEPATH += $$MKMLIB_PATH/mkm
-DEPENDPATH += $$MKMLIB_PATH/mkm
 
 DISTFILES += \
     VERSION.txt

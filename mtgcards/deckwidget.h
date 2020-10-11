@@ -50,7 +50,6 @@ public slots:
 	void removeFromDeck(const QVector<int>&);
 	void downloadCardArt();
 	void fetchOnlineData();
-	void addSelectionToWantslist();
 
 private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);

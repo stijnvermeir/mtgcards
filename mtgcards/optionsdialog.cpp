@@ -372,16 +372,6 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	connect(ui_.delUserColumnBtn, SIGNAL(released()), this, SLOT(delUserColumnClicked()));
 	connect(ui_.saveUserColumnsBtn, SIGNAL(released()), this, SLOT(saveUserColumnsClicked()));
 
-	// magiccardmarket.eu tab
-	ui_.mkmAppTokenTxt->setText(Settings::instance().getMkm().appToken);
-	ui_.mkmAppSecretTxt->setText(Settings::instance().getMkm().appSecret);
-	ui_.mkmAccessTokenTxt->setText(Settings::instance().getMkm().accessToken);
-	ui_.mkmAccessTokenSecretTxt->setText(Settings::instance().getMkm().accessTokenSecret);
-	connect(ui_.mkmAppTokenTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
-	connect(ui_.mkmAppSecretTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
-	connect(ui_.mkmAccessTokenTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
-	connect(ui_.mkmAccessTokenSecretTxt, SIGNAL(editingFinished()), this, SLOT(mkmEditFinished()));
-
 	// misc tab
 	connect(ui_.browseAppDataDirBtn, SIGNAL(clicked()), this, SLOT(browseAppDataDirBtnClicked()));
 	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
@@ -546,17 +536,6 @@ void OptionsDialog::saveUserColumnsClicked()
 		QProcess::startDetached(QApplication::applicationFilePath());
 		QApplication::quit();
 	}
-}
-
-void OptionsDialog::mkmEditFinished()
-{
-	Settings::Mkm mkm;
-	mkm.appToken = ui_.mkmAppTokenTxt->text();
-	mkm.appSecret = ui_.mkmAppSecretTxt->text();
-	mkm.accessToken = ui_.mkmAccessTokenTxt->text();
-	mkm.accessTokenSecret = ui_.mkmAccessTokenSecretTxt->text();
-
-	Settings::instance().setMkm(mkm);
 }
 
 void OptionsDialog::browseAppDataDirBtnClicked()

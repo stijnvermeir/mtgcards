@@ -5,8 +5,6 @@
 #include "onlinedatacache.h"
 #include "settings.h"
 
-#include <mkm/exception.h>
-
 #include <QDebug>
 #include <QUrl>
 #include <QProgressDialog>
@@ -49,30 +47,21 @@ void MagicSortFilterProxyModel::downloadCardArt(const QModelIndexList& selectedR
 
 void MagicSortFilterProxyModel::fetchOnlineData(const QModelIndexList& selectedRows)
 {
-	try
+	QProgressDialog progress("Fetching online data ...", "Cancel", 0, selectedRows.size());
+	progress.setWindowModality(Qt::WindowModal);
+	int i = 0;
+	for (const QModelIndex& row : selectedRows)
 	{
-		QProgressDialog progress("Fetching online data ...", "Cancel", 0, selectedRows.size());
-		progress.setWindowModality(Qt::WindowModal);
-		int i = 0;
-		for (const QModelIndex& row : selectedRows)
+		int dataRowIndex = getDataRowIndex(row);
+		mtg::CardData::instance().fetchOnlineData(dataRowIndex);
+		emit dataChanged(index(row.row(), 0), index(row.row(), columnCount() - 1));
+		progress.setValue(i++);
+		if (progress.wasCanceled())
 		{
-			int dataRowIndex = getDataRowIndex(row);
-			mtg::CardData::instance().fetchOnlineData(dataRowIndex);
-			emit dataChanged(index(row.row(), 0), index(row.row(), columnCount() - 1));
-			progress.setValue(i++);
-			if (progress.wasCanceled())
-			{
-				break;
-			}
+			break;
 		}
-		progress.setValue(selectedRows.size());
 	}
-	catch (const mkm::MkmException& e)
-	{
-		QMessageBox msg(QMessageBox::Critical, "Error", e.getErrorMessage());
-		msg.setDetailedText(e.getErrorDetails());
-		msg.exec();
-	}
+	progress.setValue(selectedRows.size());
 }
 
 QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) const

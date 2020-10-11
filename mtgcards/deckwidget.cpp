@@ -4,7 +4,6 @@
 #include "deck.h"
 #include "settings.h"
 #include "util.h"
-#include "addtowantslistdialog.h"
 
 #include <QMenu>
 #include <QDebug>
@@ -183,12 +182,6 @@ void DeckWidget::downloadCardArt()
 void DeckWidget::fetchOnlineData()
 {
 	deckTableModel_.fetchOnlineData(ui_.tableView->selectionModel()->selectedRows());
-}
-
-void DeckWidget::addSelectionToWantslist()
-{
-	AddToWantslistDialog dialog(currentDataRowIndices(), this);
-	dialog.exec();
 }
 
 void DeckWidget::currentRowChanged(QModelIndex, QModelIndex)
