@@ -179,7 +179,7 @@ void FilterNode::loadFromJson(const QJsonDocument& doc)
 	{
 		node.setType(obj["type"].toString());
 		auto childArray = obj["children"].toArray();
-		for (const auto& childObj : childArray)
+		for (const auto childObj : childArray)
 		{
 			auto child = create();
 			jsonToNode(childObj.toObject(), *child);

@@ -64,7 +64,7 @@ struct Deck::Pimpl
 			active_ = obj["active"].toBool();
 			QJsonArray cards = obj["cards"].toArray();
 			data_.reserve(cards.size());
-			for (const auto& c : cards)
+			for (const auto c : cards)
 			{
 				QJsonObject card = c.toObject();
 				auto set = card["Set"].toString();

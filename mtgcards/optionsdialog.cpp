@@ -403,7 +403,7 @@ void OptionsDialog::browseAllSetsJsonBtnClicked()
 	if (!filename.isNull())
 	{
 		Settings::instance().setPoolDataFile(filename);
-		QProcess::startDetached(QApplication::applicationFilePath());
+		QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
 		QApplication::quit();
 	}
 }
@@ -415,7 +415,7 @@ void OptionsDialog::downloadLatestAllSetsJsonBtnClicked()
 
 	if (Util::downloadPoolDataFile())
 	{
-		QProcess::startDetached(QApplication::applicationFilePath());
+		QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
 		QApplication::quit();
 	}
 }
@@ -533,7 +533,7 @@ void OptionsDialog::saveUserColumnsClicked()
 	if (ret == QMessageBox::Yes)
 	{
 		Settings::instance().setUserColumns(userColumns);
-		QProcess::startDetached(QApplication::applicationFilePath());
+		QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
 		QApplication::quit();
 	}
 }

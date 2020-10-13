@@ -42,44 +42,6 @@ QSqlError initDb()
 
 		// card table
 		if (!q.exec("CREATE TABLE card(id integer primary key, set_code varchar, name varchar, image_name varchar, quantity integer, user_data varchar)")) return q.lastError();
-		QFile file(Settings::instance().getCollectionFile());
-		if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-		{
-			qDebug() << "Converting collection.json to collection.db ...";
-			QJsonDocument d = QJsonDocument::fromJson(QString(file.readAll()).toUtf8());
-			QJsonObject obj = d.object();
-			QJsonArray cards = obj["cards"].toArray();
-			if (!db.transaction()) return db.lastError();
-			for (const auto& c : cards)
-			{
-				QJsonObject card = c.toObject();
-				auto set = card["Set"].toString();
-				auto name = card["Name"].toString();
-				auto imageName = card["ImageName"].toString();
-				auto quantity = card["Quantity"].toInt();
-				QVariantMap userData = UserColumn::loadFromJson(card);
-				if (!q.prepare("INSERT INTO card(set_code, name, image_name, quantity, user_data) VALUES (?, ?, ?, ?, ?)"))
-				{
-					db.rollback();
-					return q.lastError();
-				}
-				q.addBindValue(set);
-				q.addBindValue(name);
-				q.addBindValue(imageName);
-				q.addBindValue(quantity);
-				QJsonObject userDataObj;
-				UserColumn::saveToJson(userDataObj, userData);
-				QJsonDocument userDataDoc(userDataObj);
-				q.addBindValue(userDataDoc.toJson(QJsonDocument::Compact));
-				if (!q.exec())
-				{
-					db.rollback();
-					return q.lastError();
-				}
-			}
-			if (!db.commit()) return db.lastError();
-			qDebug() << "Successfully converted collection.json to db.";
-		}
 
 		qDebug() << "Collection db created succesfully.";
 	}

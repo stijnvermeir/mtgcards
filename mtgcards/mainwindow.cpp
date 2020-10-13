@@ -18,6 +18,7 @@
 #include <QXmlStreamReader>
 #include <QDesktopServices>
 #include <QInputDialog>
+#include <QScreen>
 
 namespace {
 
@@ -70,7 +71,7 @@ const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
 
 void moveToCenterOfScreen(QDialog* dialog)
 {
-	const QRect screen = QApplication::desktop()->screenGeometry();
+	const QRect screen = QGuiApplication::screens().first()->availableGeometry();
 	dialog->move(screen.center() - dialog->rect().center());
 }
 

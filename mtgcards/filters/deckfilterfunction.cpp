@@ -30,7 +30,7 @@ bool DeckFilterFunction::apply(const QVariant& data) const
 {
 	if (data.type() == QVariant::Int && deck_)
 	{
-		return deck_.data()->getRowIndex(data.toInt()) != -1;
+		return deck_.toStrongRef().data()->getRowIndex(data.toInt()) != -1;
 	}
 	return true;
 }
@@ -39,7 +39,7 @@ QString DeckFilterFunction::getDescription() const
 {
 	if (deck_)
 	{
-		return deck_.data()->getDisplayName();
+		return deck_.toStrongRef().data()->getDisplayName();
 	}
 	return "No deck";
 }
@@ -50,7 +50,7 @@ QJsonObject DeckFilterFunction::toJson() const
 	obj["type"] = ID;
 	if (deck_)
 	{
-		obj["deck"] = deck_.data()->getFilename();
+		obj["deck"] = deck_.toStrongRef().data()->getFilename();
 	}
 	else
 	{
@@ -73,7 +73,7 @@ QWidget* DeckFilterFunction::createEditor(QWidget* parent) const
 	}
 	if (deck_)
 	{
-		cbx->setCurrentText(deck_.data()->getDisplayName());
+		cbx->setCurrentText(deck_.toStrongRef().data()->getDisplayName());
 	}
 	return cbx;
 }
