@@ -110,12 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
 	connect(ui_.actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-	// import collection
-	connect(ui_.actionImportCollection, SIGNAL(triggered()), this, SLOT(importCollection()));
-
 	// import decks
-	connect(ui_.actionImportDeckFromXML, SIGNAL(triggered()), this, SLOT(importDeckFromXML()));
-	connect(ui_.actionImportDeckFromText, SIGNAL(triggered()), this, SLOT(importDeckFromText()));
+	connect(ui_.actionImport_dec, SIGNAL(triggered()), this, SLOT(importDec()));
 
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
@@ -288,212 +284,9 @@ void MainWindow::aboutActionClicked()
 	about.exec();
 }
 
-void MainWindow::importCollection()
+void MainWindow::importDec()
 {
-	QString filename = QFileDialog::getOpenFileName(0, "Import collection from csv", QDir::homePath(), "CSV (*.csv)");
-	if (!filename.isNull())
-	{
-		QFile importFile(filename);
-		if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
-		{
-			QStringList lines;
-			QTextStream in(&importFile);
-			while (!in.atEnd())
-			{
-				lines << in.readLine();
-			}
-			importFile.close();
-
-			QSqlDatabase db = mtg::Collection::instance().getConnection();
-			db.transaction();
-
-			QProgressDialog progress("Importing ...", "Cancel", 0, lines.size());
-			progress.setWindowModality(Qt::WindowModal);
-			QStringList errors;
-			for (int i = 0; i < lines.size(); ++i)
-			{
-				QStringList splitLine = lines[i].split(";");
-				if (splitLine.size() >= 3)
-				{
-					QString set = splitLine[0];
-					QString name = splitLine[1];
-					if (name.contains("/"))
-					{
-						name = name.split("/").first();
-					}
-					int qty = splitLine[2].toInt();
-					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
-					if (dataRowIndex != -1)
-					{
-						int current = mtg::Collection::instance().getQuantity(dataRowIndex);
-						mtg::Collection::instance().setQuantity(dataRowIndex, current + qty);
-					}
-					else
-					{
-						errors << (set + " " + name + " not found");
-					}
-				}
-				else
-				{
-					errors << ("Line " + QString::number(i+1) + " is invalid");
-				}
-				progress.setValue(i);
-				if (progress.wasCanceled())
-				{
-					db.rollback();
-					break;
-				}
-			}
-			progress.setValue(lines.size());
-			if (!progress.wasCanceled())
-			{
-				if (errors.empty())
-				{
-					db.commit();
-				}
-				else
-				{
-					QMessageBox msgBox;
-					msgBox.setWindowTitle("Issues");
-					msgBox.setText("Some cards could not be imported. Do you want to continue with the import?");
-					msgBox.setInformativeText("See details to know which cards could not be imported.");
-					msgBox.setDetailedText(errors.join("\n"));
-					msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-					msgBox.setDefaultButton(QMessageBox::Yes);
-					msgBox.setIcon(QMessageBox::Warning);
-					int ret = msgBox.exec();
-					if (ret == QMessageBox::Yes)
-					{
-						db.commit();
-					}
-					else
-					{
-						db.rollback();
-					}
-				}
-			}
-			collectionWindow_.reload();
-		}
-	}
-}
-
-void MainWindow::importDeckFromXML()
-{
-	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import decks from xml", QDir::homePath(), "Decks (*.deck)");
-	if (!filenames.empty())
-	{
-		bool yesToAll = false;
-		bool noToAll = false;
-		QStringList decksWithIssues;
-		for (const QString& filename : filenames)
-		{
-			QStringList errors;
-			QFile importFile(filename);
-			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
-			{
-				QFileInfo fileInfo(filename);
-				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
-				if (QFileInfo(newFilename).exists())
-				{
-					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
-				}
-				Deck deck;
-				deck.setActive(false);
-				QXmlStreamReader xml(&importFile);
-				while (!xml.atEnd())
-				{
-					xml.readNext();
-                    if (xml.isStartElement() && xml.name().compare(QString("card")) == 0)
-					{
-						QString set = xml.attributes().value("edition").toString();
-						int qty = xml.attributes().value("deck").toInt();
-						int sb = xml.attributes().value("sb").toInt();
-						QString name = xml.readElementText();
-						if (name.contains("/"))
-						{
-							name = name.split("/").first();
-						}
-						int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
-						if (dataRowIndex != -1)
-						{
-							deck.setQuantity(dataRowIndex, qty);
-							deck.setSideboard(dataRowIndex, sb);
-						}
-						else
-						{
-							errors << (set + " " + name + " not found");
-						}
-					}
-					if (xml.hasError())
-					{
-						errors << xml.errorString();
-					}
-				}
-
-				bool ok = true;
-				if (!errors.empty())
-				{
-					decksWithIssues << fileInfo.baseName();
-					if (!yesToAll && !noToAll)
-					{
-						QMessageBox msgBox;
-						msgBox.setWindowTitle("Issues");
-						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
-						msgBox.setInformativeText("See details to see the issues.");
-						msgBox.setDetailedText(errors.join("\n"));
-						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
-						msgBox.setDefaultButton(QMessageBox::NoToAll);
-						msgBox.setIcon(QMessageBox::Warning);
-						int ret = msgBox.exec();
-						if (ret == QMessageBox::No)
-						{
-							ok = false;
-						}
-						if (ret == QMessageBox::NoToAll)
-						{
-							noToAll = true;
-						}
-						if (ret == QMessageBox::YesToAll)
-						{
-							yesToAll = true;
-						}
-					}
-					if (noToAll)
-					{
-						ok = false;
-					}
-				}
-
-				if (ok)
-				{
-					deck.save(newFilename);
-					deckWindow_.openDeck(newFilename);
-				}
-			}
-		}
-		if (!decksWithIssues.empty())
-		{
-			QMessageBox msgBox;
-			msgBox.setWindowTitle("Decks with issues");
-			msgBox.setText("There were some decks with import issues.");
-			msgBox.setInformativeText("See details to see which decks had issues.");
-			msgBox.setDetailedText(decksWithIssues.join("\n"));
-			msgBox.setStandardButtons(QMessageBox::Ok);
-			msgBox.setDefaultButton(QMessageBox::Ok);
-			msgBox.setIcon(QMessageBox::Warning);
-			msgBox.exec();
-		}
-		else
-		{
-			QMessageBox::information(0, "Success", "All decks were imported successfully.");
-		}
-	}
-}
-
-void MainWindow::importDeckFromText()
-{
-	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import decks from text", QDir::homePath(), "Decks (*.txt)");
-	QString set = QInputDialog::getText(this, "Enter Set Code", "Set Code");
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import .dec", QDir::homePath(), "Decks (*.dec)");
 	if (!filenames.empty())
 	{
 		bool yesToAll = false;
@@ -517,7 +310,12 @@ void MainWindow::importDeckFromText()
 				QTextStream in(&importFile);
 				while (!in.atEnd())
 				{
-					lines << in.readLine();
+					auto line = in.readLine().trimmed();
+					if (line.isEmpty() || line.startsWith("//"))
+					{
+						continue;
+					}
+					lines << line;
 				}
 				importFile.close();
 
@@ -526,9 +324,18 @@ void MainWindow::importDeckFromText()
 					QTextStream stream(&lines[i]);
 					int amount;
 					stream >> amount;
+					QString set;
+					stream >> set;
+					set = set.remove('[').remove(']').toUpper();
 					QString name = stream.readAll().trimmed();
 					qDebug() << "Amount" << amount;
+					qDebug() << "Set" << set;
 					qDebug() << "Name" << name;
+					if (name.contains("//"))
+					{
+						name = name.split(" // ").first();
+						qDebug() << "Corrected name" << name;
+					}
 					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
 					if (dataRowIndex != -1)
 					{

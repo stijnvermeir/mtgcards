@@ -39,9 +39,7 @@ private slots:
 	void deckWindowActionToggled(bool show);
 	void optionsActionClicked();
 	void aboutActionClicked();
-	void importCollection();
-	void importDeckFromXML();
-	void importDeckFromText();
+	void importDec();
 	void globalFilter();
 	void onlineManual();
 };
