@@ -37,32 +37,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& /*context*/, cons
 	cout << flush;
 }
 
-class MyApplication : public QApplication
-{
-public:
-	MainWindow* mainWindow_;
-
-	MyApplication(int &argc, char **argv)
-		: QApplication(argc, argv)
-		, mainWindow_(nullptr)
-	{
-	}
-
-#ifdef Q_OS_MACOS
-	virtual bool event(QEvent* e)
-	{
-		if (e->type() == QEvent::Quit)
-		{
-			if (mainWindow_)
-			{
-				return mainWindow_->toQuitOrNotToQuit(e);
-			}
-		}
-		return QApplication::event(e);
-	}
-#endif
-};
-
 int main(int argc, char *argv[])
 {
 	qInstallMessageHandler(myMessageOutput);
@@ -71,9 +45,8 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("stijn-v.be");
 	QCoreApplication::setApplicationName("MTGCards");
 	QCoreApplication::setApplicationVersion(MTGCARDS_VERSION);
-	QGuiApplication::setQuitOnLastWindowClosed(false);
 
-	MyApplication a(argc, argv);
+	QApplication a(argc, argv);
 	if (!QFile(Settings::instance().getPoolDataFile()).exists())
 	{
 		Util::downloadPoolDataFile();
@@ -91,8 +64,7 @@ int main(int argc, char *argv[])
 	a.processEvents();
 	MainWindow mainWindow;
 	a.processEvents();
-	a.mainWindow_ = &mainWindow;
-	splash.finish(a.mainWindow_);
-
+	splash.finish(&mainWindow);
+	mainWindow.show();
     return a.exec();
 }

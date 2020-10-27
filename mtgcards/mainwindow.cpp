@@ -22,52 +22,7 @@
 
 namespace {
 
-#if defined(Q_OS_OSX)
-const QPoint DEFAULT_MAIN_WINDOW_POS(1, 22);
-const QSize DEFAULT_MAIN_WINDOW_SIZE(465, 2);
-
-const QPoint DEFAULT_POOL_WINDOW_POS(467, 22);
-const QSize DEFAULT_POOL_WINDOW_SIZE(1453, 325);
-
-const QPoint DEFAULT_COLLECTION_WINDOW_POS(467, 368);
-const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1453, 313);
-
-const QPoint DEFAULT_DECK_WINDOW_POS(1, 703);
-const QSize DEFAULT_DECK_WINDOW_SIZE(1918, 471);
-
-const QPoint DEFAULT_CARD_WINDOW_POS(2, 22);
-const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
-#elif defined(Q_OS_WIN)
-const QPoint DEFAULT_MAIN_WINDOW_POS(0, 1);
-const QSize DEFAULT_MAIN_WINDOW_SIZE(463, 21);
-
-const QPoint DEFAULT_POOL_WINDOW_POS(473, 1);
-const QSize DEFAULT_POOL_WINDOW_SIZE(1432, 325);
-
-const QPoint DEFAULT_COLLECTION_WINDOW_POS(473, 357);
-const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1432, 355);
-
-const QPoint DEFAULT_DECK_WINDOW_POS(-1, 744);
-const QSize DEFAULT_DECK_WINDOW_SIZE(1907, 389);
-
-const QPoint DEFAULT_CARD_WINDOW_POS(-1, 54);
-const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
-#else
-const QPoint DEFAULT_MAIN_WINDOW_POS(0, 1);
-const QSize DEFAULT_MAIN_WINDOW_SIZE(463, 21);
-
-const QPoint DEFAULT_POOL_WINDOW_POS(473, 1);
-const QSize DEFAULT_POOL_WINDOW_SIZE(1432, 325);
-
-const QPoint DEFAULT_COLLECTION_WINDOW_POS(473, 357);
-const QSize DEFAULT_COLLECTION_WINDOW_SIZE(1432, 355);
-
-const QPoint DEFAULT_DECK_WINDOW_POS(-1, 744);
-const QSize DEFAULT_DECK_WINDOW_SIZE(1907, 389);
-
-const QPoint DEFAULT_CARD_WINDOW_POS(-1, 54);
-const QSize DEFAULT_CARD_WINDOW_SIZE(466, 659);
-#endif
+ static const int LAYOUT_VERSION = 1;
 
 void moveToCenterOfScreen(QDialog* dialog)
 {
@@ -80,28 +35,10 @@ void moveToCenterOfScreen(QDialog* dialog)
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
-	, poolWindow_()
-	, cardWindow_()
-	, collectionWindow_()
-	, deckWindow_()
 {
 	ui_.setupUi(this);
 
 	loadSettings();
-
-	// window management
-	ui_.actionPoolWindow->setChecked(poolWindow_.isVisible());
-	connect(ui_.actionPoolWindow, SIGNAL(toggled(bool)), this, SLOT(poolWindowActionToggled(bool)));
-	connect(&poolWindow_, SIGNAL(windowClosed(bool)), ui_.actionPoolWindow, SLOT(setChecked(bool)));
-	ui_.actionCardWindow->setChecked(cardWindow_.isVisible());
-	connect(ui_.actionCardWindow, SIGNAL(toggled(bool)), this, SLOT(cardWindowActionToggled(bool)));
-	connect(&cardWindow_, SIGNAL(windowClosed(bool)), ui_.actionCardWindow, SLOT(setChecked(bool)));
-	ui_.actionCollectionWindow->setChecked(collectionWindow_.isVisible());
-	connect(ui_.actionCollectionWindow, SIGNAL(toggled(bool)), this, SLOT(collectionWindowActionToggled(bool)));
-	connect(&collectionWindow_, SIGNAL(windowClosed(bool)), ui_.actionCollectionWindow, SLOT(setChecked(bool)));
-	ui_.actionDeckWindow->setChecked(deckWindow_.isVisible());
-	connect(ui_.actionDeckWindow, SIGNAL(toggled(bool)), this, SLOT(deckWindowActionToggled(bool)));
-	connect(&deckWindow_, SIGNAL(windowClosed(bool)), ui_.actionDeckWindow, SLOT(setChecked(bool)));
 
 	// options
 	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
@@ -115,31 +52,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
-	connect(this, SIGNAL(globalFilterChanged()), &poolWindow_, SLOT(handleGlobalFilterChanged()));
-	connect(this, SIGNAL(globalFilterChanged()), &collectionWindow_, SLOT(handleGlobalFilterChanged()));
-	connect(this, SIGNAL(globalFilterChanged()), &deckWindow_, SLOT(handleGlobalFilterChanged()));
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
-
-	// card preview
-	connect(&poolWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
-	connect(&collectionWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
-	connect(&deckWindow_, SIGNAL(selectedCardChanged(int)), &cardWindow_, SLOT(changeCardPicture(int)));
-
-	// add / remove
-	connect(&poolWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
-	connect(&poolWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
-	connect(&poolWindow_, SIGNAL(addToDeck(QVector<int>)), &deckWindow_, SLOT(addToDeck(QVector<int>)));
-	connect(&poolWindow_, SIGNAL(removeFromDeck(QVector<int>)), &deckWindow_, SLOT(removeFromDeck(QVector<int>)));
-	connect(&collectionWindow_, SIGNAL(addToDeck(QVector<int>)), &deckWindow_, SLOT(addToDeck(QVector<int>)));
-	connect(&collectionWindow_, SIGNAL(removeFromDeck(QVector<int>)), &deckWindow_, SLOT(removeFromDeck(QVector<int>)));
-	connect(&deckWindow_, SIGNAL(addToCollection(QVector<int>)), &collectionWindow_, SLOT(addToCollection(QVector<int>)));
-	connect(&deckWindow_, SIGNAL(addToCollection(QVector<QPair<int,int>>)), &collectionWindow_, SLOT(addToCollection(QVector<QPair<int,int>>)));
-	connect(&deckWindow_, SIGNAL(removeFromCollection(QVector<int>)), &collectionWindow_, SLOT(removeFromCollection(QVector<int>)));
-
-	// open used decks
-	connect(&collectionWindow_, SIGNAL(requestOpenDeck(QString)), &deckWindow_, SLOT(handleOpenDeckRequest(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -149,132 +64,51 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadSettings()
 {
-	bool mainWindowVisibleDefault = true;
-	#ifdef Q_OS_OSX
-		mainWindowVisibleDefault = false;
-	#endif
-
 	QSettings settings;
-	resize(settings.value("mainwindow/size", DEFAULT_MAIN_WINDOW_SIZE).toSize());
-	move(settings.value("mainwindow/pos", DEFAULT_MAIN_WINDOW_POS).toPoint());
-	setVisible(true); // need to call this at least one, to show the main menu on OS X
-	setVisible(settings.value("mainwindow/visible", mainWindowVisibleDefault).toBool());
-
-	poolWindow_.resize(settings.value("poolwindow/size", DEFAULT_POOL_WINDOW_SIZE).toSize());
-	poolWindow_.move(settings.value("poolwindow/pos", DEFAULT_POOL_WINDOW_POS).toPoint());
-	poolWindow_.setVisible(settings.value("poolwindow/visible", true).toBool());
-	poolWindow_.loadSettings();
-
-	cardWindow_.resize(settings.value("cardwindow/size", DEFAULT_CARD_WINDOW_SIZE).toSize());
-	cardWindow_.move(settings.value("cardwindow/pos", DEFAULT_CARD_WINDOW_POS).toPoint());
-	cardWindow_.setVisible(settings.value("cardwindow/visible", true).toBool());
-
-	collectionWindow_.resize(settings.value("collectionwindow/size", DEFAULT_COLLECTION_WINDOW_SIZE).toSize());
-	collectionWindow_.move(settings.value("collectionwindow/pos", DEFAULT_COLLECTION_WINDOW_POS).toPoint());
-	collectionWindow_.setVisible(settings.value("collectionwindow/visible", true).toBool());
-	collectionWindow_.loadSettings();
-
-	deckWindow_.resize(settings.value("deckwindow/size", DEFAULT_DECK_WINDOW_SIZE).toSize());
-	deckWindow_.move(settings.value("deckwindow/pos", DEFAULT_DECK_WINDOW_POS).toPoint());
-	deckWindow_.setVisible(settings.value("deckwindow/visible", true).toBool());
-	deckWindow_.loadSettings();
+	restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
+	if (!restoreState(settings.value("mainwindow/state").toByteArray(), LAYOUT_VERSION))
+	{
+		splitDockWidget(ui_.poolDock, ui_.collectionDock, Qt::Orientation::Vertical);
+		resizeDocks({ui_.cardDock}, {360}, Qt::Orientation::Vertical);
+		resizeDocks({ui_.cardDock, ui_.poolDock, ui_.collectionDock}, {300, 1000, 1000}, Qt::Orientation::Horizontal);
+	}
 }
 
 void MainWindow::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("mainwindow/visible", isVisible());
-	settings.setValue("mainwindow/size", size());
-	settings.setValue("mainwindow/pos", pos());
-
-	poolWindow_.saveSettings();
-	settings.setValue("poolwindow/visible", poolWindow_.isVisible());
-	settings.setValue("poolwindow/size", poolWindow_.size());
-	settings.setValue("poolwindow/pos", poolWindow_.pos());
-
-	settings.setValue("cardwindow/visible", cardWindow_.isVisible());
-	settings.setValue("cardwindow/size", cardWindow_.size());
-	settings.setValue("cardwindow/pos", cardWindow_.pos());
-
-	collectionWindow_.saveSettings();
-	settings.setValue("collectionwindow/visible", collectionWindow_.isVisible());
-	settings.setValue("collectionwindow/size", collectionWindow_.size());
-	settings.setValue("collectionwindow/pos", collectionWindow_.pos());
-
-	deckWindow_.saveSettings();
-	settings.setValue("deckwindow/visible", deckWindow_.isVisible());
-	settings.setValue("deckwindow/size", deckWindow_.size());
-	settings.setValue("deckwindow/pos", deckWindow_.pos());
-}
-
-bool MainWindow::toQuitOrNotToQuit(QEvent* event)
-{
-	int ret = QMessageBox::Yes;
-	if (deckWindow_.hasUnsavedChanges())
-	{
-		ret = QMessageBox::question(0,
-									"Are you sure?",
-									"There are unsaved changes. Are you sure you want to quit?",
-									QMessageBox::Yes | QMessageBox::No,
-									QMessageBox::No);
-	}
-	if (ret == QMessageBox::Yes)
-	{
-		event->accept();
-		saveSettings();
-		QCoreApplication::quit();
-		return true;
-	}
-	else
-	{
-		event->ignore();
-		return false;
-	}
+	settings.setValue("mainwindow/geometry", saveGeometry());
+	settings.setValue("mainwindow/state", saveState(LAYOUT_VERSION));
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-#ifdef __APPLE__
-    event->accept();
-#else
-	toQuitOrNotToQuit(event);
-#endif
-}
-
-void MainWindow::poolWindowActionToggled(bool show)
-{
-	poolWindow_.setVisible(show);
-}
-
-void MainWindow::cardWindowActionToggled(bool show)
-{
-	cardWindow_.setVisible(show);
-}
-
-void MainWindow::collectionWindowActionToggled(bool show)
-{
-	collectionWindow_.setVisible(show);
-}
-
-void MainWindow::deckWindowActionToggled(bool show)
-{
-	deckWindow_.setVisible(show);
+	int ret = QMessageBox::Yes;
+	if (false) // TODO
+	{
+		ret = QMessageBox::question(0,
+		                            "Are you sure?",
+		                            "There are unsaved changes. Are you sure you want to quit?",
+		                            QMessageBox::Yes | QMessageBox::No,
+		                            QMessageBox::No);
+	}
+	if (ret == QMessageBox::Yes)
+	{
+		saveSettings();
+		event->accept();
+		QMainWindow::closeEvent(event);
+	}
+	else
+	{
+		event->ignore();
+	}
 }
 
 void MainWindow::optionsActionClicked()
 {
 	OptionsDialog options(this);
 	moveToCenterOfScreen(&options);
-	connect(&options, SIGNAL(fontChanged()), &poolWindow_, SIGNAL(fontChanged()));
-	connect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
-	connect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
-	poolWindow_.updateShortcuts();
-	collectionWindow_.updateShortcuts();
-	deckWindow_.updateShortcuts();
-	disconnect(&options, SIGNAL(fontChanged()), &poolWindow_, SIGNAL(fontChanged()));
-	disconnect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
-	disconnect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 }
 
 void MainWindow::aboutActionClicked()
@@ -384,7 +218,7 @@ void MainWindow::importDec()
 				if (ok)
 				{
 					deck.save(newFilename);
-					deckWindow_.openDeck(newFilename);
+					//deckWindow_.openDeck(newFilename);
 				}
 			}
 		}
