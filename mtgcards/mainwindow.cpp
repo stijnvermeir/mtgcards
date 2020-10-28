@@ -35,8 +35,25 @@ void moveToCenterOfScreen(QDialog* dialog)
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
+    , poolDock_(nullptr)
 {
 	ui_.setupUi(this);
+
+	QAction* poolShowAction = ui_.poolDock->toggleViewAction();
+	poolShowAction->setText("Show");
+	ui_.menuPool->addAction(poolShowAction);
+	ui_.menuPool->addSeparator();
+
+	QAction* collectionShowAction = ui_.collectionDock->toggleViewAction();
+	collectionShowAction->setText("Show");
+	ui_.menuCollection->addAction(collectionShowAction);
+	ui_.menuCollection->addSeparator();
+
+	QAction* cardShowAction = ui_.cardDock->toggleViewAction();
+	cardShowAction->setText("Show");
+	ui_.menuCard->addAction(cardShowAction);
+
+	poolDock_ = new PoolDock(ui_.poolTableView, ui_.poolStatusBar, ui_.menuPool, this);
 
 	loadSettings();
 
@@ -52,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
+	connect(this, SIGNAL(globalFilterChanged()), poolDock_, SLOT(handleGlobalFilterChanged()));
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
@@ -59,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-
+	delete poolDock_;
 }
 
 void MainWindow::loadSettings()
@@ -72,6 +90,8 @@ void MainWindow::loadSettings()
 		resizeDocks({ui_.cardDock}, {360}, Qt::Orientation::Vertical);
 		resizeDocks({ui_.cardDock, ui_.poolDock, ui_.collectionDock}, {300, 1000, 1000}, Qt::Orientation::Horizontal);
 	}
+
+	poolDock_->loadSettings();
 }
 
 void MainWindow::saveSettings()
@@ -79,6 +99,8 @@ void MainWindow::saveSettings()
 	QSettings settings;
 	settings.setValue("mainwindow/geometry", saveGeometry());
 	settings.setValue("mainwindow/state", saveState(LAYOUT_VERSION));
+
+	poolDock_->saveSettings();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

@@ -17,7 +17,7 @@
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -48,6 +48,9 @@
        <bool>true</bool>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="StatusBar" name="deckStatusBar" native="true"/>
     </item>
    </layout>
   </widget>
@@ -172,6 +175,9 @@
      <item>
       <widget class="TableView" name="poolTableView"/>
      </item>
+     <item>
+      <widget class="StatusBar" name="poolStatusBar" native="true"/>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -205,10 +211,12 @@
      <item>
       <widget class="TableView" name="collectionTableView"/>
      </item>
+     <item>
+      <widget class="StatusBar" name="collectionStatusBar" native="true"/>
+     </item>
     </layout>
    </widget>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOptions">
    <property name="text">
     <string>Options</string>
@@ -246,6 +254,12 @@
    <class>TableView</class>
    <extends>QTableView</extends>
    <header>tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>StatusBar</class>
+   <extends>QWidget</extends>
+   <header>statusbar.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

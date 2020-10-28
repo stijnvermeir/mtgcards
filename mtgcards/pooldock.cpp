@@ -1,0 +1,233 @@
+#include "pooldock.h"
+
+#include "magicitemdelegate.h"
+#include "filtereditordialog.h"
+#include "settings.h"
+#include "util.h"
+
+#include <QSettings>
+#include <QCloseEvent>
+#include <QMenu>
+#include <QLabel>
+#include <QDebug>
+
+namespace {
+
+const QString DEFAULT_HEADER_STATE = "{\"sections\":[{\"hidden\":true,\"size\":187,\"visualIndex\":0},{\"hidden\":false,\"size\":44,\"visualIndex\":2},{\"hidden\":true,\"size\":100,\"visualIndex\":3},{\"hidden\":true,\"size\":100,\"visualIndex\":4},{\"hidden\":false,\"size\":119,\"visualIndex\":1},{\"hidden\":true,\"size\":122,\"visualIndex\":5},{\"hidden\":true,\"size\":100,\"visualIndex\":6},{\"hidden\":true,\"size\":97,\"visualIndex\":7},{\"hidden\":true,\"size\":81,\"visualIndex\":8},{\"hidden\":false,\"size\":247,\"visualIndex\":9},{\"hidden\":true,\"size\":314,\"visualIndex\":10},{\"hidden\":false,\"size\":219,\"visualIndex\":12},{\"hidden\":false,\"size\":36,\"visualIndex\":13},{\"hidden\":false,\"size\":100,\"visualIndex\":14},{\"hidden\":false,\"size\":272,\"visualIndex\":15},{\"hidden\":true,\"size\":83,\"visualIndex\":16},{\"hidden\":true,\"size\":100,\"visualIndex\":17},{\"hidden\":true,\"size\":100,\"visualIndex\":18},{\"hidden\":false,\"size\":112,\"visualIndex\":19},{\"hidden\":true,\"size\":53,\"visualIndex\":20},{\"hidden\":true,\"size\":100,\"visualIndex\":21},{\"hidden\":true,\"size\":170,\"visualIndex\":24},{\"hidden\":false,\"size\":31,\"visualIndex\":22},{\"hidden\":false,\"size\":29,\"visualIndex\":23},{\"hidden\":true,\"size\":100,\"visualIndex\":25},{\"hidden\":true,\"size\":100,\"visualIndex\":26},{\"hidden\":true,\"size\":100,\"visualIndex\":11},{\"hidden\":true,\"size\":100,\"visualIndex\":27},{\"hidden\":false,\"size\":109,\"visualIndex\":28},{\"hidden\":true,\"size\":100,\"visualIndex\":29},{\"hidden\":true,\"size\":82,\"visualIndex\":30},{\"hidden\":false,\"size\":86,\"visualIndex\":31},{\"hidden\":true,\"size\":44,\"visualIndex\":32}],\"sortIndicatorOrder\":1,\"sortIndicatorSection\":4}";
+
+class PoolItemDelegate : public MagicItemDelegate
+{
+public:
+	PoolItemDelegate(const PoolTableModel& model)
+		: model_(model)
+	{
+	}
+
+	virtual mtg::ColumnType columnIndexToType(const int columnIndex) const
+	{
+		return model_.columnIndexToType(columnIndex);
+	}
+private:
+	const PoolTableModel& model_;
+};
+
+}
+
+PoolDock::PoolDock(TableView* poolTableView, StatusBar* statusBar, QMenu* menu, QObject* parent)
+    : QObject(parent)
+    , poolTableView_(poolTableView)
+    , statusBar_(statusBar)
+	, poolTableModel_()
+	, itemDelegate_(new PoolItemDelegate(poolTableModel_))
+	, rootFilterNode_()
+    , commonActions_(this)
+{
+	poolTableView_->setItemDelegate(itemDelegate_.data());
+	poolTableView_->setModel(&poolTableModel_);
+	poolTableView_->setSortingEnabled(true);
+	poolTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+	poolTableView_->horizontalHeader()->setSectionsMovable(true);
+	poolTableView_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	poolTableView_->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(poolTableView_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
+	connect(poolTableView_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
+	connect(poolTableView_, &TableView::customContextMenuRequested, this, &PoolDock::rowContextMenuRequested);
+	connect(this, SIGNAL(fontChanged()), poolTableView_, SLOT(handleFontChanged()));
+	connect(poolTableView_, SIGNAL(searchStringChanged(QString)), statusBar_, SLOT(setSearch(QString)));
+	commonActions_.connectSignals(this);
+	commonActions_.addToMenu(menu);
+	commonActions_.addToWidget(poolTableView);
+}
+
+PoolDock::~PoolDock()
+{
+}
+
+void PoolDock::updateShortcuts()
+{
+	commonActions_.updateShortcuts();
+}
+
+void PoolDock::loadSettings()
+{
+	QSettings settings;
+	Util::loadHeaderViewState(*poolTableView_->horizontalHeader(), settings.value("poolwindow/headerstate", DEFAULT_HEADER_STATE).toString());
+	if (settings.contains("poolwindow/filterEnable"))
+	{
+		commonActions_.getEnableFilter()->setChecked(settings.value("poolwindow/filterEnable").toBool());
+	}
+	if (settings.contains("poolwindow/filter"))
+	{
+		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("poolwindow/filter").toString().toUtf8()));
+		if (commonActions_.getEnableFilter()->isChecked())
+		{
+			poolTableModel_.setFilterRootNode(rootFilterNode_);
+		}
+	}
+	updateStatusBar();
+	updateShortcuts();
+}
+
+void PoolDock::saveSettings()
+{
+	QSettings settings;
+	settings.setValue("poolwindow/headerstate", Util::saveHeaderViewState(*poolTableView_->horizontalHeader()));
+	settings.setValue("poolwindow/filterEnable", commonActions_.getEnableFilter()->isChecked());
+	if (rootFilterNode_)
+	{
+		settings.setValue("poolwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
+	}
+	else
+	{
+		settings.remove("poolwindow/filter");
+	}
+}
+
+int PoolDock::currentDataRowIndex() const
+{
+	QModelIndex proxyIndex = poolTableView_->currentIndex();
+	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+	return sourceIndex.row();
+}
+
+QVector<int> PoolDock::currentDataRowIndices() const
+{
+	QModelIndexList list = poolTableView_->selectionModel()->selectedRows();
+	QVector<int> indices;
+	indices.reserve(list.size());
+	for (const auto& proxyIndex : list)
+	{
+		QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
+		indices.push_back(sourceIndex.row());
+	}
+	return indices;
+}
+
+void PoolDock::updateStatusBar()
+{
+	statusBar_->setMessage(QString::number(poolTableModel_.rowCount()) + " cards");
+}
+
+void PoolDock::currentRowChanged(QModelIndex, QModelIndex)
+{
+	emit selectedCardChanged(currentDataRowIndex());
+}
+
+void PoolDock::actionAdvancedFilter()
+{
+	FilterEditorDialog editor;
+	editor.setFilterRootNode(rootFilterNode_);
+	editor.exec();
+	rootFilterNode_ = editor.getFilterRootNode();
+	if (commonActions_.getEnableFilter()->isChecked())
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	updateStatusBar();
+}
+
+void PoolDock::actionEnableFilter(bool enable)
+{
+	if (enable)
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
+	updateStatusBar();
+}
+
+void PoolDock::actionAddToCollection()
+{
+	qDebug() << "AddToCollection from pool";
+	emit addToCollection(currentDataRowIndices());
+}
+
+void PoolDock::actionRemoveFromCollection()
+{
+	qDebug() << "RemoveFromCollection from pool";
+	emit removeFromCollection(currentDataRowIndices());
+}
+
+void PoolDock::actionAddToDeck()
+{
+	qDebug() << "AddToDeck from pool";
+	emit addToDeck(currentDataRowIndices());
+}
+
+void PoolDock::actionRemoveFromDeck()
+{
+	qDebug() << "RemoveFromDeck from pool";
+	emit removeFromDeck(currentDataRowIndices());
+}
+
+void PoolDock::actionDownloadCardArt()
+{
+	poolTableModel_.downloadCardArt(poolTableView_->selectionModel()->selectedRows());
+}
+
+void PoolDock::actionFetchOnlineData()
+{
+	poolTableModel_.fetchOnlineData(poolTableView_->selectionModel()->selectedRows());
+}
+
+void PoolDock::hideColumnsContextMenuRequested(const QPoint& pos)
+{
+	QMenu contextMenu(poolTableView_);
+	for (int i = 0; i < poolTableModel_.columnCount(); ++i)
+	{
+		QAction* action = new QAction(&contextMenu);
+		action->setCheckable(true);
+		action->setText(poolTableModel_.headerData(i, Qt::Horizontal).toString());
+		action->setData(i);
+		action->setChecked(!poolTableView_->horizontalHeader()->isSectionHidden(i));
+		contextMenu.addAction(action);
+	}
+	QAction* a = contextMenu.exec(poolTableView_->horizontalHeader()->mapToGlobal(pos));
+	if (a)
+	{
+		poolTableView_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+	}
+}
+
+void PoolDock::rowContextMenuRequested(const QPoint& pos)
+{
+	QMenu contextMenu(poolTableView_);
+	commonActions_.addToMenu(&contextMenu);
+	contextMenu.exec(poolTableView_->mapToGlobal(pos));
+}
+
+void PoolDock::handleGlobalFilterChanged()
+{
+	if (commonActions_.getEnableFilter()->isChecked())
+	{
+		poolTableModel_.setFilterRootNode(rootFilterNode_);
+	}
+	else
+	{
+		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
+	}
+	updateStatusBar();
+}

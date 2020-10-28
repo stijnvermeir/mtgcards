@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_mainwindow.h"
+#include "pooldock.h"
 
 #include <QMainWindow>
 
@@ -20,6 +21,7 @@ signals:
 
 private:
 	Ui::MainWindow ui_;
+	PoolDock* poolDock_;
 
 	virtual void closeEvent(QCloseEvent*);
 
