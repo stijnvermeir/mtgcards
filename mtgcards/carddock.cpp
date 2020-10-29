@@ -1,4 +1,4 @@
-#include "cardwindow.h"
+#include "carddock.h"
 #include "settings.h"
 
 #include "magiccarddata.h"
@@ -18,17 +18,15 @@ enum Page
 
 } // namespace
 
-CardWindow::CardWindow(QWidget* parent)
-	: QMainWindow(parent)
-	, ui_()
+CardDock::CardDock(Ui::MainWindow& ui, QWidget* parent)
+    : QObject(parent)
+    , ui_(ui)
 	, scene_()
 	, layoutType_(mtg::LayoutType::Normal)
 	, imageFiles_()
 	, secondViewActive_(false)
 	, picturePage_(PAGE_PICTURE)
 {
-	setWindowFlags(Qt::NoDropShadowWindowHint);
-	ui_.setupUi(this);
 	ui_.cardView_->setScene(&scene_);
 	ui_.cardView_->installEventFilter(this);
 	ui_.label->installEventFilter(this);
@@ -36,17 +34,11 @@ CardWindow::CardWindow(QWidget* parent)
 	ui_.rulingsTbl->horizontalHeader()->setStretchLastSection(true);
 }
 
-CardWindow::~CardWindow()
+CardDock::~CardDock()
 {
 }
 
-void CardWindow::closeEvent(QCloseEvent* event)
-{
-	emit windowClosed(false);
-	event->accept();
-}
-
-bool CardWindow::eventFilter(QObject* object, QEvent* event)
+bool CardDock::eventFilter(QObject* object, QEvent* event)
 {
 	if (event->type() == QEvent::MouseButtonPress)
 	{
@@ -62,10 +54,10 @@ bool CardWindow::eventFilter(QObject* object, QEvent* event)
 		}
 		return true;
 	}
-	return QMainWindow::eventFilter(object, event);
+	return QObject::eventFilter(object, event);
 }
 
-void CardWindow::setCardPicture(const QString& imageFile, double rotation)
+void CardDock::setCardPicture(const QString& imageFile, double rotation)
 {
 	scene_.clear();
 	auto item = new QGraphicsPixmapItem(QPixmap(imageFile));
@@ -77,7 +69,7 @@ void CardWindow::setCardPicture(const QString& imageFile, double rotation)
 	ui_.cardView_->centerOn(item);
 }
 
-void CardWindow::changeCardPicture(int row)
+void CardDock::changeCardPicture(int row)
 {
 	auto picInfo = mtg::CardData::instance().getPictureInfo(row, Settings::instance().getArtIsHighQuality());
 	imageFiles_ = picInfo.filenames;
@@ -109,7 +101,7 @@ void CardWindow::changeCardPicture(int row)
 	ui_.rulingsTbl->resizeRowsToContents();
 }
 
-void CardWindow::switchPicture()
+void CardDock::switchPicture()
 {
 	if (secondViewActive_)
 	{

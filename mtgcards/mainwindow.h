@@ -2,6 +2,7 @@
 
 #include "ui_mainwindow.h"
 #include "pooldock.h"
+#include "carddock.h"
 
 #include <QMainWindow>
 
@@ -22,6 +23,7 @@ signals:
 private:
 	Ui::MainWindow ui_;
 	PoolDock* poolDock_;
+	CardDock* cardDock_;
 
 	virtual void closeEvent(QCloseEvent*);
 

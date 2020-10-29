@@ -1,32 +1,29 @@
 #pragma once
 
 #include "magiclayouttype.h"
-#include "ui_cardwindow.h"
+#include "cardgraphicsview.h"
+#include "ui_mainwindow.h"
 
-#include <QMainWindow>
+#include <QObject>
 #include <QGraphicsScene>
 #include <QTimer>
 
-class CardWindow : public QMainWindow
+class CardDock : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit CardWindow(QWidget* parent = 0);
-	~CardWindow();
-
-signals:
-	void windowClosed(bool);
+	explicit CardDock(Ui::MainWindow& ui,  QWidget* parent = 0);
+	~CardDock();
 
 private:
-	Ui::CardWindow ui_;
+	Ui::MainWindow& ui_;
 	QGraphicsScene scene_;
 	mtg::LayoutType layoutType_;
 	QStringList imageFiles_;
 	bool secondViewActive_;
 	int picturePage_;
 
-	void closeEvent(QCloseEvent* event);
 	bool eventFilter(QObject* object, QEvent* event);
 	void setCardPicture(const QString& imageFile, double rotation);
 

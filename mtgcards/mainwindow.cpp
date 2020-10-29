@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui_.menuCard->addAction(cardShowAction);
 
 	poolDock_ = new PoolDock(ui_.poolTableView, ui_.poolStatusBar, ui_.menuPool, this);
+	cardDock_ = new CardDock(ui_, this);
 
 	loadSettings();
 
@@ -73,11 +74,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
+
+	// card preview
+	connect(poolDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 }
 
 MainWindow::~MainWindow()
 {
 	delete poolDock_;
+	delete cardDock_;
 }
 
 void MainWindow::loadSettings()

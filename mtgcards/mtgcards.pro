@@ -20,11 +20,11 @@ VERSION = $$cat(VERSION.txt)
 DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
+    carddock.cpp \
     commonactions.cpp \
         mainwindow.cpp \
     pooldock.cpp \
     pooltablemodel.cpp \
-    cardwindow.cpp \
     collectionwindow.cpp \
     deckwindow.cpp \
     deckwidget.cpp \
@@ -67,10 +67,10 @@ SOURCES += main.cpp\
     filters/tagfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
+    carddock.h \
     commonactions.h \
     pooldock.h \
     pooltablemodel.h \
-    cardwindow.h \
     collectionwindow.h \
     deckwindow.h \
     deckwidget.h \
@@ -114,7 +114,6 @@ HEADERS  += mainwindow.h \
     filters/tagfilterfunction.h
 
 FORMS    += mainwindow.ui \
-    cardwindow.ui \
     collectionwindow.ui \
     deckwindow.ui \
     deckwidget.ui \
