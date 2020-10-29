@@ -130,7 +130,16 @@ void MainWindow::optionsActionClicked()
 {
 	OptionsDialog options(this);
 	moveToCenterOfScreen(&options);
+	connect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
+	//connect(&options, SIGNAL(fontChanged()), collectionWindow_, SIGNAL(fontChanged()));
+	//connect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
+	poolDock_->updateShortcuts();
+	//collectionWindow_.updateShortcuts();
+	//deckWindow_.updateShortcuts();
+	disconnect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
+	//disconnect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
+	//disconnect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 }
 
 void MainWindow::aboutActionClicked()
