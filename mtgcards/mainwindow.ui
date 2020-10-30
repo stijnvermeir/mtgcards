@@ -70,6 +70,7 @@
     <addaction name="separator"/>
     <addaction name="actionGlobalFilter"/>
     <addaction name="separator"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -82,10 +83,9 @@
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Deck</string>
     </property>
     <addaction name="actionImport_dec"/>
-    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuPool">
     <property name="title">
@@ -330,14 +330,14 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>CardGraphicsView</class>
-   <extends>QGraphicsView</extends>
-   <header>cardgraphicsview.h</header>
-  </customwidget>
-  <customwidget>
    <class>TableView</class>
    <extends>QTableView</extends>
    <header>tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CardGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>cardgraphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>StatusBar</class>

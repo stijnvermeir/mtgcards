@@ -36,6 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui_()
     , poolDock_(nullptr)
+    , collectionDock_(nullptr)
+    , cardDock_(nullptr)
+    , deckWindow_(nullptr)
 {
 	ui_.setupUi(this);
 
@@ -56,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 	poolDock_ = new PoolDock(ui_, this);
 	collectionDock_ = new CollectionDock(ui_, this);
 	cardDock_ = new CardDock(ui_, this);
+	deckWindow_ = new DeckWindow(ui_, this);
 
 	loadSettings();
 
@@ -73,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
 	connect(this, SIGNAL(globalFilterChanged()), poolDock_, SLOT(handleGlobalFilterChanged()));
 	connect(this, SIGNAL(globalFilterChanged()), collectionDock_, SLOT(handleGlobalFilterChanged()));
+	connect(this, SIGNAL(globalFilterChanged()), deckWindow_, SLOT(handleGlobalFilterChanged()));
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
@@ -80,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
 	// card preview
 	connect(poolDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 	connect(collectionDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
+	connect(deckWindow_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 }
 
 MainWindow::~MainWindow()
@@ -87,6 +93,7 @@ MainWindow::~MainWindow()
 	delete poolDock_;
 	delete collectionDock_;
 	delete cardDock_;
+	delete deckWindow_;
 }
 
 void MainWindow::loadSettings()
@@ -102,6 +109,7 @@ void MainWindow::loadSettings()
 
 	poolDock_->loadSettings();
 	collectionDock_->loadSettings();
+	deckWindow_->loadSettings();
 }
 
 void MainWindow::saveSettings()
@@ -112,6 +120,7 @@ void MainWindow::saveSettings()
 
 	poolDock_->saveSettings();
 	collectionDock_->saveSettings();
+	deckWindow_->saveSettings();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -143,14 +152,14 @@ void MainWindow::optionsActionClicked()
 	moveToCenterOfScreen(&options);
 	connect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
 	connect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
-	//connect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
+	connect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
 	poolDock_->updateShortcuts();
 	collectionDock_->updateShortcuts();
-	//deckWindow_.updateShortcuts();
+	deckWindow_->updateShortcuts();
 	disconnect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
 	disconnect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
-	//disconnect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
+	disconnect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
 }
 
 void MainWindow::aboutActionClicked()

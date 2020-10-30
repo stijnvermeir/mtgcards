@@ -25,7 +25,6 @@ public:
 	void saveSettings();
 
 signals:
-	void windowClosed(bool);
 	void selectedCardChanged(int);
 	void addToDeck(QVector<int>);
 	void removeFromDeck(QVector<int>);

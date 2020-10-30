@@ -4,6 +4,7 @@
 #include "pooldock.h"
 #include "collectiondock.h"
 #include "carddock.h"
+#include "deckwindow.h"
 
 #include <QMainWindow>
 
@@ -26,6 +27,7 @@ private:
 	PoolDock* poolDock_;
 	CollectionDock* collectionDock_;
 	CardDock* cardDock_;
+	DeckWindow* deckWindow_;
 
 	virtual void closeEvent(QCloseEvent*);
 
