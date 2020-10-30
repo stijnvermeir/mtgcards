@@ -53,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
 	cardShowAction->setText("Show");
 	ui_.menuCard->addAction(cardShowAction);
 
-	poolDock_ = new PoolDock(ui_.poolTableView, ui_.poolStatusBar, ui_.menuPool, this);
+	poolDock_ = new PoolDock(ui_, this);
+	collectionDock_ = new CollectionDock(ui_, this);
 	cardDock_ = new CardDock(ui_, this);
 
 	loadSettings();
@@ -71,17 +72,20 @@ MainWindow::MainWindow(QWidget *parent)
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
 	connect(this, SIGNAL(globalFilterChanged()), poolDock_, SLOT(handleGlobalFilterChanged()));
+	connect(this, SIGNAL(globalFilterChanged()), collectionDock_, SLOT(handleGlobalFilterChanged()));
 
 	// online manual
 	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
 
 	// card preview
 	connect(poolDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
+	connect(collectionDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 }
 
 MainWindow::~MainWindow()
 {
 	delete poolDock_;
+	delete collectionDock_;
 	delete cardDock_;
 }
 
@@ -97,6 +101,7 @@ void MainWindow::loadSettings()
 	}
 
 	poolDock_->loadSettings();
+	collectionDock_->loadSettings();
 }
 
 void MainWindow::saveSettings()
@@ -106,6 +111,7 @@ void MainWindow::saveSettings()
 	settings.setValue("mainwindow/state", saveState(LAYOUT_VERSION));
 
 	poolDock_->saveSettings();
+	collectionDock_->saveSettings();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -136,14 +142,14 @@ void MainWindow::optionsActionClicked()
 	OptionsDialog options(this);
 	moveToCenterOfScreen(&options);
 	connect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
-	//connect(&options, SIGNAL(fontChanged()), collectionWindow_, SIGNAL(fontChanged()));
+	connect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
 	//connect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
 	poolDock_->updateShortcuts();
-	//collectionWindow_.updateShortcuts();
+	collectionDock_->updateShortcuts();
 	//deckWindow_.updateShortcuts();
 	disconnect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
-	//disconnect(&options, SIGNAL(fontChanged()), &collectionWindow_, SIGNAL(fontChanged()));
+	disconnect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
 	//disconnect(&options, SIGNAL(fontChanged()), &deckWindow_, SIGNAL(fontChanged()));
 }
 

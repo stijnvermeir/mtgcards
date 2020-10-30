@@ -1,4 +1,4 @@
-#include "collectionwindow.h"
+#include "collectiondock.h"
 
 #include "magicitemdelegate.h"
 #include "filtereditordialog.h"
@@ -8,7 +8,6 @@
 #include "util.h"
 
 #include <QSettings>
-#include <QCloseEvent>
 #include <QMenu>
 #include <QLabel>
 #include <QDebug>
@@ -35,74 +34,59 @@ private:
 
 } // namespace
 
-CollectionWindow::CollectionWindow(QWidget* parent)
-	: QMainWindow(parent)
-	, ui_()
+CollectionDock::CollectionDock(Ui::MainWindow& ui, QWidget* parent)
+    : QObject(parent)
+    , ui_(ui)
 	, collectionTableModel_()
 	, itemDelegate_(new CollectionItemDelegate(collectionTableModel_))
 	, rootFilterNode_()
 {
-	setWindowFlags(Qt::NoDropShadowWindowHint);
-	ui_.setupUi(this);
-	ui_.collectionTbl_->setItemDelegate(itemDelegate_.data());
-	ui_.collectionTbl_->setModel(&collectionTableModel_);
-	ui_.collectionTbl_->setSortingEnabled(true);
-	ui_.collectionTbl_->setSelectionBehavior(QAbstractItemView::SelectRows);
-	ui_.collectionTbl_->horizontalHeader()->setSectionsMovable(true);
-	ui_.collectionTbl_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-	ui_.collectionTbl_->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(ui_.collectionTbl_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
-	connect(ui_.collectionTbl_, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(rowContextMenuRequested(QPoint)));
-	connect(ui_.collectionTbl_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
-	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
-	connect(ui_.actionEnableFilter, SIGNAL(triggered(bool)), this, SLOT(actionEnableFilter(bool)));
-	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
-	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
-	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
-	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
-	connect(ui_.actionDownloadCardArt, SIGNAL(triggered()), this, SLOT(actionDownloadCardArt()));
-	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(actionFetchOnlineData()));
+	ui_.collectionTableView->setItemDelegate(itemDelegate_.data());
+	ui_.collectionTableView->setModel(&collectionTableModel_);
+	ui_.collectionTableView->setSortingEnabled(true);
+	ui_.collectionTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+	ui_.collectionTableView->horizontalHeader()->setSectionsMovable(true);
+	ui_.collectionTableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui_.collectionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui_.collectionTableView->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
+	connect(ui_.collectionTableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(rowContextMenuRequested(QPoint)));
+	connect(ui_.collectionTableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(&collectionTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
 	connect(&DeckManager::instance(), SIGNAL(deckChanged()), this, SLOT(updateUsedCount()));
-	connect(this, SIGNAL(fontChanged()), ui_.collectionTbl_, SLOT(handleFontChanged()));
-
-	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
-	QLabel* permanentStatusBarLabel = new QLabel();
-	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel);
-	connect(ui_.collectionTbl_, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel, SLOT(setText(QString)));
+	connect(this, SIGNAL(fontChanged()), ui_.collectionTableView, SLOT(handleFontChanged()));
+	connect(ui_.collectionTableView, SIGNAL(searchStringChanged(QString)), ui_.collectionStatusBar, SLOT(setSearch(QString)));
+	commonActions_.connectSignals(this);
+	commonActions_.addToMenu(ui_.menuCollection);
+	commonActions_.addToWidget(ui_.collectionTableView);
 }
 
-CollectionWindow::~CollectionWindow()
+CollectionDock::~CollectionDock()
 {
 }
 
-void CollectionWindow::reload()
+void CollectionDock::reload()
 {
 	collectionTableModel_.reload();
 	updateStatusBar();
 }
 
-void CollectionWindow::updateShortcuts()
+void CollectionDock::updateShortcuts()
 {
-	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
-	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
-	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
-	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
-	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
+	commonActions_.updateShortcuts();
 }
 
-void CollectionWindow::loadSettings()
+void CollectionDock::loadSettings()
 {
 	QSettings settings;
-	Util::loadHeaderViewState(*ui_.collectionTbl_->horizontalHeader(), settings.value("collectionwindow/headerstate", DEFAULT_HEADER_STATE).toString());
+	Util::loadHeaderViewState(*ui_.collectionTableView->horizontalHeader(), settings.value("collectionwindow/headerstate", DEFAULT_HEADER_STATE).toString());
 	if (settings.contains("collectionwindow/filterEnable"))
 	{
-		ui_.actionEnableFilter->setChecked(settings.value("collectionwindow/filterEnable").toBool());
+		commonActions_.getEnableFilter()->setChecked(settings.value("collectionwindow/filterEnable").toBool());
 	}
 	if (settings.contains("collectionwindow/filter"))
 	{
 		rootFilterNode_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("collectionwindow/filter").toString().toUtf8()));
-		if (ui_.actionEnableFilter->isChecked())
+		if (commonActions_.getEnableFilter()->isChecked())
 		{
 			collectionTableModel_.setFilterRootNode(rootFilterNode_);
 		}
@@ -111,11 +95,11 @@ void CollectionWindow::loadSettings()
 	updateShortcuts();
 }
 
-void CollectionWindow::saveSettings()
+void CollectionDock::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("collectionwindow/headerstate", Util::saveHeaderViewState(*ui_.collectionTbl_->horizontalHeader()));
-	settings.setValue("collectionwindow/filterEnable", ui_.actionEnableFilter->isChecked());
+	settings.setValue("collectionwindow/headerstate", Util::saveHeaderViewState(*ui_.collectionTableView->horizontalHeader()));
+	settings.setValue("collectionwindow/filterEnable", commonActions_.getEnableFilter()->isChecked());
 	if (rootFilterNode_)
 	{
 		settings.setValue("collectionwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
@@ -126,31 +110,16 @@ void CollectionWindow::saveSettings()
 	}
 }
 
-void CollectionWindow::closeEvent(QCloseEvent* event)
+int CollectionDock::currentDataRowIndex() const
 {
-	emit windowClosed(false);
-	event->accept();
-}
-
-bool CollectionWindow::event(QEvent* event)
-{
-	if (event->type() == QEvent::WindowActivate)
-	{
-		emit selectedCardChanged(currentDataRowIndex());
-	}
-	return QMainWindow::event(event);
-}
-
-int CollectionWindow::currentDataRowIndex() const
-{
-	QModelIndex proxyIndex = ui_.collectionTbl_->currentIndex();
+	QModelIndex proxyIndex = ui_.collectionTableView->currentIndex();
 	QModelIndex sourceIndex = collectionTableModel_.mapToSource(proxyIndex);
 	return mtg::Collection::instance().getDataRowIndex(sourceIndex.row());
 }
 
-QVector<int> CollectionWindow::currentDataRowIndices() const
+QVector<int> CollectionDock::currentDataRowIndices() const
 {
-	QModelIndexList list = ui_.collectionTbl_->selectionModel()->selectedRows();
+	QModelIndexList list = ui_.collectionTableView->selectionModel()->selectedRows();
 	QVector<int> indices;
 	indices.reserve(list.size());
 	for (const auto& proxyIndex : list)
@@ -161,7 +130,7 @@ QVector<int> CollectionWindow::currentDataRowIndices() const
 	return indices;
 }
 
-void CollectionWindow::updateStatusBar()
+void CollectionDock::updateStatusBar()
 {
 	QString message;
 	QTextStream stream(&message);
@@ -191,26 +160,26 @@ void CollectionWindow::updateStatusBar()
 		sumPriceTrend += qty * getValue(i, mtg::ColumnType::PriceTrend).toDouble();
 	}
 	stream << " (" << numCopies << " copies, " << numUsed << " used)";
-	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowest)))
+	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowest)))
 	{
 		stream << " [Sum lowest price: " << sumPriceLowest << "]";
 	}
-	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowestFoil)))
+	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowestFoil)))
 	{
 		stream << " [Sum lowest price foil: " << sumPriceLowestFoil << "]";
 	}
-	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceAverage)))
+	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceAverage)))
 	{
 		stream << " [Sum average price: " << sumPriceAverage << "]";
 	}
-	if (!ui_.collectionTbl_->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceTrend)))
+	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceTrend)))
 	{
 		stream << " [Sum price trend: " << sumPriceTrend << "]";
 	}
-	ui_.statusBar->showMessage(message);
+	ui_.collectionStatusBar->setMessage(message);
 }
 
-void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
+void CollectionDock::addToCollection(const QVector<int>& dataRowIndices)
 {
 	for (const int dataRowIndex : dataRowIndices)
 	{
@@ -222,16 +191,16 @@ void CollectionWindow::addToCollection(const QVector<int>& dataRowIndices)
 		int rowIndex = mtg::Collection::instance().getRowIndex(dataRowIndices.back());
 		if (rowIndex >= 0)
 		{
-			int columnIndex = ui_.collectionTbl_->horizontalHeader()->logicalIndexAt(0);
+			int columnIndex = ui_.collectionTableView->horizontalHeader()->logicalIndexAt(0);
 			QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(rowIndex, columnIndex);
 			QModelIndex proxyIndex = collectionTableModel_.mapFromSource(sourceIndex);
-			ui_.collectionTbl_->setCurrentIndex(proxyIndex);
+			ui_.collectionTableView->setCurrentIndex(proxyIndex);
 		}
 	}
 	updateStatusBar();
 }
 
-void CollectionWindow::addToCollection(const QVector<QPair<int, int>>& additions)
+void CollectionDock::addToCollection(const QVector<QPair<int, int>>& additions)
 {
 	for (const QPair<int,int>& add : additions)
 	{
@@ -243,20 +212,20 @@ void CollectionWindow::addToCollection(const QVector<QPair<int, int>>& additions
 		int rowIndex = mtg::Collection::instance().getRowIndex(additions.back().first);
 		if (rowIndex >= 0)
 		{
-			int columnIndex = ui_.collectionTbl_->horizontalHeader()->logicalIndexAt(0);
+			int columnIndex = ui_.collectionTableView->horizontalHeader()->logicalIndexAt(0);
 			QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(rowIndex, columnIndex);
 			QModelIndex proxyIndex = collectionTableModel_.mapFromSource(sourceIndex);
-			ui_.collectionTbl_->setCurrentIndex(proxyIndex);
+			ui_.collectionTableView->setCurrentIndex(proxyIndex);
 		}
 	}
 	updateStatusBar();
 }
 
-void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
+void CollectionDock::removeFromCollection(const QVector<int>& dataRowIndices)
 {
 	for (const int dataRowIndex : dataRowIndices)
 	{
-		int rowIndex = ui_.collectionTbl_->currentIndex().row();
+		int rowIndex = ui_.collectionTableView->currentIndex().row();
 		auto currentQuantity = collectionTableModel_.getQuantity(dataRowIndex);
 		if (currentQuantity >= 0)
 		{
@@ -267,48 +236,48 @@ void CollectionWindow::removeFromCollection(const QVector<int>& dataRowIndices)
 				{
 					--rowIndex;
 				}
-				ui_.collectionTbl_->setCurrentIndex(collectionTableModel_.index(rowIndex, ui_.collectionTbl_->horizontalHeader()->logicalIndexAt(0)));
+				ui_.collectionTableView->setCurrentIndex(collectionTableModel_.index(rowIndex, ui_.collectionTableView->horizontalHeader()->logicalIndexAt(0)));
 			}
 			else
 			{
 				int rowIndex = mtg::Collection::instance().getRowIndex(dataRowIndex);
-				int columnIndex = ui_.collectionTbl_->horizontalHeader()->logicalIndexAt(0);
+				int columnIndex = ui_.collectionTableView->horizontalHeader()->logicalIndexAt(0);
 				QModelIndex sourceIndex = collectionTableModel_.sourceModel()->index(rowIndex, columnIndex);
 				QModelIndex proxyIndex = collectionTableModel_.mapFromSource(sourceIndex);
-				ui_.collectionTbl_->setCurrentIndex(proxyIndex);
+				ui_.collectionTableView->setCurrentIndex(proxyIndex);
 			}
 		}
 	}
 	updateStatusBar();
 }
 
-void CollectionWindow::currentRowChanged(QModelIndex, QModelIndex)
+void CollectionDock::currentRowChanged(QModelIndex, QModelIndex)
 {
-	if (ui_.collectionTbl_->hasFocus())
+	if (ui_.collectionTableView->hasFocus())
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}
 }
 
-void CollectionWindow::dataChanged(QModelIndex, QModelIndex)
+void CollectionDock::dataChanged(QModelIndex, QModelIndex)
 {
 	updateStatusBar();
 }
 
-void CollectionWindow::actionAdvancedFilter()
+void CollectionDock::actionAdvancedFilter()
 {
 	FilterEditorDialog editor;
 	editor.setFilterRootNode(rootFilterNode_);
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
-	if (ui_.actionEnableFilter->isChecked())
+	if (commonActions_.getEnableFilter()->isChecked())
 	{
 		collectionTableModel_.setFilterRootNode(rootFilterNode_);
 	}
 	updateStatusBar();
 }
 
-void CollectionWindow::actionEnableFilter(bool enable)
+void CollectionDock::actionEnableFilter(bool enable)
 {
 	if (enable)
 	{
@@ -321,66 +290,68 @@ void CollectionWindow::actionEnableFilter(bool enable)
 	updateStatusBar();
 }
 
-void CollectionWindow::actionAddToCollection()
+void CollectionDock::actionAddToCollection()
 {
 	addToCollection(currentDataRowIndices());
 }
 
-void CollectionWindow::actionRemoveFromCollection()
+void CollectionDock::actionRemoveFromCollection()
 {
 	removeFromCollection(currentDataRowIndices());
 }
 
-void CollectionWindow::actionAddToDeck()
+void CollectionDock::actionAddToDeck()
 {
 	emit addToDeck(currentDataRowIndices());
 }
 
-void CollectionWindow::actionRemoveFromDeck()
+void CollectionDock::actionRemoveFromDeck()
 {
 	emit removeFromDeck(currentDataRowIndices());
 }
 
-void CollectionWindow::actionDownloadCardArt()
+void CollectionDock::actionDownloadCardArt()
 {
-	collectionTableModel_.downloadCardArt(ui_.collectionTbl_->selectionModel()->selectedRows());
+	collectionTableModel_.downloadCardArt(ui_.collectionTableView->selectionModel()->selectedRows());
 }
 
-void CollectionWindow::actionFetchOnlineData()
+void CollectionDock::actionFetchOnlineData()
 {
-	collectionTableModel_.fetchOnlineData(ui_.collectionTbl_->selectionModel()->selectedRows());
+	collectionTableModel_.fetchOnlineData(ui_.collectionTableView->selectionModel()->selectedRows());
 }
 
-void CollectionWindow::hideColumnsContextMenuRequested(const QPoint& pos)
+void CollectionDock::hideColumnsContextMenuRequested(const QPoint& pos)
 {
-	QMenu contextMenu(this);
+	QMenu contextMenu(ui_.collectionTableView);
 	for (int i = 0; i < collectionTableModel_.columnCount(); ++i)
 	{
 		QAction* action = new QAction(&contextMenu);
 		action->setCheckable(true);
 		action->setText(collectionTableModel_.headerData(i, Qt::Horizontal).toString());
 		action->setData(i);
-		action->setChecked(!ui_.collectionTbl_->horizontalHeader()->isSectionHidden(i));
+		action->setChecked(!ui_.collectionTableView->horizontalHeader()->isSectionHidden(i));
 		contextMenu.addAction(action);
 	}
-	QAction* a = contextMenu.exec(ui_.collectionTbl_->horizontalHeader()->mapToGlobal(pos));
+	QAction* a = contextMenu.exec(ui_.collectionTableView->horizontalHeader()->mapToGlobal(pos));
 	if (a)
 	{
-		ui_.collectionTbl_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+		ui_.collectionTableView->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
 		updateStatusBar();
 	}
 }
 
-void CollectionWindow::rowContextMenuRequested(const QPoint& pos)
+void CollectionDock::rowContextMenuRequested(const QPoint& pos)
 {
-	if (ui_.collectionTbl_->currentIndex().isValid())
+	if (ui_.collectionTableView->currentIndex().isValid())
 	{
-		QMenu contextMenu(this);
-		contextMenu.addAction("Open decks where this card is used");
-		QAction* a = contextMenu.exec(ui_.collectionTbl_->mapToGlobal(pos));
-		if (a)
+		QMenu contextMenu(ui_.collectionTableView);
+		QAction* openDecksAction = contextMenu.addAction("Open decks where this card is used");
+		contextMenu.addSeparator();
+		commonActions_.addToMenu(&contextMenu);
+		QAction* a = contextMenu.exec(ui_.collectionTableView->mapToGlobal(pos));
+		if (a == openDecksAction)
 		{
-			QModelIndex sourceIndex = collectionTableModel_.mapToSource(ui_.collectionTbl_->currentIndex());
+			QModelIndex sourceIndex = collectionTableModel_.mapToSource(ui_.collectionTableView->currentIndex());
 			int dataRowIndex = mtg::Collection::instance().getDataRowIndex(sourceIndex.row());
 			auto decks = DeckManager::instance().getDecksUsedIn(dataRowIndex);
 			for (const auto& deck : decks)
@@ -391,14 +362,14 @@ void CollectionWindow::rowContextMenuRequested(const QPoint& pos)
 	}
 }
 
-void CollectionWindow::updateUsedCount()
+void CollectionDock::updateUsedCount()
 {
 	collectionTableModel_.updateUsedCount();
 }
 
-void CollectionWindow::handleGlobalFilterChanged()
+void CollectionDock::handleGlobalFilterChanged()
 {
-	if (ui_.actionEnableFilter->isChecked())
+	if (commonActions_.getEnableFilter()->isChecked())
 	{
 		collectionTableModel_.setFilterRootNode(rootFilterNode_);
 	}

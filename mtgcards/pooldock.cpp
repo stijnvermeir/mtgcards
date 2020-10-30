@@ -33,30 +33,29 @@ private:
 
 }
 
-PoolDock::PoolDock(TableView* poolTableView, StatusBar* statusBar, QMenu* menu, QObject* parent)
+PoolDock::PoolDock(Ui::MainWindow& ui, QObject* parent)
     : QObject(parent)
-    , poolTableView_(poolTableView)
-    , statusBar_(statusBar)
+    , ui_(ui)
 	, poolTableModel_()
 	, itemDelegate_(new PoolItemDelegate(poolTableModel_))
 	, rootFilterNode_()
     , commonActions_(this)
 {
-	poolTableView_->setItemDelegate(itemDelegate_.data());
-	poolTableView_->setModel(&poolTableModel_);
-	poolTableView_->setSortingEnabled(true);
-	poolTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-	poolTableView_->horizontalHeader()->setSectionsMovable(true);
-	poolTableView_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-	poolTableView_->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(poolTableView_->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
-	connect(poolTableView_->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
-	connect(poolTableView_, &TableView::customContextMenuRequested, this, &PoolDock::rowContextMenuRequested);
-	connect(this, SIGNAL(fontChanged()), poolTableView_, SLOT(handleFontChanged()));
-	connect(poolTableView_, SIGNAL(searchStringChanged(QString)), statusBar_, SLOT(setSearch(QString)));
+	ui_.poolTableView->setItemDelegate(itemDelegate_.data());
+	ui_.poolTableView->setModel(&poolTableModel_);
+	ui_.poolTableView->setSortingEnabled(true);
+	ui_.poolTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+	ui_.poolTableView->horizontalHeader()->setSectionsMovable(true);
+	ui_.poolTableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui_.poolTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui_.poolTableView->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
+	connect(ui_.poolTableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
+	connect(ui_.poolTableView, &TableView::customContextMenuRequested, this, &PoolDock::rowContextMenuRequested);
+	connect(this, SIGNAL(fontChanged()), ui_.poolTableView, SLOT(handleFontChanged()));
+	connect(ui_.poolTableView, SIGNAL(searchStringChanged(QString)), ui_.poolStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
-	commonActions_.addToMenu(menu);
-	commonActions_.addToWidget(poolTableView);
+	commonActions_.addToMenu(ui_.menuPool);
+	commonActions_.addToWidget(ui_.poolTableView);
 }
 
 PoolDock::~PoolDock()
@@ -71,7 +70,7 @@ void PoolDock::updateShortcuts()
 void PoolDock::loadSettings()
 {
 	QSettings settings;
-	Util::loadHeaderViewState(*poolTableView_->horizontalHeader(), settings.value("poolwindow/headerstate", DEFAULT_HEADER_STATE).toString());
+	Util::loadHeaderViewState(*ui_.poolTableView->horizontalHeader(), settings.value("poolwindow/headerstate", DEFAULT_HEADER_STATE).toString());
 	if (settings.contains("poolwindow/filterEnable"))
 	{
 		commonActions_.getEnableFilter()->setChecked(settings.value("poolwindow/filterEnable").toBool());
@@ -91,7 +90,7 @@ void PoolDock::loadSettings()
 void PoolDock::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("poolwindow/headerstate", Util::saveHeaderViewState(*poolTableView_->horizontalHeader()));
+	settings.setValue("poolwindow/headerstate", Util::saveHeaderViewState(*ui_.poolTableView->horizontalHeader()));
 	settings.setValue("poolwindow/filterEnable", commonActions_.getEnableFilter()->isChecked());
 	if (rootFilterNode_)
 	{
@@ -105,14 +104,14 @@ void PoolDock::saveSettings()
 
 int PoolDock::currentDataRowIndex() const
 {
-	QModelIndex proxyIndex = poolTableView_->currentIndex();
+	QModelIndex proxyIndex = ui_.poolTableView->currentIndex();
 	QModelIndex sourceIndex = poolTableModel_.mapToSource(proxyIndex);
 	return sourceIndex.row();
 }
 
 QVector<int> PoolDock::currentDataRowIndices() const
 {
-	QModelIndexList list = poolTableView_->selectionModel()->selectedRows();
+	QModelIndexList list = ui_.poolTableView->selectionModel()->selectedRows();
 	QVector<int> indices;
 	indices.reserve(list.size());
 	for (const auto& proxyIndex : list)
@@ -125,7 +124,7 @@ QVector<int> PoolDock::currentDataRowIndices() const
 
 void PoolDock::updateStatusBar()
 {
-	statusBar_->setMessage(QString::number(poolTableModel_.rowCount()) + " cards");
+	ui_.poolStatusBar->setMessage(QString::number(poolTableModel_.rowCount()) + " cards");
 }
 
 void PoolDock::currentRowChanged(QModelIndex, QModelIndex)
@@ -185,38 +184,38 @@ void PoolDock::actionRemoveFromDeck()
 
 void PoolDock::actionDownloadCardArt()
 {
-	poolTableModel_.downloadCardArt(poolTableView_->selectionModel()->selectedRows());
+	poolTableModel_.downloadCardArt(ui_.poolTableView->selectionModel()->selectedRows());
 }
 
 void PoolDock::actionFetchOnlineData()
 {
-	poolTableModel_.fetchOnlineData(poolTableView_->selectionModel()->selectedRows());
+	poolTableModel_.fetchOnlineData(ui_.poolTableView->selectionModel()->selectedRows());
 }
 
 void PoolDock::hideColumnsContextMenuRequested(const QPoint& pos)
 {
-	QMenu contextMenu(poolTableView_);
+	QMenu contextMenu(ui_.poolTableView);
 	for (int i = 0; i < poolTableModel_.columnCount(); ++i)
 	{
 		QAction* action = new QAction(&contextMenu);
 		action->setCheckable(true);
 		action->setText(poolTableModel_.headerData(i, Qt::Horizontal).toString());
 		action->setData(i);
-		action->setChecked(!poolTableView_->horizontalHeader()->isSectionHidden(i));
+		action->setChecked(!ui_.poolTableView->horizontalHeader()->isSectionHidden(i));
 		contextMenu.addAction(action);
 	}
-	QAction* a = contextMenu.exec(poolTableView_->horizontalHeader()->mapToGlobal(pos));
+	QAction* a = contextMenu.exec(ui_.poolTableView->horizontalHeader()->mapToGlobal(pos));
 	if (a)
 	{
-		poolTableView_->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
+		ui_.poolTableView->horizontalHeader()->setSectionHidden(a->data().toInt(), !a->isChecked());
 	}
 }
 
 void PoolDock::rowContextMenuRequested(const QPoint& pos)
 {
-	QMenu contextMenu(poolTableView_);
+	QMenu contextMenu(ui_.poolTableView);
 	commonActions_.addToMenu(&contextMenu);
-	contextMenu.exec(poolTableView_->mapToGlobal(pos));
+	contextMenu.exec(ui_.poolTableView->mapToGlobal(pos));
 }
 
 void PoolDock::handleGlobalFilterChanged()

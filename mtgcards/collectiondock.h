@@ -2,21 +2,22 @@
 
 #include "collectiontablemodel.h"
 #include "filter.h"
-#include "ui_collectionwindow.h"
+#include "commonactions.h"
+#include "ui_mainwindow.h"
 
-#include <QMainWindow>
+#include <QObject>
 #include <QVector>
 #include <QScopedPointer>
 
 class QAbstractItemDelegate;
 
-class CollectionWindow : public QMainWindow
+class CollectionDock : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit CollectionWindow(QWidget* parent = 0);
-	virtual ~CollectionWindow();
+	explicit CollectionDock(Ui::MainWindow& ui, QWidget* parent = 0);
+	virtual ~CollectionDock();
 
 	void reload();
 	void updateShortcuts();
@@ -32,13 +33,12 @@ signals:
 	void fontChanged();
 
 private:
-	Ui::CollectionWindow ui_;
+	Ui::MainWindow& ui_;
 	CollectionTableModel collectionTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
+	CommonActions commonActions_;
 
-	virtual void closeEvent(QCloseEvent* event);
-	virtual bool event(QEvent* event);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
 	void updateStatusBar();

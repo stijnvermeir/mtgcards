@@ -21,11 +21,11 @@ DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
     carddock.cpp \
+    collectiondock.cpp \
     commonactions.cpp \
         mainwindow.cpp \
     pooldock.cpp \
     pooltablemodel.cpp \
-    collectionwindow.cpp \
     deckwindow.cpp \
     deckwidget.cpp \
     optionsdialog.cpp \
@@ -68,10 +68,10 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     carddock.h \
+    collectiondock.h \
     commonactions.h \
     pooldock.h \
     pooltablemodel.h \
-    collectionwindow.h \
     deckwindow.h \
     deckwidget.h \
     optionsdialog.h \
@@ -114,7 +114,6 @@ HEADERS  += mainwindow.h \
     filters/tagfilterfunction.h
 
 FORMS    += mainwindow.ui \
-    collectionwindow.ui \
     deckwindow.ui \
     deckwidget.ui \
     optionsdialog.ui \

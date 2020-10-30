@@ -1,10 +1,9 @@
 #pragma once
 
-#include "tableview.h"
-#include "statusbar.h"
 #include "pooltablemodel.h"
 #include "filter.h"
 #include "commonactions.h"
+#include "ui_mainwindow.h"
 
 #include <QVector>
 #include <QScopedPointer>
@@ -14,7 +13,7 @@ class PoolDock : public QObject
 	Q_OBJECT
 
 public:
-	explicit PoolDock(TableView* poolTableView, StatusBar* statusBar, QMenu* menu, QObject* parent = nullptr);
+	explicit PoolDock(Ui::MainWindow& ui, QObject* parent = nullptr);
 	virtual ~PoolDock();
 
 	void updateShortcuts();
@@ -30,8 +29,7 @@ signals:
 	void fontChanged();
 
 private:
-	TableView* poolTableView_;
-	StatusBar* statusBar_;
+	Ui::MainWindow& ui_;
 	PoolTableModel poolTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
