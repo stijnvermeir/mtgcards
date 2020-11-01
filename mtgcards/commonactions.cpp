@@ -41,10 +41,13 @@ CommonActions::CommonActions(QObject *parent) : QObject(parent)
 void CommonActions::updateShortcuts()
 {
 	actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
+	actionEnableFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::EnableFilter]);
 	actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
 	actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
 	actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
 	actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
+	actionDownloadCardArt->setShortcut(Settings::instance().getShortcuts()[ShortcutType::DownloadCardArt]);
+	actionFetchOnlineData->setShortcut(Settings::instance().getShortcuts()[ShortcutType::FetchOnlineData]);
 }
 
 void CommonActions::connectSignals(QObject* object)

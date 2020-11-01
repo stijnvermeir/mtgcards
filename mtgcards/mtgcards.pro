@@ -114,7 +114,6 @@ HEADERS  += mainwindow.h \
     filters/tagfilterfunction.h
 
 FORMS    += mainwindow.ui \
-    deckwindow.ui \
     deckwidget.ui \
     optionsdialog.ui \
     aboutdialog.ui \

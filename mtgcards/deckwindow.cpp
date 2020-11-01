@@ -99,6 +99,7 @@ DeckWindow::~DeckWindow()
 void DeckWindow::updateShortcuts()
 {
 	actionNewDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
+	actionImportDec_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::ImportFile]);
 	actionOpenDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::OpenFile]);
 	actionSaveDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
 	actionSaveDeckAs_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFileAs]);
