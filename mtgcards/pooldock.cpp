@@ -54,7 +54,6 @@ PoolDock::PoolDock(Ui::MainWindow& ui, QObject* parent)
 	connect(this, SIGNAL(fontChanged()), ui_.poolTableView, SLOT(handleFontChanged()));
 	connect(ui_.poolTableView, SIGNAL(searchStringChanged(QString)), ui_.poolStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
-	commonActions_.addToMenu(ui_.menuPool);
 	commonActions_.addToWidget(ui_.poolTableView);
 }
 

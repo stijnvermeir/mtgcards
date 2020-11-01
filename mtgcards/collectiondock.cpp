@@ -56,7 +56,6 @@ CollectionDock::CollectionDock(Ui::MainWindow& ui, QWidget* parent)
 	connect(this, SIGNAL(fontChanged()), ui_.collectionTableView, SLOT(handleFontChanged()));
 	connect(ui_.collectionTableView, SIGNAL(searchStringChanged(QString)), ui_.collectionStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
-	commonActions_.addToMenu(ui_.menuCollection);
 	commonActions_.addToWidget(ui_.collectionTableView);
 }
 

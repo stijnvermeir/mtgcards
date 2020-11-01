@@ -43,18 +43,16 @@ MainWindow::MainWindow(QWidget *parent)
 	ui_.setupUi(this);
 
 	QAction* poolShowAction = ui_.poolDock->toggleViewAction();
-	poolShowAction->setText("Show");
-	ui_.menuPool->addAction(poolShowAction);
-	ui_.menuPool->addSeparator();
+	poolShowAction->setText("Show Pool");
+	ui_.menuWindow->addAction(poolShowAction);
 
 	QAction* collectionShowAction = ui_.collectionDock->toggleViewAction();
-	collectionShowAction->setText("Show");
-	ui_.menuCollection->addAction(collectionShowAction);
-	ui_.menuCollection->addSeparator();
+	collectionShowAction->setText("Show Collection");
+	ui_.menuWindow->addAction(collectionShowAction);
 
 	QAction* cardShowAction = ui_.cardDock->toggleViewAction();
-	cardShowAction->setText("Show");
-	ui_.menuCard->addAction(cardShowAction);
+	cardShowAction->setText("Show Card Preview");
+	ui_.menuWindow->addAction(cardShowAction);
 
 	poolDock_ = new PoolDock(ui_, this);
 	collectionDock_ = new CollectionDock(ui_, this);
@@ -70,22 +68,30 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
 	connect(ui_.actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-	// import decks
-	connect(ui_.actionImport_dec, SIGNAL(triggered()), this, SLOT(importDec()));
-
 	// global filter
 	connect(ui_.actionGlobalFilter, SIGNAL(triggered()), this, SLOT(globalFilter()));
 	connect(this, SIGNAL(globalFilterChanged()), poolDock_, SLOT(handleGlobalFilterChanged()));
 	connect(this, SIGNAL(globalFilterChanged()), collectionDock_, SLOT(handleGlobalFilterChanged()));
 	connect(this, SIGNAL(globalFilterChanged()), deckWindow_, SLOT(handleGlobalFilterChanged()));
 
-	// online manual
-	connect(ui_.actionOnlineManual, SIGNAL(triggered()), this, SLOT(onlineManual()));
-
 	// card preview
 	connect(poolDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 	connect(collectionDock_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
 	connect(deckWindow_, SIGNAL(selectedCardChanged(int)), cardDock_, SLOT(changeCardPicture(int)));
+
+	// add / remove
+	connect(poolDock_, SIGNAL(addToCollection(QVector<int>)), collectionDock_, SLOT(addToCollection(QVector<int>)));
+	connect(poolDock_, SIGNAL(removeFromCollection(QVector<int>)), collectionDock_, SLOT(removeFromCollection(QVector<int>)));
+	connect(poolDock_, SIGNAL(addToDeck(QVector<int>)), deckWindow_, SLOT(addToDeck(QVector<int>)));
+	connect(poolDock_, SIGNAL(removeFromDeck(QVector<int>)), deckWindow_, SLOT(removeFromDeck(QVector<int>)));
+	connect(collectionDock_, SIGNAL(addToDeck(QVector<int>)), deckWindow_, SLOT(addToDeck(QVector<int>)));
+	connect(collectionDock_, SIGNAL(removeFromDeck(QVector<int>)), deckWindow_, SLOT(removeFromDeck(QVector<int>)));
+	connect(deckWindow_, SIGNAL(addToCollection(QVector<int>)), collectionDock_, SLOT(addToCollection(QVector<int>)));
+	connect(deckWindow_, SIGNAL(addToCollection(QVector<QPair<int,int>>)), collectionDock_, SLOT(addToCollection(QVector<QPair<int,int>>)));
+	connect(deckWindow_, SIGNAL(removeFromCollection(QVector<int>)), collectionDock_, SLOT(removeFromCollection(QVector<int>)));
+
+	// open used decks
+	connect(collectionDock_, SIGNAL(requestOpenDeck(QString)), deckWindow_, SLOT(handleOpenDeckRequest(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -126,7 +132,7 @@ void MainWindow::saveSettings()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	int ret = QMessageBox::Yes;
-	if (false) // TODO
+	if (deckWindow_->hasUnsavedChanges())
 	{
 		ret = QMessageBox::question(0,
 		                            "Are you sure?",
@@ -169,129 +175,6 @@ void MainWindow::aboutActionClicked()
 	about.exec();
 }
 
-void MainWindow::importDec()
-{
-	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import .dec", QDir::homePath(), "Decks (*.dec)");
-	if (!filenames.empty())
-	{
-		bool yesToAll = false;
-		bool noToAll = false;
-		QStringList decksWithIssues;
-		for (const QString& filename : filenames)
-		{
-			QStringList errors;
-			QFile importFile(filename);
-			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
-			{
-				QFileInfo fileInfo(filename);
-				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
-				if (QFileInfo(newFilename).exists())
-				{
-					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
-				}
-				Deck deck;
-				deck.setActive(false);
-				QStringList lines;
-				QTextStream in(&importFile);
-				while (!in.atEnd())
-				{
-					auto line = in.readLine().trimmed();
-					if (line.isEmpty() || line.startsWith("//"))
-					{
-						continue;
-					}
-					lines << line;
-				}
-				importFile.close();
-
-				for (int i = 0; i < lines.size(); ++i)
-				{
-					QTextStream stream(&lines[i]);
-					int amount;
-					stream >> amount;
-					QString set;
-					stream >> set;
-					set = set.remove('[').remove(']').toUpper();
-					QString name = stream.readAll().trimmed();
-					qDebug() << "Amount" << amount;
-					qDebug() << "Set" << set;
-					qDebug() << "Name" << name;
-					if (name.contains("//"))
-					{
-						name = name.split(" // ").first();
-						qDebug() << "Corrected name" << name;
-					}
-					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
-					if (dataRowIndex != -1)
-					{
-						deck.setQuantity(dataRowIndex, amount);
-					}
-					else
-					{
-						errors << (set + " " + name + " not found");
-					}
-				}
-
-				bool ok = true;
-				if (!errors.empty())
-				{
-					decksWithIssues << fileInfo.baseName();
-					if (!yesToAll && !noToAll)
-					{
-						QMessageBox msgBox;
-						msgBox.setWindowTitle("Issues");
-						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
-						msgBox.setInformativeText("See details to see the issues.");
-						msgBox.setDetailedText(errors.join("\n"));
-						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
-						msgBox.setDefaultButton(QMessageBox::NoToAll);
-						msgBox.setIcon(QMessageBox::Warning);
-						int ret = msgBox.exec();
-						if (ret == QMessageBox::No)
-						{
-							ok = false;
-						}
-						if (ret == QMessageBox::NoToAll)
-						{
-							noToAll = true;
-						}
-						if (ret == QMessageBox::YesToAll)
-						{
-							yesToAll = true;
-						}
-					}
-					if (noToAll)
-					{
-						ok = false;
-					}
-				}
-
-				if (ok)
-				{
-					deck.save(newFilename);
-					//deckWindow_.openDeck(newFilename);
-				}
-			}
-		}
-		if (!decksWithIssues.empty())
-		{
-			QMessageBox msgBox;
-			msgBox.setWindowTitle("Decks with issues");
-			msgBox.setText("There were some decks with import issues.");
-			msgBox.setInformativeText("See details to see which decks had issues.");
-			msgBox.setDetailedText(decksWithIssues.join("\n"));
-			msgBox.setStandardButtons(QMessageBox::Ok);
-			msgBox.setDefaultButton(QMessageBox::Ok);
-			msgBox.setIcon(QMessageBox::Warning);
-			msgBox.exec();
-		}
-		else
-		{
-			QMessageBox::information(0, "Success", "All decks were imported successfully.");
-		}
-	}
-}
-
 void MainWindow::globalFilter()
 {
 	FilterEditorDialog editor;
@@ -300,9 +183,4 @@ void MainWindow::globalFilter()
 	editor.exec();
 	Settings::instance().setGlobalFilter(editor.getFilterRootNode());
 	emit globalFilterChanged();
-}
-
-void MainWindow::onlineManual()
-{
-	QDesktopServices::openUrl(QUrl("https://github.com/stijnvermeir/mtgcards/blob/master/manual.md"));
 }

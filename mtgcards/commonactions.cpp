@@ -2,24 +2,39 @@
 
 #include "settings.h"
 
+namespace  {
+    QIcon createIcon(const QString& path)
+	{
+		return QIcon(path);
+	}
+
+	QIcon createIcon(const QString& pathOff, const QString& pathOn)
+	{
+		QIcon icon;
+		icon.addFile(pathOff, QSize(), QIcon::Normal, QIcon::Off);
+		icon.addFile(pathOn, QSize(), QIcon::Normal, QIcon::On);
+		return icon;
+	}
+}
+
 CommonActions::CommonActions(QObject *parent) : QObject(parent)
 {
-	actionAdvancedFilter = new QAction("Advanced filter", this);
+	actionAdvancedFilter = new QAction(createIcon(":/resources/icons/funnel2.svg"), "Advanced filter", this);
 	actionAdvancedFilter->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionEnableFilter = new QAction("Enable filter", this);
+	actionEnableFilter = new QAction(createIcon(":/resources/icons/switches3.svg", ":/resources/icons/switch14.svg"), "Enable filter", this);
 	actionEnableFilter->setCheckable(true);
 	actionEnableFilter->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionAddToCollection = new QAction("Add to collection", this);
+	actionAddToCollection = new QAction(createIcon(":/resources/icons/add182.svg"), "Add to collection", this);
 	actionAddToCollection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionRemoveFromCollection = new QAction("Remove from collection", this);
+	actionRemoveFromCollection = new QAction(createIcon(":/resources/icons/rounded56.svg"), "Remove from collection", this);
 	actionRemoveFromCollection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionAddToDeck = new QAction("Add to deck", this);
+	actionAddToDeck = new QAction(createIcon(":/resources/icons/rounded54.svg"), "Add to deck", this);
 	actionAddToDeck->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionRemoveFromDeck = new QAction("Remove from deck", this);
+	actionRemoveFromDeck = new QAction(createIcon(":/resources/icons/round56.svg"), "Remove from deck", this);
 	actionRemoveFromDeck->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionDownloadCardArt = new QAction("Download card art", this);
+	actionDownloadCardArt = new QAction(createIcon(":/resources/icons/paint-board-and-brush.svg"), "Download card art", this);
 	actionDownloadCardArt->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionFetchOnlineData = new QAction("Fetch online data", this);
+	actionFetchOnlineData = new QAction(createIcon(":/resources/icons/internet43.svg"), "Fetch online data", this);
 	actionFetchOnlineData->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 }
 

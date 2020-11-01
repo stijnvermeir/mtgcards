@@ -34,7 +34,5 @@ private:
 private slots:
 	void optionsActionClicked();
 	void aboutActionClicked();
-	void importDec();
 	void globalFilter();
-	void onlineManual();
 };

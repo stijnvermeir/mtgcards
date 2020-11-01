@@ -2,6 +2,7 @@
 
 #include "decktablemodel.h"
 #include "filter.h"
+#include "commonactions.h"
 #include "ui_deckwidget.h"
 
 #include <QWidget>
@@ -17,7 +18,7 @@ class DeckWidget : public QWidget
 	Q_OBJECT
 
 public:
-	explicit DeckWidget(const QString& filename, QWidget* parent = 0);
+	explicit DeckWidget(const QString& filename, CommonActions& commonActions, QWidget* parent = 0);
 	~DeckWidget();
 
 	void save(const QString& filename);
@@ -43,6 +44,7 @@ private:
 	DeckTableModel deckTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	bool headerStateChangedSlotDisabled_;
+	CommonActions& commonActions_;
 
 public slots:
 	void resetSearchString();
@@ -55,5 +57,6 @@ private slots:
 	void currentRowChanged(QModelIndex, QModelIndex);
 	void dataChanged(QModelIndex, QModelIndex);
 	void hideColumnsContextMenuRequested(const QPoint& pos);
+	void rowContextMenuRequested(const QPoint& pos);
 	void headerStateChangedSlot();
 };

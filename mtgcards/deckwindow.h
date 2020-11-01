@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QVector>
 #include <QString>
+#include <QToolBar>
 
 class DeckWidget;
 class QLabel;
@@ -40,11 +41,13 @@ private:
 	QAction* actionOpenDeck_;
 	QAction* actionSaveDeck_;
 	QAction* actionSaveDeckAs_;
+	QAction* actionImportDec_;
 	QAction* actionToggleDeckActive_;
 	QAction* actionAddDeckToCollection_;
 	QAction* actionCreateProxies_;
 	QAction* actionStats_;
 	CommonActions commonActions_;
+	QToolBar* toolBar_;
 
 	void updateStatusBar();
 	DeckWidget* createDeckWidget(const QString& filename = QString());
@@ -63,6 +66,7 @@ private slots:
 	void actionOpenDeck();
 	void actionSaveDeck();
 	void actionSaveDeckAs();
+	void actionImportDec();
 	void actionAdvancedFilter();
 	void actionEnableFilter(bool enable);
 	void actionAddToCollection();
@@ -73,8 +77,8 @@ private slots:
 	void actionToggleDeckActive(bool);
 	void createProxies();
 	void showStatistics();
-	void downloadCardArt();
-	void fetchOnlineData();
+	void actionDownloadCardArt();
+	void actionFetchOnlineData();
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);

@@ -34,6 +34,13 @@
      <number>0</number>
     </property>
     <item>
+     <layout class="QHBoxLayout" name="toolbarLayout">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+     </layout>
+    </item>
+    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="tabPosition">
        <enum>QTabWidget::South</enum>
@@ -67,7 +74,6 @@
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="actionGlobalFilter"/>
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
@@ -76,36 +82,21 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionOnlineManual"/>
-    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>Deck</string>
-    </property>
-    <addaction name="actionImport_dec"/>
-   </widget>
-   <widget class="QMenu" name="menuPool">
-    <property name="title">
-     <string>Pool</string>
+     <string>File</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuCollection">
+   <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>Collection</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuCard">
-    <property name="title">
-     <string>Card</string>
+     <string>Window</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuPool"/>
-   <addaction name="menuCollection"/>
-   <addaction name="menuCard"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -306,11 +297,6 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionOnlineManual">
-   <property name="text">
-    <string>Online Manual</string>
-   </property>
-  </action>
   <action name="actionAboutQt">
    <property name="text">
     <string>About Qt</string>
@@ -319,11 +305,6 @@
   <action name="actionGlobalFilter">
    <property name="text">
     <string>Global filter ...</string>
-   </property>
-  </action>
-  <action name="actionImport_dec">
-   <property name="text">
-    <string>Import .dec</string>
    </property>
   </action>
  </widget>

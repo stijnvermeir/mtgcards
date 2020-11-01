@@ -34,21 +34,39 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
     , actionOpenDeck_(nullptr)
     , actionSaveDeck_(nullptr)
     , actionSaveDeckAs_(nullptr)
+    , actionImportDec_(nullptr)
     , actionToggleDeckActive_(nullptr)
     , actionAddDeckToCollection_(nullptr)
     , actionCreateProxies_(nullptr)
     , actionStats_(nullptr)
     , commonActions_(this)
+    , toolBar_(new QToolBar())
 {
-	actionNewDeck_ = new QAction("New deck", this);
-	actionOpenDeck_ = new QAction("Open deck ...", this);
-	actionSaveDeck_ = new QAction("Save deck", this);
-	actionSaveDeckAs_ = new QAction("Save deck as ...", this);
-	actionToggleDeckActive_ = new QAction("Toggle deck active", this);
+	actionNewDeck_ = new QAction(QIcon(":/resources/icons/blank33.svg"), "New deck", this);
+	actionOpenDeck_ = new QAction(QIcon(":/resources/icons/folder215.svg"), "Open deck ...", this);
+	actionSaveDeck_ = new QAction(QIcon(":/resources/icons/save20.svg"), "Save deck", this);
+	actionSaveDeckAs_ = new QAction(QIcon(":/resources/icons/disc36.svg"), "Save deck as ...", this);
+	actionImportDec_ = new QAction(QIcon(":/resources/icons/import.svg"), "Import deck from .dec file ...", this);
+	QIcon deckActiveIcon(":/resources/icons/switches3.svg");
+	deckActiveIcon.addFile(":/resources/icons/switch14.svg", QSize(), QIcon::Normal, QIcon::On);
+	actionToggleDeckActive_ = new QAction(deckActiveIcon, "Toggle deck active", this);
 	actionToggleDeckActive_->setCheckable(true);
-	actionAddDeckToCollection_ = new QAction("Add deck to collection", this);
-	actionCreateProxies_= new QAction("Create proxies", this);
-	actionStats_ = new QAction("Stats", this);
+	actionAddDeckToCollection_ = new QAction(QIcon(":/resources/icons/document24.svg"), "Add deck to collection", this);
+	actionCreateProxies_= new QAction(QIcon(":/resources/icons/printer11.svg"), "Create proxies", this);
+	actionStats_ = new QAction(QIcon(":/resources/icons/chart59.svg"), "Stats", this);
+
+	toolBar_->setIconSize(QSize(16, 16));
+	toolBar_->addAction(actionNewDeck_);
+	toolBar_->addAction(actionImportDec_);
+	toolBar_->addAction(actionOpenDeck_);
+	toolBar_->addAction(actionSaveDeck_);
+	toolBar_->addAction(actionSaveDeckAs_);
+	toolBar_->addSeparator();
+	toolBar_->addAction(actionToggleDeckActive_);
+	toolBar_->addAction(actionStats_);
+	toolBar_->addAction(actionAddDeckToCollection_);
+	toolBar_->addAction(actionCreateProxies_);
+	ui_.toolbarLayout->addWidget(toolBar_);
 
 	connect(ui_.tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeDeck(int)));
 	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
@@ -57,30 +75,25 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	connect(actionOpenDeck_, SIGNAL(triggered()), this, SLOT(actionOpenDeck()));
 	connect(actionSaveDeck_, SIGNAL(triggered()), this, SLOT(actionSaveDeck()));
 	connect(actionSaveDeckAs_, SIGNAL(triggered()), this, SLOT(actionSaveDeckAs()));
+	connect(actionImportDec_, SIGNAL(triggered()), this, SLOT(actionImportDec()));
 	connect(actionToggleDeckActive_, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
 	connect(actionAddDeckToCollection_, SIGNAL(triggered()), this, SLOT(actionAddDeckToCollection()));
 	connect(actionCreateProxies_, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(actionStats_, SIGNAL(triggered()), this, SLOT(showStatistics()));
-	commonActions_.connectSignals(this);
 
 	ui_.menuFile->addAction(actionNewDeck_);
+	ui_.menuFile->addAction(actionImportDec_);
 	ui_.menuFile->addAction(actionOpenDeck_);
 	ui_.menuFile->addAction(actionSaveDeck_);
 	ui_.menuFile->addAction(actionSaveDeckAs_);
-	ui_.menuFile->addSeparator();
-	ui_.menuFile->addAction(actionToggleDeckActive_);
-	ui_.menuFile->addSeparator();
-	ui_.menuFile->addAction(actionAddDeckToCollection_);
-	ui_.menuFile->addAction(actionCreateProxies_);
-	ui_.menuFile->addAction(actionStats_);
-	ui_.menuFile->addSeparator();
-	commonActions_.addToMenu(ui_.menuFile);
 
+	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
 }
 
 DeckWindow::~DeckWindow()
 {
+	delete toolBar_;
 }
 
 void DeckWindow::updateShortcuts()
@@ -251,7 +264,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		}
 	}
 
-	DeckWidget* deckWidget = new DeckWidget(filename);
+	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_);
 	deckWidget->setHeaderState(headerState_);
 	if (commonActions_.getEnableFilter()->isChecked())
 	{
@@ -386,6 +399,129 @@ void DeckWindow::actionSaveDeck()
 void DeckWindow::actionSaveDeckAs()
 {
 	saveDeck(static_cast<DeckWidget*>(ui_.tabWidget->currentWidget()), true);
+}
+
+void DeckWindow::actionImportDec()
+{
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import .dec", QDir::homePath(), "Decks (*.dec)");
+	if (!filenames.empty())
+	{
+		bool yesToAll = false;
+		bool noToAll = false;
+		QStringList decksWithIssues;
+		for (const QString& filename : filenames)
+		{
+			QStringList errors;
+			QFile importFile(filename);
+			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				QFileInfo fileInfo(filename);
+				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
+				if (QFileInfo(newFilename).exists())
+				{
+					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
+				}
+				Deck deck;
+				deck.setActive(false);
+				QStringList lines;
+				QTextStream in(&importFile);
+				while (!in.atEnd())
+				{
+					auto line = in.readLine().trimmed();
+					if (line.isEmpty() || line.startsWith("//"))
+					{
+						continue;
+					}
+					lines << line;
+				}
+				importFile.close();
+
+				for (int i = 0; i < lines.size(); ++i)
+				{
+					QTextStream stream(&lines[i]);
+					int amount;
+					stream >> amount;
+					QString set;
+					stream >> set;
+					set = set.remove('[').remove(']').toUpper();
+					QString name = stream.readAll().trimmed();
+					qDebug() << "Amount" << amount;
+					qDebug() << "Set" << set;
+					qDebug() << "Name" << name;
+					if (name.contains("//"))
+					{
+						name = name.split(" // ").first();
+						qDebug() << "Corrected name" << name;
+					}
+					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
+					if (dataRowIndex != -1)
+					{
+						deck.setQuantity(dataRowIndex, amount);
+					}
+					else
+					{
+						errors << (set + " " + name + " not found");
+					}
+				}
+
+				bool ok = true;
+				if (!errors.empty())
+				{
+					decksWithIssues << fileInfo.baseName();
+					if (!yesToAll && !noToAll)
+					{
+						QMessageBox msgBox;
+						msgBox.setWindowTitle("Issues");
+						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
+						msgBox.setInformativeText("See details to see the issues.");
+						msgBox.setDetailedText(errors.join("\n"));
+						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
+						msgBox.setDefaultButton(QMessageBox::NoToAll);
+						msgBox.setIcon(QMessageBox::Warning);
+						int ret = msgBox.exec();
+						if (ret == QMessageBox::No)
+						{
+							ok = false;
+						}
+						if (ret == QMessageBox::NoToAll)
+						{
+							noToAll = true;
+						}
+						if (ret == QMessageBox::YesToAll)
+						{
+							yesToAll = true;
+						}
+					}
+					if (noToAll)
+					{
+						ok = false;
+					}
+				}
+
+				if (ok)
+				{
+					deck.save(newFilename);
+					openDeck(newFilename);
+				}
+			}
+		}
+		if (!decksWithIssues.empty())
+		{
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Decks with issues");
+			msgBox.setText("There were some decks with import issues.");
+			msgBox.setInformativeText("See details to see which decks had issues.");
+			msgBox.setDetailedText(decksWithIssues.join("\n"));
+			msgBox.setStandardButtons(QMessageBox::Ok);
+			msgBox.setDefaultButton(QMessageBox::Ok);
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
+		else
+		{
+			QMessageBox::information(0, "Success", "All decks were imported successfully.");
+		}
+	}
 }
 
 void DeckWindow::actionAdvancedFilter()
@@ -575,7 +711,7 @@ void DeckWindow::showStatistics()
 	}
 }
 
-void DeckWindow::downloadCardArt()
+void DeckWindow::actionDownloadCardArt()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)
@@ -584,7 +720,7 @@ void DeckWindow::downloadCardArt()
 	}
 }
 
-void DeckWindow::fetchOnlineData()
+void DeckWindow::actionFetchOnlineData()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)

@@ -28,12 +28,13 @@ private:
 
 } // namespace
 
-DeckWidget::DeckWidget(const QString& filename, QWidget* parent)
+DeckWidget::DeckWidget(const QString& filename, CommonActions& commonActions, QWidget* parent)
 	: QWidget(parent)
 	, ui_()
 	, deckTableModel_(filename)
 	, itemDelegate_(new DeckItemDelegate(deckTableModel_))
 	, headerStateChangedSlotDisabled_(false)
+    , commonActions_(commonActions)
 {
 	ui_.setupUi(this);
 	ui_.tableView->setItemDelegate(itemDelegate_.data());
@@ -42,12 +43,14 @@ DeckWidget::DeckWidget(const QString& filename, QWidget* parent)
 	ui_.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui_.tableView->horizontalHeader()->setSectionsMovable(true);
 	ui_.tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui_.tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(hideColumnsContextMenuRequested(QPoint)));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), this, SLOT(headerStateChangedSlot()));
 	connect(ui_.tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(currentRowChanged(QModelIndex, QModelIndex)));
 	connect(&deckTableModel_, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+	connect(ui_.tableView, &TableView::customContextMenuRequested, this, &DeckWidget::rowContextMenuRequested);
 	connect(this, SIGNAL(fontChanged()), ui_.tableView, SLOT(handleFontChanged()));
 
 	connect(ui_.tableView, SIGNAL(searchStringChanged(QString)), this, SIGNAL(searchStringChanged(QString)));
@@ -217,6 +220,13 @@ void DeckWidget::hideColumnsContextMenuRequested(const QPoint& pos)
 		headerStateChangedSlotDisabled_ = false;
 		headerStateChangedSlot();
 	}
+}
+
+void DeckWidget::rowContextMenuRequested(const QPoint& pos)
+{
+	QMenu contextMenu(ui_.tableView);
+	commonActions_.addToMenu(&contextMenu);
+	contextMenu.exec(ui_.tableView->mapToGlobal(pos));
 }
 
 void DeckWidget::headerStateChangedSlot()
