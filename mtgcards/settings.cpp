@@ -21,7 +21,6 @@ struct Settings::Pimpl
 	QString cardImageDir_;
 	bool ultraHighQualityArt_;
 	QMap<ShortcutType, QKeySequence> shortcuts_;
-	QVector<UserColumn> userColumns_;
 	FilterNode::Ptr globalFilter_;
 	QFont font_;
 	QVector<mtg::ColumnType> copyColumns_;
@@ -48,19 +47,6 @@ struct Settings::Pimpl
 			}
 		}
 
-		if (settings.contains("options/usercolumns"))
-		{
-			QVariantList userColumnList = QJsonDocument::fromJson(settings.value("options/usercolumns").toString().toUtf8()).toVariant().toList();
-			for (int i = 0; i < userColumnList.size(); ++i)
-			{
-				QVariantMap userColumnMap = userColumnList[i].toMap();
-				UserColumn userColumn;
-				userColumn.dataType_ = UserColumn::DataType(userColumnMap["dataType"].toString());
-				userColumn.name_ = userColumnMap["name"].toString();
-				userColumns_.push_back(userColumn);
-			}
-		}
-
 		if (settings.contains("globalfilter"))
 		{
 			globalFilter_ = FilterNode::createFromJson(QJsonDocument::fromJson(settings.value("globalfilter").toString().toUtf8()));
@@ -77,7 +63,7 @@ struct Settings::Pimpl
 			for (const QString& copyColumn : copyColumns)
 			{
 				auto column = mtg::ColumnType(copyColumn);
-				if (column != mtg::ColumnType::UNKNOWN && column < mtg::ColumnType::UserDefined)
+				if (column != mtg::ColumnType::UNKNOWN && column < mtg::ColumnType::COUNT)
 				{
 					copyColumns_.push_back(column);
 				}
@@ -132,27 +118,6 @@ struct Settings::Pimpl
 			key += QString(it.key());
 			settings.setValue(key, it.value().toString(QKeySequence::NativeText));
 		}
-	}
-
-	void setUserColumns(const QVector<UserColumn>& userColumns)
-	{
-		userColumns_ = userColumns;
-
-		QSettings settings;
-		if (userColumns_.empty())
-		{
-			settings.remove("options/usercolumns");
-			return;
-		}
-		QVariantList userColumnList;
-		for (const UserColumn& entry : userColumns_)
-		{
-			QVariantMap userColumnMap;
-			userColumnMap["dataType"] = static_cast<QString>(entry.dataType_);
-			userColumnMap["name"] = entry.name_;
-			userColumnList.push_back(userColumnMap);
-		}
-		settings.setValue("options/usercolumns", QString(QJsonDocument::fromVariant(userColumnList).toJson()));
 	}
 
 	void setGlobalFilter(const FilterNode::Ptr& globalFilter)
@@ -284,16 +249,6 @@ const QMap<ShortcutType, QKeySequence>& Settings::getShortcuts() const
 void Settings::setShortcuts(const QMap<ShortcutType, QKeySequence>& shortcuts)
 {
 	pimpl_->setShortcuts(shortcuts);
-}
-
-const QVector<UserColumn>& Settings::getUserColumns() const
-{
-	return pimpl_->userColumns_;
-}
-
-void Settings::setUserColumns(const QVector<UserColumn>& userColumns)
-{
-	pimpl_->setUserColumns(userColumns);
 }
 
 const FilterNode::Ptr& Settings::getGlobalFilter() const

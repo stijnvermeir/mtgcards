@@ -1,7 +1,6 @@
 #pragma once
 
 #include "shortcuttype.h"
-#include "usercolumn.h"
 #include "magiccolumntype.h"
 #include "filter.h"
 
@@ -38,9 +37,6 @@ public:
 
 	const QMap<ShortcutType, QKeySequence>& getShortcuts() const;
 	void setShortcuts(const QMap<ShortcutType, QKeySequence>& shortcuts);
-
-	const QVector<UserColumn>& getUserColumns() const;
-	void setUserColumns(const QVector<UserColumn>& userColumns);
 
 	const FilterNode::Ptr& getGlobalFilter() const;
 	void setGlobalFilter(const FilterNode::Ptr& globalFilter);

@@ -5,10 +5,6 @@
 #include "settings.h"
 
 #include <QtSql>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QVector>
 #include <QDebug>
 
@@ -41,7 +37,7 @@ QSqlError initDb()
 		if (!q.exec()) return q.lastError();
 
 		// card table
-		if (!q.exec("CREATE TABLE card(id integer primary key, set_code varchar, name varchar, image_name varchar, quantity integer, user_data varchar)")) return q.lastError();
+		if (!q.exec("CREATE TABLE card(id integer primary key, set_code varchar, name varchar, image_name varchar, quantity integer)")) return q.lastError();
 
 		qDebug() << "Collection db created succesfully.";
 	}
@@ -54,7 +50,6 @@ QSqlError initDb()
 		if (currentVersion != DB_VERSION)
 		{
 			qDebug() << "Collection db version" << currentVersion;
-			// for auto database model updates later
 			qFatal("Invalid collection db version");
 		}
 	}
@@ -72,14 +67,12 @@ struct Collection::Pimpl
 		int dbId;
 		QVariant quantity;
 		QVariant used;
-		QVariantMap userData;
 
 		Row()
 			: rowIndexInData(-1)
 			, dbId(-1)
 			, quantity(0)
-			, used(0)
-            , userData() {}
+		    , used(0) {}
 	};
 	QVector<Row> data_;
 
@@ -104,7 +97,7 @@ struct Collection::Pimpl
 
 		QSqlDatabase db = conn();
 		QSqlQuery q(db);
-		if (!q.exec("SELECT id, set_code, name, image_name, quantity, user_data FROM card")) return q.lastError();
+		if (!q.exec("SELECT id, set_code, name, image_name, quantity FROM card")) return q.lastError();
 		while (q.next())
 		{
 			auto set = q.value(1).toString();
@@ -131,8 +124,6 @@ struct Collection::Pimpl
 				r.dbId = q.value(0).toInt();
 				r.quantity = q.value(4).toInt();
 				r.used = DeckManager::instance().getUsedCount(r.rowIndexInData);
-				QJsonDocument userDataDoc = QJsonDocument::fromJson(q.value(5).toByteArray());
-				r.userData = UserColumn::loadFromJson(userDataDoc.object());
 				data_.push_back(r);
 			}
 		}
@@ -190,15 +181,6 @@ struct Collection::Pimpl
 			{
 				auto notOwned = entry.used.toInt() - entry.quantity.toInt();
 				return ((notOwned > 0) ? notOwned : 0);
-			}
-			if (column == ColumnType::UserDefined)
-			{
-				auto it = entry.userData.find(column.userColumn().name_);
-				if (it != entry.userData.cend())
-				{
-					return it.value();
-				}
-				return column.userColumn().dataType_.getEmptyVariant();
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -314,12 +296,11 @@ struct Collection::Pimpl
 
 				QSqlDatabase db = conn();
 				QSqlQuery q(db);
-				q.prepare("INSERT INTO card(set_code, name, image_name, quantity, user_data) VALUES(?, ?, ?, ?, ?)");
+				q.prepare("INSERT INTO card(set_code, name, image_name, quantity) VALUES(?, ?, ?, ?)");
 				q.addBindValue(setCode);
 				q.addBindValue(name);
 				q.addBindValue(imageName);
 				q.addBindValue(newQuantity);
-				q.addBindValue(QByteArray("{}"));
 				q.exec();
 				QVariant dbId = q.lastInsertId();
 				if (dbId.isValid() && !q.lastError().isValid())
@@ -341,33 +322,6 @@ struct Collection::Pimpl
 		if (row)
 		{
 			row->used = usedCount;
-		}
-	}
-
-	void set(const int row, const ColumnType& column, const QVariant& data)
-	{
-		if (row >= 0 && row < getNumRows())
-		{
-			Row& entry = data_[row];
-			if (column == ColumnType::UserDefined)
-			{
-				QVariantMap userDataCopy = entry.userData;
-				userDataCopy[column.userColumn().name_] = data;
-				QJsonObject obj;
-				UserColumn::saveToJson(obj, userDataCopy);
-				QJsonDocument doc(obj);
-
-				QSqlDatabase db = conn();
-				QSqlQuery q(db);
-				q.prepare("UPDATE card SET user_data = ? WHERE id = ?");
-				q.addBindValue(doc.toJson(QJsonDocument::Compact));
-				q.addBindValue(entry.dbId);
-				q.exec();
-				if (!q.lastError().isValid())
-				{
-					entry.userData = userDataCopy;
-				}
-			}
 		}
 	}
 };
@@ -444,9 +398,4 @@ void Collection::setQuantity(const int dataRowIndex, const int newQuantity)
 void Collection::setUsedCount(const int dataRowIndex, const int usedCount)
 {
 	pimpl_->setUsedCount(dataRowIndex, usedCount);
-}
-
-void Collection::set(const int row, const ColumnType& column, const QVariant& data)
-{
-	pimpl_->set(row, column, data);
 }

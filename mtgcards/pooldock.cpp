@@ -159,25 +159,21 @@ void PoolDock::actionEnableFilter(bool enable)
 
 void PoolDock::actionAddToCollection()
 {
-	qDebug() << "AddToCollection from pool";
 	emit addToCollection(currentDataRowIndices());
 }
 
 void PoolDock::actionRemoveFromCollection()
 {
-	qDebug() << "RemoveFromCollection from pool";
 	emit removeFromCollection(currentDataRowIndices());
 }
 
 void PoolDock::actionAddToDeck()
 {
-	qDebug() << "AddToDeck from pool";
 	emit addToDeck(currentDataRowIndices());
 }
 
 void PoolDock::actionRemoveFromDeck()
 {
-	qDebug() << "RemoveFromDeck from pool";
 	emit removeFromDeck(currentDataRowIndices());
 }
 

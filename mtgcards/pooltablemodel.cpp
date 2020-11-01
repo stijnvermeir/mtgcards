@@ -166,7 +166,7 @@ int PoolTableModel::columnToIndex(const mtg::ColumnType& column) const
 {
 	auto it = std::find_if(POOLTABLE_COLUMNS.begin(), POOLTABLE_COLUMNS.end(), [&column](const mtg::ColumnType& c)
 	{
-		return c.value() == column.value() && c.getUserColumnIndex() == column.getUserColumnIndex();
+		return c.value() == column.value();
 	});
 	if (it != POOLTABLE_COLUMNS.end())
 	{

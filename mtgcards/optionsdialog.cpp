@@ -176,7 +176,7 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	}
 	for (const mtg::ColumnType& column : mtg::ColumnType::list())
 	{
-		if (column != mtg::ColumnType::UserDefined && !Settings::instance().getCopyColumns().contains(column))
+		if (!Settings::instance().getCopyColumns().contains(column))
 		{
 			QListWidgetItem* item = new QListWidgetItem(column.getDisplayName());
 			item->setData(Qt::UserRole, (QString) column);

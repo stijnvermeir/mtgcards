@@ -4,8 +4,6 @@
 #include <QVector>
 #include <QMetaType>
 
-struct UserColumn;
-
 namespace mtg {
 
 class ColumnType
@@ -68,7 +66,6 @@ public:
 		ScryfallId,
 		OtherFaceIds,
 		Side,
-		UserDefined,
 
 		COUNT,
 		UNKNOWN = -1
@@ -83,10 +80,6 @@ public:
 
 	const QString& getDisplayName() const;
 
-	const UserColumn& userColumn() const;
-	void setUserColumnIndex(int userColumnIndex);
-	int getUserColumnIndex() const;
-
 	static const QVector<ColumnType>& list();
 
 	bool operator==(const ColumnType& other) const;
@@ -94,7 +87,6 @@ public:
 
 private:
 	type_t value_;
-	int userColumnIndex_;
 };
 
 } // namespace mtg

@@ -51,7 +51,6 @@ SOURCES += main.cpp\
     statusbar.cpp \
     tableview.cpp \
     util.cpp \
-    usercolumn.cpp \
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
     onlinedatacache.cpp \
@@ -99,7 +98,6 @@ HEADERS  += mainwindow.h \
     statusbar.h \
     tableview.h \
     util.h \
-    usercolumn.h \
     filters/timefilterfunction.h \
     filters/comparetype.h \
     filters/numberfilterfunction.h \

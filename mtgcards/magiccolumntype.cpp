@@ -1,6 +1,5 @@
 #include "magiccolumntype.h"
 
-#include "usercolumn.h"
 #include "settings.h"
 
 using namespace mtg;
@@ -63,8 +62,7 @@ const QVector<QString> NAMES =
 	"Uuid",
 	"ScryfallId",
     "OtherFaceIds",
-    "Side",
-	"UserDefined"
+    "Side"
 };
 
 const QVector<QString> DISPLAY_NAMES =
@@ -123,21 +121,18 @@ const QVector<QString> DISPLAY_NAMES =
 	"Uuid",
 	"ScryfallId",
     "OtherFaceIds",
-    "Side",
-	"User Defined"
+    "Side"
 };
 
 } // namespace
 
 ColumnType::ColumnType(const type_t value)
 	: value_(value)
-	, userColumnIndex_(-1)
 {
 }
 
 ColumnType::ColumnType(const QString& stringValue)
 	: value_(UNKNOWN)
-	, userColumnIndex_(-1)
 {
 	int index = NAMES.indexOf(stringValue);
 	if (index != -1)
@@ -167,40 +162,12 @@ ColumnType::type_t ColumnType::value() const
 
 const QString& ColumnType::getDisplayName() const
 {
-	if (value_ >= 0 && value_ < UserDefined)
+	if (value_ >= 0 && value_ < COUNT)
 	{
 		return DISPLAY_NAMES[value_];
 	}
-	if (value_ == UserDefined)
-	{
-		return userColumn().name_;
-	}
 	static const QString EMPTY;
 	return EMPTY;
-}
-
-const UserColumn& ColumnType::userColumn() const
-{
-	if (value_ == UserDefined)
-	{
-		const auto& userColumns = Settings::instance().getUserColumns();
-		if (userColumnIndex_ >= 0 && userColumnIndex_ < userColumns.size())
-		{
-			return userColumns[userColumnIndex_];
-		}
-	}
-	static UserColumn EMPTY;
-	return EMPTY;
-}
-
-void ColumnType::setUserColumnIndex(int userColumnIndex)
-{
-	userColumnIndex_ = userColumnIndex;
-}
-
-int ColumnType::getUserColumnIndex() const
-{
-	return userColumnIndex_;
 }
 
 const QVector<ColumnType>& ColumnType::list()
@@ -209,17 +176,10 @@ const QVector<ColumnType>& ColumnType::list()
 	static bool ready = false;
 	if (!ready)
 	{
-		const auto& userColumns = Settings::instance().getUserColumns();
-		l.reserve(UserDefined + userColumns.size());
-		for (int i = 0; i < UserDefined; ++i)
+		l.reserve(COUNT);
+		for (int i = 0; i < COUNT; ++i)
 		{
 			l.push_back(ColumnType(static_cast<ColumnType::type_t>(i)));
-		}
-		for (int i = 0; i < userColumns.size(); ++i)
-		{
-			ColumnType columnType(UserDefined);
-			columnType.userColumnIndex_ = i;
-			l.push_back(columnType);
 		}
 		ready = true;
 	}
@@ -228,7 +188,7 @@ const QVector<ColumnType>& ColumnType::list()
 
 bool ColumnType::operator==(const ColumnType& other) const
 {
-	return (value_ == other.value_) && (userColumnIndex_ == other.userColumnIndex_);
+	return (value_ == other.value_);
 }
 
 bool ColumnType::operator==(ColumnType::type_t other) const
