@@ -10,10 +10,12 @@ public:
 	enum type_t
 	{
 		NewFile,
+		ImportFile,
 		OpenFile,
 		SaveFile,
 		SaveFileAs,
 		AdvancedFilter,
+		EnableFilter,
 		AddToCollection,
 		RemoveFromCollection,
 		AddToDeck,
@@ -21,6 +23,8 @@ public:
 		AddFilterGroup,
 		AddFilterNode,
 		RemoveFilterNode,
+		DownloadCardArt,
+		FetchOnlineData,
 
 		COUNT,
 		UNKNOWN = -1

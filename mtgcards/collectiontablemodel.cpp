@@ -3,7 +3,6 @@
 #include "magiccollection.h"
 #include "deckmanager.h"
 #include "util.h"
-#include "settings.h"
 
 #include <QAbstractTableModel>
 #include <QDebug>
@@ -64,17 +63,10 @@ const QVector<mtg::ColumnType>& GetColumns()
 	static bool ready = false;
 	if (!ready)
 	{
-		const auto& userColumns = Settings::instance().getUserColumns();
-		columns.reserve(COLLECTIONTABLE_COLUMNS.size() + userColumns.size());
+		columns.reserve(COLLECTIONTABLE_COLUMNS.size());
 		for (const mtg::ColumnType& column : COLLECTIONTABLE_COLUMNS)
 		{
 			columns.push_back(column);
-		}
-		for (int i = 0; i < userColumns.size(); ++i)
-		{
-			mtg::ColumnType userColumn(mtg::ColumnType::UserDefined);
-			userColumn.setUserColumnIndex(i);
-			columns.push_back(userColumn);
 		}
 		ready = true;
 	}
@@ -174,13 +166,6 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 						emit dataChanged(index, index);
 						return true;
 					}
-					else
-					if (GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
-					{
-						mtg::Collection::instance().set(index.row(), GetColumns()[index.column()], value);
-						emit dataChanged(index, index);
-						return true;
-					}
 				}
 			}
 		}
@@ -206,7 +191,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.column() < columnCount())
 		{
-			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity || GetColumns()[index.column()] == mtg::ColumnType::UserDefined)
+			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity)
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}
@@ -231,7 +216,7 @@ struct CollectionTableModel::Pimpl : public virtual QAbstractTableModel
 		const auto& columns = GetColumns();
 		auto it = std::find_if(columns.begin(), columns.end(), [&column](const mtg::ColumnType& c)
 		{
-			return c.value() == column.value() && c.getUserColumnIndex() == column.getUserColumnIndex();
+			return c.value() == column.value();
 		});
 		if (it != columns.end())
 		{

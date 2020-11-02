@@ -9,7 +9,6 @@
 #include "util.h"
 #include "deckstatisticsdialog.h"
 
-#include <QCloseEvent>
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -26,54 +25,85 @@ const QString DEFAULT_HEADER_STATE = "{\"sections\": [{\"hidden\": true,\"size\"
 
 }
 
-DeckWindow::DeckWindow(QWidget* parent)
-	: QMainWindow(parent)
-	, ui_()
+DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
+    : QObject(parent)
+    , ui_(ui)
 	, headerState_()
 	, rootFilterNode_()
-	, permanentStatusBarLabel_(new QLabel())
+    , actionNewDeck_(nullptr)
+    , actionOpenDeck_(nullptr)
+    , actionSaveDeck_(nullptr)
+    , actionSaveDeckAs_(nullptr)
+    , actionImportDec_(nullptr)
+    , actionToggleDeckActive_(nullptr)
+    , actionAddDeckToCollection_(nullptr)
+    , actionCreateProxies_(nullptr)
+    , actionStats_(nullptr)
+    , commonActions_(this)
+    , toolBar_(new QToolBar())
 {
-	setWindowFlags(Qt::NoDropShadowWindowHint);
-	ui_.setupUi(this);
+	actionNewDeck_ = new QAction(QIcon(":/resources/icons/blank33.svg"), "New deck", this);
+	actionOpenDeck_ = new QAction(QIcon(":/resources/icons/folder215.svg"), "Open deck ...", this);
+	actionSaveDeck_ = new QAction(QIcon(":/resources/icons/save20.svg"), "Save deck", this);
+	actionSaveDeckAs_ = new QAction(QIcon(":/resources/icons/disc36.svg"), "Save deck as ...", this);
+	actionImportDec_ = new QAction(QIcon(":/resources/icons/import.svg"), "Import deck from .dec file ...", this);
+	QIcon deckActiveIcon(":/resources/icons/switches3.svg");
+	deckActiveIcon.addFile(":/resources/icons/switch14.svg", QSize(), QIcon::Normal, QIcon::On);
+	actionToggleDeckActive_ = new QAction(deckActiveIcon, "Toggle deck active", this);
+	actionToggleDeckActive_->setCheckable(true);
+	actionAddDeckToCollection_ = new QAction(QIcon(":/resources/icons/document24.svg"), "Add deck to collection", this);
+	actionCreateProxies_= new QAction(QIcon(":/resources/icons/printer11.svg"), "Create proxies", this);
+	actionStats_ = new QAction(QIcon(":/resources/icons/chart59.svg"), "Stats", this);
+
+	toolBar_->setIconSize(QSize(16, 16));
+	toolBar_->addAction(actionNewDeck_);
+	toolBar_->addAction(actionImportDec_);
+	toolBar_->addAction(actionOpenDeck_);
+	toolBar_->addAction(actionSaveDeck_);
+	toolBar_->addAction(actionSaveDeckAs_);
+	toolBar_->addSeparator();
+	toolBar_->addAction(actionToggleDeckActive_);
+	toolBar_->addAction(actionStats_);
+	toolBar_->addAction(actionAddDeckToCollection_);
+	toolBar_->addAction(actionCreateProxies_);
+	ui_.toolbarLayout->addWidget(toolBar_);
 
 	connect(ui_.tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeDeck(int)));
 	connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChangedSlot(int)));
-	connect(ui_.actionNewDeck, SIGNAL(triggered()), this, SLOT(actionNewDeck()));
-	connect(ui_.actionOpenDeck, SIGNAL(triggered()), this, SLOT(actionOpenDeck()));
-	connect(ui_.actionSaveDeck, SIGNAL(triggered()), this, SLOT(actionSaveDeck()));
-	connect(ui_.actionSaveDeckAs, SIGNAL(triggered()), this, SLOT(actionSaveDeckAs()));
-	connect(ui_.actionAdvancedFilter, SIGNAL(triggered()), this, SLOT(actionAdvancedFilter()));
-	connect(ui_.actionEnableFilter, SIGNAL(triggered(bool)), this, SLOT(actionEnableFilter(bool)));
-	connect(ui_.actionAddToCollection, SIGNAL(triggered()), this, SLOT(actionAddToCollection()));
-	connect(ui_.actionRemoveFromCollection, SIGNAL(triggered()), this, SLOT(actionRemoveFromCollection()));
-	connect(ui_.actionAddToDeck, SIGNAL(triggered()), this, SLOT(actionAddToDeck()));
-	connect(ui_.actionRemoveFromDeck, SIGNAL(triggered()), this, SLOT(actionRemoveFromDeck()));
-	connect(ui_.actionAddDeckToCollection, SIGNAL(triggered()), this, SLOT(actionAddDeckToCollection()));
-	connect(ui_.actionToggleDeckActive, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
-	connect(ui_.actionCreateProxies, SIGNAL(triggered()), this, SLOT(createProxies()));
-	connect(ui_.actionStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
-	connect(ui_.actionDownloadCardArt, SIGNAL(triggered()), this, SLOT(downloadCardArt()));
-	connect(ui_.actionFetchOnlineData, SIGNAL(triggered()), this, SLOT(fetchOnlineData()));
 
-	ui_.statusBar->addPermanentWidget(new QLabel("Search: "));
-	ui_.statusBar->addPermanentWidget(permanentStatusBarLabel_);
+	connect(actionNewDeck_, SIGNAL(triggered()), this, SLOT(actionNewDeck()));
+	connect(actionOpenDeck_, SIGNAL(triggered()), this, SLOT(actionOpenDeck()));
+	connect(actionSaveDeck_, SIGNAL(triggered()), this, SLOT(actionSaveDeck()));
+	connect(actionSaveDeckAs_, SIGNAL(triggered()), this, SLOT(actionSaveDeckAs()));
+	connect(actionImportDec_, SIGNAL(triggered()), this, SLOT(actionImportDec()));
+	connect(actionToggleDeckActive_, SIGNAL(triggered(bool)), this, SLOT(actionToggleDeckActive(bool)));
+	connect(actionAddDeckToCollection_, SIGNAL(triggered()), this, SLOT(actionAddDeckToCollection()));
+	connect(actionCreateProxies_, SIGNAL(triggered()), this, SLOT(createProxies()));
+	connect(actionStats_, SIGNAL(triggered()), this, SLOT(showStatistics()));
+
+	ui_.menuFile->addAction(actionNewDeck_);
+	ui_.menuFile->addAction(actionImportDec_);
+	ui_.menuFile->addAction(actionOpenDeck_);
+	ui_.menuFile->addAction(actionSaveDeck_);
+	ui_.menuFile->addAction(actionSaveDeckAs_);
+
+	commonActions_.connectSignals(this);
+	commonActions_.addToWidget(ui_.tabWidget);
 }
 
 DeckWindow::~DeckWindow()
 {
+	delete toolBar_;
 }
 
 void DeckWindow::updateShortcuts()
 {
-	ui_.actionNewDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
-	ui_.actionOpenDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::OpenFile]);
-	ui_.actionSaveDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
-	ui_.actionSaveDeckAs->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFileAs]);
-	ui_.actionAdvancedFilter->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AdvancedFilter]);
-	ui_.actionAddToCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToCollection]);
-	ui_.actionRemoveFromCollection->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromCollection]);
-	ui_.actionAddToDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::AddToDeck]);
-	ui_.actionRemoveFromDeck->setShortcut(Settings::instance().getShortcuts()[ShortcutType::RemoveFromDeck]);
+	actionNewDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
+	actionImportDec_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::ImportFile]);
+	actionOpenDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::OpenFile]);
+	actionSaveDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
+	actionSaveDeckAs_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFileAs]);
+	commonActions_.updateShortcuts();
 }
 
 void DeckWindow::loadSettings()
@@ -82,7 +112,7 @@ void DeckWindow::loadSettings()
 	headerState_ = settings.value("deckwindow/headerstate", DEFAULT_HEADER_STATE).toString();
 	if (settings.contains("deckwindow/filterEnable"))
 	{
-		ui_.actionEnableFilter->setChecked(settings.value("deckwindow/filterEnable").toBool());
+		commonActions_.getEnableFilter()->setChecked(settings.value("deckwindow/filterEnable").toBool());
 	}
 	if (settings.contains("deckwindow/filter"))
 	{
@@ -103,7 +133,7 @@ void DeckWindow::loadSettings()
 void DeckWindow::saveSettings()
 {
 	QSettings settings;
-	settings.setValue("deckwindow/filterEnable", ui_.actionEnableFilter->isChecked());
+	settings.setValue("deckwindow/filterEnable", commonActions_.getEnableFilter()->isChecked());
 	if (rootFilterNode_)
 	{
 		settings.setValue("deckwindow/filter", QString(rootFilterNode_->toJson().toJson(QJsonDocument::Compact)));
@@ -147,21 +177,6 @@ bool DeckWindow::hasUnsavedChanges() const
 void DeckWindow::openDeck(const QString& deckId)
 {
 	handleOpenDeckRequest(deckId);
-}
-
-void DeckWindow::closeEvent(QCloseEvent* event)
-{
-	emit windowClosed(false);
-	event->accept();
-}
-
-bool DeckWindow::event(QEvent* event)
-{
-	if (event->type() == QEvent::WindowActivate)
-	{
-		selectedCardChangedSlot();
-	}
-	return QMainWindow::event(event);
 }
 
 void DeckWindow::updateStatusBar()
@@ -222,13 +237,13 @@ void DeckWindow::updateStatusBar()
 		{
 			str << " [Sum price trend: " << sumPriceTrend << "]";
 		}
-		ui_.statusBar->showMessage(message);
-		ui_.actionToggleDeckActive->setChecked(deckWidget->deck().isActive());
+		ui_.deckStatusBar->setMessage(message);
+		actionToggleDeckActive_->setChecked(deckWidget->deck().isActive());
 	}
 	else
 	{
-		ui_.statusBar->clearMessage();
-		ui_.actionToggleDeckActive->setChecked(false);
+		ui_.deckStatusBar->setMessage("");
+		actionToggleDeckActive_->setChecked(false);
 	}
 }
 
@@ -250,16 +265,16 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		}
 	}
 
-	DeckWidget* deckWidget = new DeckWidget(filename);
+	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_);
 	deckWidget->setHeaderState(headerState_);
-	if (ui_.actionEnableFilter->isChecked())
+	if (commonActions_.getEnableFilter()->isChecked())
 	{
 		deckWidget->setFilterRootNode(rootFilterNode_);
 	}
 	connect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 	connect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 	connect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
-	connect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
+	connect(deckWidget, SIGNAL(searchStringChanged(QString)), ui_.deckStatusBar, SLOT(setSearch(QString)));
 	connect(this, SIGNAL(fontChanged()), deckWidget, SIGNAL(fontChanged()));
 	ui_.tabWidget->addTab(deckWidget, deckWidget->deck().getDisplayName());
 	ui_.tabWidget->setCurrentWidget(deckWidget);
@@ -275,7 +290,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 		{
 			if (deckWidget->deck().hasUnsavedChanges())
 			{
-				int ret = QMessageBox::question(this,
+				int ret = QMessageBox::question(ui_.tabWidget,
 												"Save before close?",
 												"This deck has unsaved changes. Do you want to save your changes?",
 												QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
@@ -292,7 +307,7 @@ void DeckWindow::destroyDeckWidget(DeckWidget* deckWidget)
 			disconnect(deckWidget, SIGNAL(selectedCardChanged(int)), this, SIGNAL(selectedCardChanged(int)));
 			disconnect(deckWidget, SIGNAL(headerStateChangedSignal(QString)), this, SLOT(headerStateChangedSlot(QString)));
 			disconnect(deckWidget, SIGNAL(deckEdited()), this, SLOT(deckEdited()));
-			disconnect(deckWidget, SIGNAL(searchStringChanged(QString)), permanentStatusBarLabel_, SLOT(setText(QString)));
+			disconnect(deckWidget, SIGNAL(searchStringChanged(QString)), ui_.deckStatusBar, SLOT(setSearch(QString)));
 			disconnect(this, SIGNAL(fontChanged()), deckWidget, SIGNAL(fontChanged()));
 			deckWidget->close();
 			ui_.tabWidget->removeTab(index);
@@ -308,7 +323,7 @@ void DeckWindow::saveDeck(DeckWidget* deckWidget, bool saveAs)
 		QString filename = deckWidget->deck().getFilename();
 		if (filename.isEmpty() || saveAs)
 		{
-			filename = QFileDialog::getSaveFileName(this, "Save Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
+			filename = QFileDialog::getSaveFileName(ui_.tabWidget , "Save Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
 		}
 		if (!filename.isEmpty())
 		{
@@ -359,7 +374,7 @@ void DeckWindow::currentTabChangedSlot(int)
 	}
 	else
 	{
-		permanentStatusBarLabel_->clear();
+		ui_.deckStatusBar->setMessage("");
 	}
 }
 
@@ -370,7 +385,7 @@ void DeckWindow::actionNewDeck()
 
 void DeckWindow::actionOpenDeck()
 {
-	auto filename = QFileDialog::getOpenFileName(this, "Open Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
+	auto filename = QFileDialog::getOpenFileName(ui_.tabWidget, "Open Deck file", Settings::instance().getDecksDir(), "Decks (*.deck)");
 	if (!filename.isNull())
 	{
 		createDeckWidget(filename);
@@ -387,20 +402,143 @@ void DeckWindow::actionSaveDeckAs()
 	saveDeck(static_cast<DeckWidget*>(ui_.tabWidget->currentWidget()), true);
 }
 
+void DeckWindow::actionImportDec()
+{
+	QStringList filenames = QFileDialog::getOpenFileNames(0, "Import .dec", QDir::homePath(), "Decks (*.dec)");
+	if (!filenames.empty())
+	{
+		bool yesToAll = false;
+		bool noToAll = false;
+		QStringList decksWithIssues;
+		for (const QString& filename : filenames)
+		{
+			QStringList errors;
+			QFile importFile(filename);
+			if (importFile.open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				QFileInfo fileInfo(filename);
+				QString newFilename = Settings::instance().getDecksDir() + QDir::separator() + fileInfo.baseName() + ".deck";
+				if (QFileInfo(newFilename).exists())
+				{
+					errors << ("Deck '" + fileInfo.baseName() + "' already exists");
+				}
+				Deck deck;
+				deck.setActive(false);
+				QStringList lines;
+				QTextStream in(&importFile);
+				while (!in.atEnd())
+				{
+					auto line = in.readLine().trimmed();
+					if (line.isEmpty() || line.startsWith("//"))
+					{
+						continue;
+					}
+					lines << line;
+				}
+				importFile.close();
+
+				for (int i = 0; i < lines.size(); ++i)
+				{
+					QTextStream stream(&lines[i]);
+					int amount;
+					stream >> amount;
+					QString set;
+					stream >> set;
+					set = set.remove('[').remove(']').toUpper();
+					QString name = stream.readAll().trimmed();
+					qDebug() << "Amount" << amount;
+					qDebug() << "Set" << set;
+					qDebug() << "Name" << name;
+					if (name.contains("//"))
+					{
+						name = name.split(" // ").first();
+						qDebug() << "Corrected name" << name;
+					}
+					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
+					if (dataRowIndex != -1)
+					{
+						deck.setQuantity(dataRowIndex, amount);
+					}
+					else
+					{
+						errors << (set + " " + name + " not found");
+					}
+				}
+
+				bool ok = true;
+				if (!errors.empty())
+				{
+					decksWithIssues << fileInfo.baseName();
+					if (!yesToAll && !noToAll)
+					{
+						QMessageBox msgBox;
+						msgBox.setWindowTitle("Issues");
+						msgBox.setText("There were some issues importing deck <i>" + fileInfo.baseName() + "</i>. Do you want to continue to import this deck?");
+						msgBox.setInformativeText("See details to see the issues.");
+						msgBox.setDetailedText(errors.join("\n"));
+						msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll | QMessageBox::NoToAll);
+						msgBox.setDefaultButton(QMessageBox::NoToAll);
+						msgBox.setIcon(QMessageBox::Warning);
+						int ret = msgBox.exec();
+						if (ret == QMessageBox::No)
+						{
+							ok = false;
+						}
+						if (ret == QMessageBox::NoToAll)
+						{
+							noToAll = true;
+						}
+						if (ret == QMessageBox::YesToAll)
+						{
+							yesToAll = true;
+						}
+					}
+					if (noToAll)
+					{
+						ok = false;
+					}
+				}
+
+				if (ok)
+				{
+					deck.save(newFilename);
+					openDeck(newFilename);
+				}
+			}
+		}
+		if (!decksWithIssues.empty())
+		{
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Decks with issues");
+			msgBox.setText("There were some decks with import issues.");
+			msgBox.setInformativeText("See details to see which decks had issues.");
+			msgBox.setDetailedText(decksWithIssues.join("\n"));
+			msgBox.setStandardButtons(QMessageBox::Ok);
+			msgBox.setDefaultButton(QMessageBox::Ok);
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
+		else
+		{
+			QMessageBox::information(0, "Success", "All decks were imported successfully.");
+		}
+	}
+}
+
 void DeckWindow::actionAdvancedFilter()
 {
 	FilterEditorDialog editor;
 	editor.setFilterRootNode(rootFilterNode_);
 	editor.exec();
 	rootFilterNode_ = editor.getFilterRootNode();
-	if (ui_.actionEnableFilter->isChecked())
+	if (commonActions_.getEnableFilter()->isChecked())
 	{
 		for (int tabIndex = 0; tabIndex < ui_.tabWidget->count(); ++tabIndex)
 		{
 			QWidget* widget = ui_.tabWidget->widget(tabIndex);
 			if (widget)
 			{
-				if (ui_.actionEnableFilter->isChecked())
+				if (commonActions_.getEnableFilter()->isChecked())
 				{
 					static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
 				}
@@ -494,13 +632,13 @@ void DeckWindow::createProxies()
 		auto indices = deckWidget->currentDataRowIndices();
 		if (indices.isEmpty())
 		{
-			QMessageBox::information(this, "No selection", "No cards were selected. Please select the cards you want to make proxies for.");
+			QMessageBox::information(ui_.tabWidget, "No selection", "No cards were selected. Please select the cards you want to make proxies for.");
 			return;
 		}
 
-		auto fullBorders = QMessageBox::question(this, "Borders cropped?", "Would you like to use cropped or full borders?", "Cropped", "Full");
+		auto fullBorders = QMessageBox::question(ui_.tabWidget, "Borders cropped?", "Would you like to use cropped or full borders?", "Cropped", "Full");
 
-		auto pdfFile = QFileDialog::getSaveFileName(this, "Save to Pdf", QDir::homePath(), "Pdf (*.pdf)");
+		auto pdfFile = QFileDialog::getSaveFileName(ui_.tabWidget, "Save to Pdf", QDir::homePath(), "Pdf (*.pdf)");
 		if (pdfFile.isNull())
 			return;
 
@@ -548,7 +686,7 @@ void DeckWindow::createProxies()
 
 		if (missing.empty())
 		{
-			QMessageBox::information(this, "Success", "Proxy generation successful.");
+			QMessageBox::information(ui_.tabWidget, "Success", "Proxy generation successful.");
 		}
 		else
 		{
@@ -569,12 +707,12 @@ void DeckWindow::showStatistics()
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)
 	{
-		DeckStatisticsDialog dlg(deckWidget->deck(), this);
+		DeckStatisticsDialog dlg(deckWidget->deck(), ui_.tabWidget);
 		dlg.exec();
 	}
 }
 
-void DeckWindow::downloadCardArt()
+void DeckWindow::actionDownloadCardArt()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)
@@ -583,7 +721,7 @@ void DeckWindow::downloadCardArt()
 	}
 }
 
-void DeckWindow::fetchOnlineData()
+void DeckWindow::actionFetchOnlineData()
 {
 	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
 	if (deckWidget)
@@ -631,7 +769,7 @@ void DeckWindow::handleGlobalFilterChanged()
 		QWidget* widget = ui_.tabWidget->widget(tabIndex);
 		if (widget)
 		{
-			if (ui_.actionEnableFilter->isChecked())
+			if (commonActions_.getEnableFilter()->isChecked())
 			{
 				static_cast<DeckWidget*>(widget)->setFilterRootNode(rootFilterNode_);
 			}

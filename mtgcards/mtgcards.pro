@@ -20,11 +20,12 @@ VERSION = $$cat(VERSION.txt)
 DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
+    carddock.cpp \
+    collectiondock.cpp \
+    commonactions.cpp \
         mainwindow.cpp \
+    pooldock.cpp \
     pooltablemodel.cpp \
-    poolwindow.cpp \
-    cardwindow.cpp \
-    collectionwindow.cpp \
     deckwindow.cpp \
     deckwidget.cpp \
     optionsdialog.cpp \
@@ -47,9 +48,9 @@ SOURCES += main.cpp\
     deck.cpp \
     decktablemodel.cpp \
     deckmanager.cpp \
+    statusbar.cpp \
     tableview.cpp \
     util.cpp \
-    usercolumn.cpp \
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
     onlinedatacache.cpp \
@@ -65,10 +66,11 @@ SOURCES += main.cpp\
     filters/tagfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
+    carddock.h \
+    collectiondock.h \
+    commonactions.h \
+    pooldock.h \
     pooltablemodel.h \
-    poolwindow.h \
-    cardwindow.h \
-    collectionwindow.h \
     deckwindow.h \
     deckwidget.h \
     optionsdialog.h \
@@ -93,9 +95,9 @@ HEADERS  += mainwindow.h \
     deck.h \
     decktablemodel.h \
     deckmanager.h \
+    statusbar.h \
     tableview.h \
     util.h \
-    usercolumn.h \
     filters/timefilterfunction.h \
     filters/comparetype.h \
     filters/numberfilterfunction.h \
@@ -110,16 +112,13 @@ HEADERS  += mainwindow.h \
     filters/tagfilterfunction.h
 
 FORMS    += mainwindow.ui \
-    poolwindow.ui \
-    cardwindow.ui \
-    collectionwindow.ui \
-    deckwindow.ui \
     deckwidget.ui \
     optionsdialog.ui \
     aboutdialog.ui \
     filtereditordialog.ui \
     deckstatisticsdialog.ui \
-    manacurvelinewidget.ui
+    manacurvelinewidget.ui \
+    statusbar.ui
 
 RESOURCES += \
     mtgcards.qrc

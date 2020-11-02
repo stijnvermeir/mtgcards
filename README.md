@@ -9,85 +9,48 @@ Main features:
 * Easy generation of proxies
 * Fetch card prices from [magiccardmarket.eu](http://magiccardmarket.eu)
 * Integrated card art download feature
-* Works fast
+* Fast and snappy
 * Advanced search possibilities with support for regular expressions
-* Multi window = multi display friendly
-* Highly customizable: create your own columns
 * Cross platform (Mac OS X, Windows, Linux)
 * Native desktop application
-* Works offline (no internet required, except for some online-only features)
+* Works offline
 
 And it's free and always will be!
 
-![screenshot](http://mtgcards.stijn-v.be/screenshot1.png)
+![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot1.png)
+![screenshot](http://mtgcards.stijn-v.be/screens/win/screenshot1.png)
+![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot2.png)
+![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot3.png)
+![screenshot](http://mtgcards.stijn-v.be/screens/win/screenshot2.png)
 
-Don't forget to take a look at the [manual](https://github.com/stijnvermeir/mtgcards/blob/master/manual.md).
 
-Download binaries
------------------
+Application Files and Folder
+----------------------------
 
-Binaries can be downloaded [here](http://mtgcards.stijn-v.be).
+Depending on your OS, the configuration files and default application folder have different locations. Here's an overview.
 
 ### Mac OS X
 
-Once you download the .dmg file, open it and drag and drop MTGCards.app to your Applications.
+#### Secret configuration file
+	~/Library/Preferences/be.stijn-v.MTGCards.plist
 
-The app is not signed, because I don't want to pay 99$ for that. So you'll have to right-click (or CTRL-click) on it and choose Open. Then you'll be able to open it. You only have to do this once.
-
-Tested on clean Mac OS X 10.9.5. Probably works on newer version as well.
-
-### Windows
-
-Tested on Windows 7 and Windows 10. Probably works on newer versions as well.
-
-### Ubuntu 14.04 64-bit and derivatives
-
-Install my public repo: (you only need to do this once)
-
-	# install the public gpg key from packagecloud.io
-	curl https://packagecloud.io/gpg.key | sudo apt-key add -
-	
-	# make it possible for apt to fetch packages over https
-	sudo apt-get install -y apt-transport-https
-	
-	# add the repo
-	HOSTNAME=`hostname -f` && curl "https://packagecloud.io/install/repositories/stijnv/public/config_file.list?os=ubuntu&dist=trusty&name=${HOSTNAME}" | sudo tee /etc/apt/sources.list.d/stijnvpublic.list
-	
-Install or update MTGCards
-	
-	# update apt
-	sudo apt-get update
-	
-	# finally install mtgcards package
-	sudo apt-get install mtgcards
-	
-This package install the executable in /usr/local/bin, so you can start it by just typing `mtgcards`.
-
-Build from source
------------------
-
-MTGCards has only one dependency and that's Qt.
-
-For Mac and Windows you can download [the online installer from their website](http://www.qt.io/download-open-source/).
-
-### Mac
-
-You'll need to install Xcode as well. I'm still on Mavericks (10.9.5) and downloaded Xcode 5.1.1 from <https://developer.apple.com/downloads>. I used Qt version 5.2.1 to build the binaries you can find here.
-
-To create a self-contained OS X application, you need to run macdeployqt. For example:
-
-	~/Qt/5.2.1/clang_64/bin/macdeployqt MTGCards.app -dmg
+#### Application Folder
+	~/Library/Application Support/stijnvsoftware/MTGCards
 
 ### Windows
 
-You'll need to install Visual Studio as well. I used Visual Studio 2013 Community, which you can still find [here](http://go.microsoft.com/?linkid=9863608). I used the latest version of Qt (5.4) to build the binaries you can find here.
+#### Secret configuration file
+Open regedit.exe and go to:
+	
+	HKEY_CURRENT_USER\Software\stijnvsoftware\MTGCards
 
-To gather all the dependencies in one folder, you need to run windeployqt. For example:
-
-1. Copy MTGCards.exe to some empty folder.
-2. Open a Visual Studio Developer Command Prompt and go to that folder.
-3. Run this command: `windeployqt MTGCards.exe`
+#### Application Folder
+	C:\Users\**user**\AppData\Local\stijnvsoftware\MTGCards
 
 ### Linux
 
-On Ubuntu or Linux Mint you can just run `sudo apt-get install qt5-default qt-sdk` to get the required development environment.
+#### Secret configuration file
+	~/.config/stijnvsoftware/MTGCards.conf
+
+#### Application Folder
+	~/.local/share/stijnvsoftware/MTGCards

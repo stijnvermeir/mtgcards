@@ -1,21 +1,23 @@
 #pragma once
 
 #include "filter.h"
-#include "ui_deckwindow.h"
+#include "commonactions.h"
+#include "ui_mainwindow.h"
 
-#include <QMainWindow>
+#include <QObject>
 #include <QVector>
 #include <QString>
+#include <QToolBar>
 
 class DeckWidget;
 class QLabel;
 
-class DeckWindow : public QMainWindow
+class DeckWindow : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit DeckWindow(QWidget* parent = 0);
+	explicit DeckWindow(Ui::MainWindow& ui, QWidget* parent = 0);
 	virtual ~DeckWindow();
 
 	void updateShortcuts();
@@ -25,7 +27,6 @@ public:
 	void openDeck(const QString& deckId);
 
 signals:
-	void windowClosed(bool);
 	void selectedCardChanged(int);
 	void addToCollection(QVector<int>);
 	void addToCollection(QVector<QPair<int,int>>);
@@ -33,13 +34,21 @@ signals:
 	void fontChanged();
 
 private:
-	Ui::DeckWindow ui_;
+	Ui::MainWindow& ui_;
 	QString headerState_;
 	FilterNode::Ptr rootFilterNode_;
-	QLabel* permanentStatusBarLabel_;
+	QAction* actionNewDeck_;
+	QAction* actionOpenDeck_;
+	QAction* actionSaveDeck_;
+	QAction* actionSaveDeckAs_;
+	QAction* actionImportDec_;
+	QAction* actionToggleDeckActive_;
+	QAction* actionAddDeckToCollection_;
+	QAction* actionCreateProxies_;
+	QAction* actionStats_;
+	CommonActions commonActions_;
+	QToolBar* toolBar_;
 
-	void closeEvent(QCloseEvent* event);
-	virtual bool event(QEvent* event);
 	void updateStatusBar();
 	DeckWidget* createDeckWidget(const QString& filename = QString());
 	void destroyDeckWidget(DeckWidget* deckWidget);
@@ -57,6 +66,7 @@ private slots:
 	void actionOpenDeck();
 	void actionSaveDeck();
 	void actionSaveDeckAs();
+	void actionImportDec();
 	void actionAdvancedFilter();
 	void actionEnableFilter(bool enable);
 	void actionAddToCollection();
@@ -67,8 +77,8 @@ private slots:
 	void actionToggleDeckActive(bool);
 	void createProxies();
 	void showStatistics();
-	void downloadCardArt();
-	void fetchOnlineData();
+	void actionDownloadCardArt();
+	void actionFetchOnlineData();
 	void deckEdited();
 	void handleOpenDeckRequest(const QString& deckId);
 	void headerStateChangedSlot(const QString& headerState);

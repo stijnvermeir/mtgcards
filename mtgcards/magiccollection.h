@@ -29,8 +29,6 @@ public:
 
 	void setUsedCount(const int dataRowIndex, const int usedCount);
 
-	void set(const int row, const ColumnType& column, const QVariant& data);
-
 private:
 	Collection();
 	~Collection();

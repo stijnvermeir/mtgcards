@@ -41,8 +41,6 @@ public:
 	bool isActive() const;
 	void setActive(bool active);
 
-	void set(const int row, const mtg::ColumnType& column, const QVariant& data);
-
 	QVector<QPair<int,int>> getQuantities() const;
 
 signals:

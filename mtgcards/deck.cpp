@@ -1,7 +1,6 @@
 #include "deck.h"
 
 #include "magiccarddata.h"
-#include "usercolumn.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -21,13 +20,11 @@ struct Deck::Pimpl
 		int rowIndexInData;
 		QVariant quantity;
 		QVariant sideboard;
-		QVariantMap userData;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
-			, sideboard(0)
-			, userData() {}
+		    , sideboard(0){}
 	};
 	QVector<Row> data_;
 	bool active_;
@@ -90,7 +87,6 @@ struct Deck::Pimpl
 					r.rowIndexInData = rowIndexInData;
 					r.quantity = card["Quantity"].toInt();
 					r.sideboard = card["Sideboard"].toInt();
-					r.userData = UserColumn::loadFromJson(card);
 					data_.push_back(r);
 				}
 			}
@@ -111,7 +107,6 @@ struct Deck::Pimpl
 			cardObj["ImageName"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::ImageName).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
 			cardObj["Sideboard"] = r.sideboard.toInt();
-			UserColumn::saveToJson(cardObj, r.userData);
 			cards.append(cardObj);
 		}
 		QJsonObject obj;
@@ -158,15 +153,6 @@ struct Deck::Pimpl
 			if (column == ColumnType::Sideboard)
 			{
 				return entry.sideboard;
-			}
-			if (column == ColumnType::UserDefined)
-			{
-				auto it = entry.userData.find(column.userColumn().name_);
-				if (it != entry.userData.end())
-				{
-					return it.value();
-				}
-				return column.userColumn().dataType_.getEmptyVariant();
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -286,19 +272,6 @@ struct Deck::Pimpl
 			}
 		}
 		hasUnsavedChanges_ = true;
-	}
-
-	void set(const int row, const ColumnType& column, const QVariant& data)
-	{
-		if (row >= 0 && row < getNumRows())
-		{
-			Row& entry = data_[row];
-			if (column == ColumnType::UserDefined)
-			{
-				entry.userData[column.userColumn().name_] = data;
-				hasUnsavedChanges_ = true;
-			}
-		}
 	}
 
 	QVector<QPair<int,int>> getQuantities() const
@@ -439,11 +412,6 @@ void Deck::setActive(bool active)
 	pimpl_->active_ = active;
 	pimpl_->hasUnsavedChanges_ = true;
 	emit changed();
-}
-
-void Deck::set(const int row, const ColumnType& column, const QVariant& data)
-{
-	pimpl_->set(row, column, data);
 }
 
 QVector<QPair<int, int>> Deck::getQuantities() const

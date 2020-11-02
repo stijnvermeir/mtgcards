@@ -6,99 +6,287 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>877</width>
-    <height>38</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MTG Cards</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="toolbarLayout">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="tabPosition">
+       <enum>QTabWidget::South</enum>
+      </property>
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>true</bool>
+      </property>
+      <property name="movable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="StatusBar" name="deckStatusBar" native="true"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>877</width>
-     <height>22</height>
+     <width>1280</width>
+     <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuWindow">
-    <property name="title">
-     <string>Window</string>
-    </property>
-    <addaction name="actionCardWindow"/>
-    <addaction name="actionPoolWindow"/>
-    <addaction name="actionCollectionWindow"/>
-    <addaction name="actionDeckWindow"/>
-   </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="actionOptions"/>
-    <addaction name="separator"/>
     <addaction name="actionGlobalFilter"/>
     <addaction name="separator"/>
-    <addaction name="actionImport_dec"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionOnlineManual"/>
-    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuWindow"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
-  <action name="actionCardWindow">
-   <property name="checkable">
-    <bool>true</bool>
+  <widget class="QDockWidget" name="cardDock">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
-   <property name="checked">
-    <bool>true</bool>
+   <property name="windowTitle">
+    <string>Card Preview</string>
    </property>
-   <property name="text">
-    <string>Card</string>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="cardDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QStackedWidget" name="stackedWidget">
+       <widget class="QWidget" name="page">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="CardGraphicsView" name="cardView_">
+           <property name="renderHints">
+            <set>QPainter::Antialiasing|QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_2">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_3">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Rulings</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="rulingsTbl">
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <column>
+            <property name="text">
+             <string>Date</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Text</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="backToPictureBtn">
+           <property name="text">
+            <string>Back to picture</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="poolDock">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
-  </action>
-  <action name="actionPoolWindow">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
+   <property name="windowTitle">
     <string>Pool</string>
    </property>
-  </action>
-  <action name="actionCollectionWindow">
-   <property name="checkable">
-    <bool>true</bool>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="poolDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="TableView" name="poolTableView"/>
+     </item>
+     <item>
+      <widget class="StatusBar" name="poolStatusBar" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="collectionDock">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
+   <property name="windowTitle">
     <string>Collection</string>
    </property>
-  </action>
-  <action name="actionDeckWindow">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Decks</string>
-   </property>
-  </action>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="collectionDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="TableView" name="collectionTableView"/>
+     </item>
+     <item>
+      <widget class="StatusBar" name="collectionStatusBar" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionOptions">
    <property name="text">
     <string>Options</string>
@@ -107,11 +295,6 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
-   </property>
-  </action>
-  <action name="actionOnlineManual">
-   <property name="text">
-    <string>Online Manual</string>
    </property>
   </action>
   <action name="actionAboutQt">
@@ -124,13 +307,26 @@
     <string>Global filter ...</string>
    </property>
   </action>
-  <action name="actionImport_dec">
-   <property name="text">
-    <string>Import .dec</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CardGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>cardgraphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>StatusBar</class>
+   <extends>QWidget</extends>
+   <header>statusbar.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

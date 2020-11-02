@@ -2,26 +2,25 @@
 
 #include "pooltablemodel.h"
 #include "filter.h"
-#include "ui_poolwindow.h"
+#include "commonactions.h"
+#include "ui_mainwindow.h"
 
-#include <QMainWindow>
 #include <QVector>
 #include <QScopedPointer>
 
-class PoolWindow : public QMainWindow
+class PoolDock : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit PoolWindow(QWidget *parent = 0);
-	virtual ~PoolWindow();
+	explicit PoolDock(Ui::MainWindow& ui, QObject* parent = nullptr);
+	virtual ~PoolDock();
 
 	void updateShortcuts();
 	void loadSettings();
 	void saveSettings();
 
 signals:
-	void windowClosed(bool);
 	void selectedCardChanged(int);
 	void addToCollection(QVector<int>);
 	void removeFromCollection(QVector<int>);
@@ -30,13 +29,12 @@ signals:
 	void fontChanged();
 
 private:
-	Ui::PoolWindow ui_;
+	Ui::MainWindow& ui_;
 	PoolTableModel poolTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
+	CommonActions commonActions_;
 
-	virtual void closeEvent(QCloseEvent* event);
-	virtual bool event(QEvent* event);
 	int currentDataRowIndex() const;
 	QVector<int> currentDataRowIndices() const;
 	void updateStatusBar();
@@ -52,5 +50,6 @@ private slots:
 	void actionDownloadCardArt();
 	void actionFetchOnlineData();
 	void hideColumnsContextMenuRequested(const QPoint& pos);
+	void rowContextMenuRequested(const QPoint& pos);
 	void handleGlobalFilterChanged();
 };

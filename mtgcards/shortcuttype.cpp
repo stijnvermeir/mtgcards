@@ -5,33 +5,41 @@ namespace {
 const QVector<QString> NAMES =
 {
 	 "newfile",
+     "importfile",
 	 "openfile",
 	 "savefile",
 	 "savefileas",
 	 "advancedfilter",
+     "enablefilter",
 	 "addtocollection",
 	 "removefromcollection",
 	 "addtodeck",
 	 "removefromdeck",
 	 "addfiltergroup",
 	 "addfilternode",
-	 "removefilternode"
+     "removefilternode",
+     "downloadcardart",
+     "fetchonlinedata"
 };
 
 const QVector<QString> DESCRIPTIONS =
 {
 	 "New File",
+     "Import File",
 	 "Open File",
 	 "Save File",
 	 "Save File as",
 	 "Advanced Filter",
+     "Enable Filter",
 	 "Add To Collection",
 	 "Remove From Collection",
 	 "Add To Deck",
 	 "Remove From Deck",
 	 "Add Filter Group",
 	 "Add Filter Node",
-	 "Remove Filter Node"
+     "Remove Filter Node",
+     "Download card art",
+     "Fetch online data"
 };
 
 QVector<QKeySequence> DEFAULT_KEY_SEQUENCES;
@@ -42,10 +50,12 @@ void initDefaultKeySequences()
 	{
 		DEFAULT_KEY_SEQUENCES.reserve(ShortcutType::COUNT);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::New);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+I"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Open),
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Save);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::SaveAs);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+SHIFT+F"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+ALT+="));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+ALT+-"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+="));
@@ -53,6 +63,8 @@ void initDefaultKeySequences()
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+G"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+F"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Delete);
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+D"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+U"));
 		initialized = true;
 	}
 }

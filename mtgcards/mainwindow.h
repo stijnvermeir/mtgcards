@@ -1,10 +1,10 @@
 #pragma once
 
-#include "poolwindow.h"
-#include "cardwindow.h"
-#include "collectionwindow.h"
-#include "deckwindow.h"
 #include "ui_mainwindow.h"
+#include "pooldock.h"
+#include "collectiondock.h"
+#include "carddock.h"
+#include "deckwindow.h"
 
 #include <QMainWindow>
 
@@ -18,28 +18,21 @@ public:
 
 	void loadSettings();
 	void saveSettings();
-	bool toQuitOrNotToQuit(QEvent* event);
 
 signals:
 	void globalFilterChanged();
 
 private:
 	Ui::MainWindow ui_;
-	PoolWindow poolWindow_;
-	CardWindow cardWindow_;
-	CollectionWindow collectionWindow_;
-	DeckWindow deckWindow_;
+	PoolDock* poolDock_;
+	CollectionDock* collectionDock_;
+	CardDock* cardDock_;
+	DeckWindow* deckWindow_;
 
 	virtual void closeEvent(QCloseEvent*);
 
 private slots:
-	void poolWindowActionToggled(bool show);
-	void cardWindowActionToggled(bool show);
-	void collectionWindowActionToggled(bool show);
-	void deckWindowActionToggled(bool show);
 	void optionsActionClicked();
 	void aboutActionClicked();
-	void importDec();
 	void globalFilter();
-	void onlineManual();
 };
