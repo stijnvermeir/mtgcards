@@ -89,6 +89,8 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
+
+	ui_.deckStatusBar->setViewChangerEnabled(false);
 }
 
 DeckWindow::~DeckWindow()

@@ -57,6 +57,8 @@ CollectionDock::CollectionDock(Ui::MainWindow& ui, QWidget* parent)
 	connect(ui_.collectionTableView, SIGNAL(searchStringChanged(QString)), ui_.collectionStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.collectionTableView);
+
+	ui_.collectionStatusBar->setViewChangerEnabled(false);
 }
 
 CollectionDock::~CollectionDock()

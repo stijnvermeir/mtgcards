@@ -23,6 +23,8 @@ SOURCES += main.cpp\
     carddock.cpp \
     collectiondock.cpp \
     commonactions.cpp \
+    imagetablemodel.cpp \
+    imagetableview.cpp \
         mainwindow.cpp \
     pooldock.cpp \
     pooltablemodel.cpp \
@@ -69,6 +71,8 @@ HEADERS  += mainwindow.h \
     carddock.h \
     collectiondock.h \
     commonactions.h \
+    imagetablemodel.h \
+    imagetableview.h \
     pooldock.h \
     pooltablemodel.h \
     deckwindow.h \

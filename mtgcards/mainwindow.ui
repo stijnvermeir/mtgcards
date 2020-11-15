@@ -243,7 +243,55 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="TableView" name="poolTableView"/>
+      <widget class="QStackedWidget" name="poolStack">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page_4">
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="TableView" name="poolTableView"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_5">
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="ImageTableView" name="poolImageTable"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </item>
      <item>
       <widget class="StatusBar" name="poolStatusBar" native="true"/>
@@ -325,6 +373,11 @@
    <extends>QWidget</extends>
    <header>statusbar.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ImageTableView</class>
+   <extends>QTableView</extends>
+   <header>imagetableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

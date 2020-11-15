@@ -37,6 +37,7 @@ PoolDock::PoolDock(Ui::MainWindow& ui, QObject* parent)
     : QObject(parent)
     , ui_(ui)
 	, poolTableModel_()
+    , imageTableModel_(&poolTableModel_)
 	, itemDelegate_(new PoolItemDelegate(poolTableModel_))
 	, rootFilterNode_()
     , commonActions_(this)
@@ -55,6 +56,11 @@ PoolDock::PoolDock(Ui::MainWindow& ui, QObject* parent)
 	connect(ui_.poolTableView, SIGNAL(searchStringChanged(QString)), ui_.poolStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.poolTableView);
+
+	ui_.poolImageTable->setImageTableModel(&imageTableModel_);
+
+	connect(ui_.poolStatusBar, SIGNAL(viewChanged(int)), this, SLOT(statusBarViewChanged(int)));
+	connect(ui_.poolStatusBar, SIGNAL(sliderValueChanged(int)), ui_.poolImageTable, SLOT(changeImageScale(int)));
 }
 
 PoolDock::~PoolDock()
@@ -82,6 +88,10 @@ void PoolDock::loadSettings()
 			poolTableModel_.setFilterRootNode(rootFilterNode_);
 		}
 	}
+
+	ui_.poolStatusBar->setViewIndex(settings.value("poolwindow/viewIndex", 0).toInt());
+	ui_.poolStatusBar->setSliderValue(settings.value("poolwindow/imagePromille", 500).toInt());
+
 	updateStatusBar();
 	updateShortcuts();
 }
@@ -99,6 +109,9 @@ void PoolDock::saveSettings()
 	{
 		settings.remove("poolwindow/filter");
 	}
+
+	settings.setValue("poolwindow/viewIndex", ui_.poolStatusBar->getViewIndex());
+	settings.setValue("poolwindow/imagePromille", ui_.poolStatusBar->getSliderValue());
 }
 
 int PoolDock::currentDataRowIndex() const
@@ -224,4 +237,20 @@ void PoolDock::handleGlobalFilterChanged()
 		poolTableModel_.setFilterRootNode(FilterNode::Ptr());
 	}
 	updateStatusBar();
+}
+
+void PoolDock::statusBarViewChanged(int index)
+{
+	if (index == 0)
+	{
+		ui_.poolStatusBar->setSearchEnabled(true);
+		ui_.poolStatusBar->setSliderEnabled(false);
+	}
+	if (index == 1)
+	{
+		ui_.poolStatusBar->setSearchEnabled(false);
+		ui_.poolStatusBar->setSliderEnabled(true);
+		imageTableModel_.reset();
+	}
+	ui_.poolStack->setCurrentIndex(index);
 }

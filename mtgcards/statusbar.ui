@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>487</width>
-    <height>20</height>
+    <height>22</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>9</number>
    </property>
    <property name="leftMargin">
     <number>9</number>
@@ -50,9 +50,43 @@
     </spacer>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QSlider" name="imageSizeSlider">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="minimum">
+      <number>300</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="value">
+      <number>500</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="searchPrefixLabel">
      <property name="text">
-      <string>Search: </string>
+      <string>Search:</string>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
      </property>
     </widget>
    </item>
@@ -60,6 +94,16 @@
     <widget class="QLabel" name="searchLabel">
      <property name="text">
       <string/>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="viewComboBox">
+     <property name="frame">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
