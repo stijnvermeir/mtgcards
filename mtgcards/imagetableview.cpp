@@ -14,6 +14,8 @@ ImageTableView::ImageTableView(QWidget* parent)
 	verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 	verticalHeader()->setDefaultSectionSize(340);
 	verticalHeader()->setVisible(false);
+
+	setSelectionMode(SingleSelection);
 }
 
 void ImageTableView::setImageSize(const QSize& imageSize)

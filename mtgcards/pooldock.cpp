@@ -56,8 +56,10 @@ PoolDock::PoolDock(Ui::MainWindow& ui, QObject* parent)
 	connect(ui_.poolTableView, SIGNAL(searchStringChanged(QString)), ui_.poolStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.poolTableView);
+	commonActions_.addToWidget(ui_.poolImageTable);
 
 	ui_.poolImageTable->setImageTableModel(&imageTableModel_);
+	connect(ui_.poolImageTable->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(imageCurrentChanged(const QModelIndex&, const QModelIndex&)));
 
 	connect(ui_.poolStatusBar, SIGNAL(viewChanged(int)), this, SLOT(statusBarViewChanged(int)));
 	connect(ui_.poolStatusBar, SIGNAL(sliderValueChanged(int)), ui_.poolImageTable, SLOT(changeImageScale(int)));
@@ -251,6 +253,16 @@ void PoolDock::statusBarViewChanged(int index)
 		ui_.poolStatusBar->setSearchEnabled(false);
 		ui_.poolStatusBar->setSliderEnabled(true);
 		imageTableModel_.reset();
+		int currentRow = ui_.poolTableView->currentIndex().row();
+		int imageColumnCount = imageTableModel_.columnCount();
+		QModelIndex indexToSelect = imageTableModel_.index(currentRow / imageColumnCount, currentRow % imageColumnCount);
+		ui_.poolImageTable->selectionModel()->select(indexToSelect, QItemSelectionModel::Select);
+		ui_.poolImageTable->scrollTo(indexToSelect);
 	}
 	ui_.poolStack->setCurrentIndex(index);
+}
+
+void PoolDock::imageCurrentChanged(const QModelIndex& current, const QModelIndex&)
+{
+	ui_.poolTableView->selectRow(current.row() * imageTableModel_.columnCount() + current.column());
 }

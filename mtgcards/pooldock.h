@@ -55,4 +55,5 @@ private slots:
 	void rowContextMenuRequested(const QPoint& pos);
 	void handleGlobalFilterChanged();
 	void statusBarViewChanged(int index);
+	void imageCurrentChanged(const QModelIndex&, const QModelIndex&);
 };

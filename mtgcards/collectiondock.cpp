@@ -38,6 +38,7 @@ CollectionDock::CollectionDock(Ui::MainWindow& ui, QWidget* parent)
     : QObject(parent)
     , ui_(ui)
 	, collectionTableModel_()
+    , imageTableModel_(&collectionTableModel_)
 	, itemDelegate_(new CollectionItemDelegate(collectionTableModel_))
 	, rootFilterNode_()
 {
@@ -57,8 +58,13 @@ CollectionDock::CollectionDock(Ui::MainWindow& ui, QWidget* parent)
 	connect(ui_.collectionTableView, SIGNAL(searchStringChanged(QString)), ui_.collectionStatusBar, SLOT(setSearch(QString)));
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.collectionTableView);
+	commonActions_.addToWidget(ui_.collectionImageTable);
 
-	ui_.collectionStatusBar->setViewChangerEnabled(false);
+	ui_.collectionImageTable->setImageTableModel(&imageTableModel_);
+	connect(ui_.collectionImageTable->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(imageCurrentChanged(const QModelIndex&, const QModelIndex&)));
+
+	connect(ui_.collectionStatusBar, SIGNAL(viewChanged(int)), this, SLOT(statusBarViewChanged(int)));
+	connect(ui_.collectionStatusBar, SIGNAL(sliderValueChanged(int)), ui_.collectionImageTable, SLOT(changeImageScale(int)));
 }
 
 CollectionDock::~CollectionDock()
@@ -92,6 +98,10 @@ void CollectionDock::loadSettings()
 			collectionTableModel_.setFilterRootNode(rootFilterNode_);
 		}
 	}
+
+	ui_.collectionStatusBar->setViewIndex(settings.value("collectionwindow/viewIndex", 0).toInt());
+	ui_.collectionStatusBar->setSliderValue(settings.value("collectionwindow/imagePromille", 500).toInt());
+
 	updateStatusBar();
 	updateShortcuts();
 }
@@ -109,6 +119,9 @@ void CollectionDock::saveSettings()
 	{
 		settings.remove("collectionwindow/filter");
 	}
+
+	settings.setValue("collectionwindow/viewIndex", ui_.collectionStatusBar->getViewIndex());
+	settings.setValue("collectionwindow/imagePromille", ui_.collectionStatusBar->getSliderValue());
 }
 
 int CollectionDock::currentDataRowIndex() const
@@ -254,7 +267,7 @@ void CollectionDock::removeFromCollection(const QVector<int>& dataRowIndices)
 
 void CollectionDock::currentRowChanged(QModelIndex, QModelIndex)
 {
-	if (ui_.collectionTableView->hasFocus())
+	if (ui_.collectionTableView->hasFocus() || ui_.collectionImageTable->hasFocus())
 	{
 		emit selectedCardChanged(currentDataRowIndex());
 	}
@@ -379,4 +392,30 @@ void CollectionDock::handleGlobalFilterChanged()
 		collectionTableModel_.setFilterRootNode(FilterNode::Ptr());
 	}
 	updateStatusBar();
+}
+
+void CollectionDock::statusBarViewChanged(int index)
+{
+	if (index == 0)
+	{
+		ui_.collectionStatusBar->setSearchEnabled(true);
+		ui_.collectionStatusBar->setSliderEnabled(false);
+	}
+	if (index == 1)
+	{
+		ui_.collectionStatusBar->setSearchEnabled(false);
+		ui_.collectionStatusBar->setSliderEnabled(true);
+		imageTableModel_.reset();
+		int currentRow = ui_.collectionTableView->currentIndex().row();
+		int imageColumnCount = imageTableModel_.columnCount();
+		QModelIndex indexToSelect = imageTableModel_.index(currentRow / imageColumnCount, currentRow % imageColumnCount);
+		ui_.collectionImageTable->selectionModel()->select(indexToSelect, QItemSelectionModel::Select);
+		ui_.collectionImageTable->scrollTo(indexToSelect);
+	}
+	ui_.collectionStack->setCurrentIndex(index);
+}
+
+void CollectionDock::imageCurrentChanged(const QModelIndex& current, const QModelIndex&)
+{
+	ui_.collectionTableView->selectRow(current.row() * imageTableModel_.columnCount() + current.column());
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "collectiontablemodel.h"
+#include "imagetablemodel.h"
 #include "filter.h"
 #include "commonactions.h"
 #include "ui_mainwindow.h"
@@ -34,6 +35,7 @@ signals:
 private:
 	Ui::MainWindow& ui_;
 	CollectionTableModel collectionTableModel_;
+	ImageTableModel imageTableModel_;
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	FilterNode::Ptr rootFilterNode_;
 	CommonActions commonActions_;
@@ -62,4 +64,6 @@ private slots:
 	void rowContextMenuRequested(const QPoint& pos);
 	void updateUsedCount();
 	void handleGlobalFilterChanged();
+	void statusBarViewChanged(int index);
+	void imageCurrentChanged(const QModelIndex&, const QModelIndex&);
 };
