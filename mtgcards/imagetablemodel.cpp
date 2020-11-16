@@ -15,7 +15,7 @@ ImageTableModel::ImageTableModel(MagicSortFilterProxyModel* proxy, QObject *pare
 
 int ImageTableModel::rowCount(const QModelIndex&) const
 {
-	return proxy_->rowCount() / numColumns_;
+	return proxy_->rowCount() / numColumns_ + ((proxy_->rowCount() % numColumns_) ? 1 : 0);
 }
 
 int ImageTableModel::columnCount(const QModelIndex&) const
@@ -30,7 +30,13 @@ QVariant ImageTableModel::data(const QModelIndex &index, int role) const
 		return QVariant();
 	}
 
-	QModelIndex proxyIndex = proxy_->index(index.row() * numColumns_ + index.column(), 0);
+	int proxyRow = index.row() * numColumns_ + index.column();
+	if (proxyRow >= proxy_->rowCount())
+	{
+		return QVariant();
+	}
+
+	QModelIndex proxyIndex = proxy_->index(proxyRow, 0);
 	int dataRowIndex = proxy_->getDataRowIndex(proxyIndex);
 	if (dataRowIndex < mtg::CardData::instance().getNumRows())
 	{
