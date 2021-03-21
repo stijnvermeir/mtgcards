@@ -374,6 +374,12 @@ void CollectionDock::rowContextMenuRequested(const QPoint& pos)
 			}
 		}
 	}
+	else
+	{
+		QMenu contextMenu(ui_.collectionTableView);
+		commonActions_.addToMenu(&contextMenu);
+		contextMenu.exec(ui_.collectionTableView->mapToGlobal(pos));
+	}
 }
 
 void CollectionDock::updateUsedCount()
