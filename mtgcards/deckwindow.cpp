@@ -584,7 +584,11 @@ void DeckWindow::actionAddDeckToCollection()
 	QWidget* widget = ui_.tabWidget->currentWidget();
 	if (widget)
 	{
-		emit addToCollection(static_cast<DeckWidget*>(widget)->deck().getQuantities());
+		auto response = QMessageBox::question(widget, "Are you sure?", "Are you sure you want to add the entire deck to your collection?", QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No), QMessageBox::No);
+		if (response == QMessageBox::Yes)
+		{
+			emit addToCollection(static_cast<DeckWidget*>(widget)->deck().getQuantities());
+		}
 	}
 }
 
