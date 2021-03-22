@@ -324,6 +324,16 @@ struct Collection::Pimpl
 			row->used = usedCount;
 		}
 	}
+
+	int getUsedCount(const int dataRowIndex)
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			return row->used.toInt();
+		}
+		return 0;
+	}
 };
 
 Collection& Collection::instance()
@@ -398,4 +408,9 @@ void Collection::setQuantity(const int dataRowIndex, const int newQuantity)
 void Collection::setUsedCount(const int dataRowIndex, const int usedCount)
 {
 	pimpl_->setUsedCount(dataRowIndex, usedCount);
+}
+
+int Collection::getUsedCount(const int dataRowIndex) const
+{
+	return pimpl_->getUsedCount(dataRowIndex);
 }

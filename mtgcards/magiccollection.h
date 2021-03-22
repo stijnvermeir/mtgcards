@@ -28,6 +28,7 @@ public:
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 
 	void setUsedCount(const int dataRowIndex, const int usedCount);
+	int getUsedCount(const int dataRowIndex) const;
 
 private:
 	Collection();

@@ -4,6 +4,8 @@
 #include "deck.h"
 #include "settings.h"
 #include "util.h"
+#include "magiccarddata.h"
+#include "magiccollection.h"
 
 #include <QMenu>
 #include <QDebug>
@@ -225,8 +227,56 @@ void DeckWidget::hideColumnsContextMenuRequested(const QPoint& pos)
 void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 {
 	QMenu contextMenu(ui_.tableView);
+	auto indices = currentDataRowIndices();
+	int dataRowIndex = -1;
+	if (indices.size() == 1)
+	{
+		dataRowIndex = indices.at(0);
+		int rowIndex = deck().getRowIndex(dataRowIndex);
+		auto name = deck().get(rowIndex, mtg::ColumnType::Name).toString();
+		auto reprints = mtg::CardData::instance().findRowsFast(name);
+		if (reprints.size() > 1 && reprints.size() < 50)
+		{
+			QMenu* menu = contextMenu.addMenu("Change set");
+			for (int i : reprints)
+			{
+				QAction* action = new QAction(menu);
+				action->setCheckable(true);
+				int owned = mtg::Collection::instance().getQuantity(i);
+				int used = mtg::Collection::instance().getUsedCount(i);
+				if (owned > 0)
+				{
+					action->setText(QString("%1 (Owned: %2 - Used: %3)").arg(mtg::CardData::instance().get(i, mtg::ColumnType::Set).toString()).arg(owned).arg(used));
+				}
+				else
+				{
+					action->setText(mtg::CardData::instance().get(i, mtg::ColumnType::Set).toString());
+				}
+				action->setData(i);
+				action->setChecked(dataRowIndex == i);
+				menu->addAction(action);
+			}
+			contextMenu.addSeparator();
+		}
+	}
 	commonActions_.addToMenu(&contextMenu);
-	contextMenu.exec(ui_.tableView->mapToGlobal(pos));
+	QAction* a = contextMenu.exec(ui_.tableView->mapToGlobal(pos));
+	if (a)
+	{
+		if (a->data().isValid())
+		{
+			int newDataRowIndex = a->data().toInt();
+			if (newDataRowIndex != dataRowIndex)
+			{
+				int quantity = deck().getQuantity(dataRowIndex);
+				int sb = deck().getSideboard(dataRowIndex);
+				deckTableModel_.setQuantity(dataRowIndex, -1);
+				deckTableModel_.setQuantity(newDataRowIndex, quantity);
+				deckTableModel_.setSideboard(newDataRowIndex, sb);
+				emit deckEdited();
+			}
+		}
+	}
 }
 
 void DeckWidget::headerStateChangedSlot()

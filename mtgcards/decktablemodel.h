@@ -17,6 +17,7 @@ public:
 	void save(const QString& filename);
 	void setDeckActive(const bool active);
 	void setQuantity(const int dataRowIndex, const int newQuantity);
+	void setSideboard(const int dataRowIndex, const int newSideboard);
 	const Deck& deck() const;
 
 	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const;

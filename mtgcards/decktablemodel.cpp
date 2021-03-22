@@ -107,6 +107,13 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 		endResetModel();
 	}
 
+	void setSideboard(const int dataRowIndex, const int newSideboard)
+	{
+		beginResetModel();
+		deck_->setSideboard(dataRowIndex, newSideboard);
+		endResetModel();
+	}
+
 	virtual int rowCount(const QModelIndex& = QModelIndex()) const
 	{
 		return deck_->getNumRows();
@@ -251,6 +258,11 @@ void DeckTableModel::setDeckActive(const bool active)
 void DeckTableModel::setQuantity(const int dataRowIndex, const int newQuantity)
 {
 	pimpl_->setQuantity(dataRowIndex, newQuantity);
+}
+
+void DeckTableModel::setSideboard(const int dataRowIndex, const int newSideboard)
+{
+	pimpl_->setSideboard(dataRowIndex, newSideboard);
 }
 
 const Deck& DeckTableModel::deck() const
