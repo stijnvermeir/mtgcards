@@ -441,12 +441,31 @@ void DeckWindow::actionImportDec()
 
 				for (int i = 0; i < lines.size(); ++i)
 				{
-					QTextStream stream(&lines[i]);
+					auto line = lines[i];
+					if (line.contains('#'))
+					{
+						line = line.split('#').first();
+					}
+					bool sideBoard = false;
+					if (line.startsWith("SB: "))
+					{
+						line.remove("SB: ");
+						sideBoard = true;
+					}
+					bool withSet = false;
+					if (line.contains('['))
+					{
+						withSet = true;
+					}
+					QTextStream stream(&line);
 					int amount;
 					stream >> amount;
 					QString set;
-					stream >> set;
-					set = set.remove('[').remove(']').toUpper();
+					if (withSet)
+					{
+						stream >> set;
+						set = set.remove('[').remove(']').toUpper();
+					}
 					QString name = stream.readAll().trimmed();
 					qDebug() << "Amount" << amount;
 					qDebug() << "Set" << set;
@@ -459,7 +478,14 @@ void DeckWindow::actionImportDec()
 					int dataRowIndex = mtg::CardData::instance().findRowFast(set, name);
 					if (dataRowIndex != -1)
 					{
-						deck.setQuantity(dataRowIndex, amount);
+						if (sideBoard)
+						{
+							deck.setSideboard(dataRowIndex, amount);
+						}
+						else
+						{
+							deck.setQuantity(dataRowIndex, amount);
+						}
 					}
 					else
 					{
