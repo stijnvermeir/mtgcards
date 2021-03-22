@@ -25,6 +25,7 @@ public:
 		RemoveFilterNode,
 		DownloadCardArt,
 		FetchOnlineData,
+		DeckstatsClipboard,
 
 		COUNT,
 		UNKNOWN = -1

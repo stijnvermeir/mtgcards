@@ -46,6 +46,7 @@ private:
 	QAction* actionAddDeckToCollection_;
 	QAction* actionCreateProxies_;
 	QAction* actionStats_;
+	QAction* actionCopyDeckStatsClipboard_;
 	CommonActions commonActions_;
 	QToolBar* toolBar_;
 
@@ -77,6 +78,7 @@ private slots:
 	void actionToggleDeckActive(bool);
 	void createProxies();
 	void showStatistics();
+	void copyDeckstatsClipboard();
 	void actionDownloadCardArt();
 	void actionFetchOnlineData();
 	void deckEdited();

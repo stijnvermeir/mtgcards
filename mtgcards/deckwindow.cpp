@@ -17,6 +17,7 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QLabel>
+#include <QClipboard>
 #include <QDebug>
 
 namespace {
@@ -54,6 +55,8 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	actionAddDeckToCollection_ = new QAction(QIcon(":/resources/icons/document24.svg"), "Add deck to collection", this);
 	actionCreateProxies_= new QAction(QIcon(":/resources/icons/printer11.svg"), "Create proxies", this);
 	actionStats_ = new QAction(QIcon(":/resources/icons/chart59.svg"), "Stats", this);
+	actionCopyDeckStatsClipboard_ = new QAction("Copy deckstats.net format to clipboard", this);
+	actionCopyDeckStatsClipboard_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::DeckstatsClipboard]);
 
 	toolBar_->setIconSize(QSize(16, 16));
 	toolBar_->addAction(actionNewDeck_);
@@ -80,6 +83,7 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	connect(actionAddDeckToCollection_, SIGNAL(triggered()), this, SLOT(actionAddDeckToCollection()));
 	connect(actionCreateProxies_, SIGNAL(triggered()), this, SLOT(createProxies()));
 	connect(actionStats_, SIGNAL(triggered()), this, SLOT(showStatistics()));
+	connect(actionCopyDeckStatsClipboard_, SIGNAL(triggered()), this, SLOT(copyDeckstatsClipboard()));
 
 	ui_.menuFile->addAction(actionNewDeck_);
 	ui_.menuFile->addAction(actionImportDec_);
@@ -89,6 +93,7 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
+	ui_.tabWidget->addAction(actionCopyDeckStatsClipboard_);
 
 	ui_.deckStatusBar->setViewChangerEnabled(false);
 }
@@ -267,7 +272,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		}
 	}
 
-	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_);
+	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_, *actionCopyDeckStatsClipboard_);
 	deckWidget->setHeaderState(headerState_);
 	if (commonActions_.getEnableFilter()->isChecked())
 	{
@@ -741,6 +746,26 @@ void DeckWindow::showStatistics()
 	{
 		DeckStatisticsDialog dlg(deckWidget->deck(), ui_.tabWidget);
 		dlg.exec();
+	}
+}
+
+void DeckWindow::copyDeckstatsClipboard()
+{
+	DeckWidget* deckWidget = static_cast<DeckWidget*>(ui_.tabWidget->currentWidget());
+	if (deckWidget)
+	{
+		qDebug() << "Copying deck onto clipboard in deckstats.net format.";
+		QString text;
+		for (int i = 0; i < deckWidget->deck().getNumRows(); ++i)
+		{
+			text += deckWidget->deck().get(i, mtg::ColumnType::Quantity).toString();
+			text += " [";
+			text += deckWidget->deck().get(i, mtg::ColumnType::SetCode).toString();
+			text += "] ";
+			text += deckWidget->deck().get(i, mtg::ColumnType::Name).toString();
+			text += "\n";
+		}
+		QApplication::clipboard()->setText(text);
 	}
 }
 

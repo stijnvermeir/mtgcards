@@ -19,7 +19,8 @@ const QVector<QString> NAMES =
 	 "addfilternode",
      "removefilternode",
      "downloadcardart",
-     "fetchonlinedata"
+     "fetchonlinedata",
+     "clipdeckstats"
 };
 
 const QVector<QString> DESCRIPTIONS =
@@ -39,7 +40,8 @@ const QVector<QString> DESCRIPTIONS =
 	 "Add Filter Node",
      "Remove Filter Node",
      "Download card art",
-     "Fetch online data"
+     "Fetch online data",
+     "Copy deckstats.net format to clipboard"
 };
 
 QVector<QKeySequence> DEFAULT_KEY_SEQUENCES;
@@ -65,6 +67,7 @@ void initDefaultKeySequences()
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence::Delete);
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+D"));
 		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+U"));
+		DEFAULT_KEY_SEQUENCES.push_back(QKeySequence("CTRL+E"));
 		initialized = true;
 	}
 }

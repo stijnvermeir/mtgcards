@@ -30,13 +30,14 @@ private:
 
 } // namespace
 
-DeckWidget::DeckWidget(const QString& filename, CommonActions& commonActions, QWidget* parent)
+DeckWidget::DeckWidget(const QString& filename, CommonActions& commonActions, QAction& actionCopyDeckStatsClipboard, QWidget* parent)
 	: QWidget(parent)
 	, ui_()
 	, deckTableModel_(filename)
 	, itemDelegate_(new DeckItemDelegate(deckTableModel_))
 	, headerStateChangedSlotDisabled_(false)
     , commonActions_(commonActions)
+    , actionCopyDeckStatsClipboard_(actionCopyDeckStatsClipboard)
 {
 	ui_.setupUi(this);
 	ui_.tableView->setItemDelegate(itemDelegate_.data());
@@ -260,6 +261,8 @@ void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 		}
 	}
 	commonActions_.addToMenu(&contextMenu);
+	contextMenu.addSeparator();
+	contextMenu.addAction(&actionCopyDeckStatsClipboard_);
 	QAction* a = contextMenu.exec(ui_.tableView->mapToGlobal(pos));
 	if (a)
 	{
