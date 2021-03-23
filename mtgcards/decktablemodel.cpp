@@ -54,7 +54,13 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::LegalityLegacy,
     mtg::ColumnType::LegalityVintage,
     mtg::ColumnType::LegalityCommander,
-	mtg::ColumnType::OwnedAll
+    mtg::ColumnType::OwnedAll,
+    mtg::ColumnType::IsCompanion,
+    mtg::ColumnType::CanBeCommander,
+    mtg::ColumnType::IsAlternative,
+    mtg::ColumnType::IsFullArt,
+    mtg::ColumnType::IsPromo,
+    mtg::ColumnType::IsReprint
 };
 
 const QVector<mtg::ColumnType>& GetColumns()

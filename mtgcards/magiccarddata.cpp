@@ -57,15 +57,21 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::IsLatestPrint,
     ColumnType::MultiverseId,
     ColumnType::ColorIdentity,
-    mtg::ColumnType::LegalityStandard,
-    mtg::ColumnType::LegalityModern,
-    mtg::ColumnType::LegalityLegacy,
-    mtg::ColumnType::LegalityVintage,
-	mtg::ColumnType::LegalityCommander,
+    ColumnType::LegalityStandard,
+    ColumnType::LegalityModern,
+    ColumnType::LegalityLegacy,
+    ColumnType::LegalityVintage,
+    ColumnType::LegalityCommander,
 	ColumnType::Uuid,
     ColumnType::ScryfallId,
     ColumnType::OtherFaceIds,
-    ColumnType::Side
+    ColumnType::Side,
+    ColumnType::IsCompanion,
+    ColumnType::CanBeCommander,
+    ColumnType::IsAlternative,
+    ColumnType::IsFullArt,
+    ColumnType::IsPromo,
+    ColumnType::IsReprint
 };
 
 QVector<int> generateColumnIndices()
@@ -268,7 +274,15 @@ struct CardData::Pimpl
 		qs += "s.releaseDate, ";
 		qs += "s.type, ";
 		qs += "s.block, ";
-		qs += "s.isOnlineOnly, ";
+		qs += "c.isOnlineOnly, ";
+		qs += "c.availability, ";
+		qs += "c.isAlternative, ";
+		qs += "c.isFullArt, ";
+		qs += "c.isPromo, ";
+		qs += "c.isReprint, ";
+		qs += "c.printings, ";
+		qs += "c.keywords, ";
+		qs += "c.leadershipSkills, ";
 		qs += "c.convertedManaCost, ";
 		qs += "c.borderColor, ";
 		qs += "c.name, ";
@@ -309,13 +323,51 @@ struct CardData::Pimpl
 		quickLookUpTableByUuid_.reserve(numCards);
 		while (q.next())
 		{
+			bool onlineOnly = q.value("cards.isOnlineOnly").toBool();
+			if (onlineOnly)
+			{
+				continue;
+			}
+			bool isPaper = q.value("cards.availability").toString().contains("paper");
+			if (!isPaper)
+			{
+				continue;
+			}
+			QString border = q.value("cards.borderColor").toString();
+			QString setType = q.value("sets.type").toString();
+			QString cardType = q.value("cards.type").toString();
+			bool unSet = false;
+			if (setType == "funny" && (border == "silver" || (border == "borderless" && cardType.contains("Basic Land"))))
+			{
+				unSet = true;
+			}
+			if (!unSet && (setType == "funny" || setType == "memorabilia"))
+			{
+				continue;
+			}
+			QString layout = q.value("cards.layout").toString();
+			if (layout == "phenomenon" || layout == "planar" || layout == "scheme" || layout == "token" || layout == "vanguard")
+			{
+				continue;
+			}
+
+			if (cardType == "Conspiracy")
+			{
+				continue;
+			}
+
+			bool isAlternative = q.value("cards.isAlternative").toBool();
+			bool isFullArt = q.value("cards.isFullArt").toBool();
+			bool isPromo = q.value("cards.isPromo").toBool();
+			bool isReprint = q.value("cards.isReprint").toBool();
+			bool isOnlyPrint = !q.value("cards.printings").toString().contains(',');
+			bool includeInLatestPrintCheck = (isOnlyPrint || (!isAlternative && !isFullArt && !isPromo));
+
 			QString setName = q.value("sets.name").toString();
 			QString setCode = q.value("sets.code").toString().toUpper();
 			QDate setReleaseDate = QDate::fromString(q.value("sets.releaseDate").toString(), "yyyy-MM-dd");
-			QString setType = q.value("sets.type").toString();
+
 			QString block = q.value("sets.block").toString();
-			bool onlineOnly = q.value("sets.isOnlineOnly").toBool();
-			bool includeInLatestPrintCheck = (setType != "promo" && setType != "reprint" && !onlineOnly);
 
 			Row r(COLUMNS.size());
 			r[columnToIndex(ColumnType::Id)] = data_.size();
@@ -331,7 +383,7 @@ struct CardData::Pimpl
 
 			// card
 			double cmc = q.value("cards.convertedManaCost").toDouble();
-			r[columnToIndex(ColumnType::Border)] = q.value("cards.borderColor").toString();
+			r[columnToIndex(ColumnType::Border)] = border;
 			QString cardName = q.value("cards.name").toString();
 			QStringList cardNames;
 			cardNames.push_back(cardName);
@@ -345,7 +397,7 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(q.value("cards.manaCost").toString(), cmc));
 			r[columnToIndex(ColumnType::CMC)] = cmc;
 			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
-			r[columnToIndex(ColumnType::Type)] = q.value("cards.type").toString();
+			r[columnToIndex(ColumnType::Type)] = cardType;
 			r[columnToIndex(ColumnType::SuperTypes)] = q.value("cards.supertypes").toString().split(",");
 			r[columnToIndex(ColumnType::Types)] = q.value("cards.types").toString().split(",");
 			r[columnToIndex(ColumnType::SubTypes)] = q.value("cards.subtypes").toString().split(",");
@@ -371,8 +423,18 @@ struct CardData::Pimpl
 			}
 			r[columnToIndex(ColumnType::ColorIdentity)] = QVariant::fromValue(ManaCost(colorIdentityStr, 0));
 
+			bool isCompanion = q.value("cards.keywords").toString().contains("Companion");
+			r[columnToIndex(ColumnType::IsCompanion)] = isCompanion;
+			bool canBeCommander = q.value("cards.leadershipSkills").toString().contains("'commander': True");
+			r[columnToIndex(ColumnType::CanBeCommander)] = canBeCommander;
+
+			r[columnToIndex(ColumnType::IsAlternative)] = isAlternative;
+			r[columnToIndex(ColumnType::IsPromo)] = isPromo;
+			r[columnToIndex(ColumnType::IsFullArt)] = isFullArt;
+			r[columnToIndex(ColumnType::IsReprint)] = isReprint;
+
 			// misc
-			r[columnToIndex(ColumnType::Layout)] = q.value("cards.layout").toString();
+			r[columnToIndex(ColumnType::Layout)] = layout;
 
 			QString uuid = q.value("cards.uuid").toString();
 			r[columnToIndex(ColumnType::Uuid)] = uuid;

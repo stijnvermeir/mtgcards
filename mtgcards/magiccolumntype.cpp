@@ -62,7 +62,13 @@ const QVector<QString> NAMES =
 	"Uuid",
 	"ScryfallId",
     "OtherFaceIds",
-    "Side"
+    "Side",
+    "IsCompanion",
+    "CanBeCommander",
+    "IsAlternative",
+    "IsFullArt",
+    "IsPromo",
+    "IsReprint"
 };
 
 const QVector<QString> DISPLAY_NAMES =
@@ -99,7 +105,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Used",
 	"SB",
     "Own",
-	"Is latest print",
+    "Latest print",
 	"Multiverse Id",
 	"Lowest Price (EX+)",
 	"Lowest Price (Foil)",
@@ -110,18 +116,24 @@ const QVector<QString> DISPLAY_NAMES =
 	"Tags",
     "OwnNot",
     "Color Identity",
-    "Standard",
-    "Modern",
-    "Legacy",
-    "Vintage",
-    "Commander",
+    "Standard legal",
+    "Modern legal",
+    "Legacy legal",
+    "Vintage legal",
+    "Commander legal",
     "QtyAll",
     "OwnAll",
     "UsedAll",
 	"Uuid",
 	"ScryfallId",
     "OtherFaceIds",
-    "Side"
+    "Side",
+    "Companion",
+    "Commander",
+    "Alternative",
+    "Full art",
+    "Promo",
+    "Reprint"
 };
 
 } // namespace

@@ -66,6 +66,12 @@ public:
 		ScryfallId,
 		OtherFaceIds,
 		Side,
+		IsCompanion,
+		CanBeCommander,
+		IsAlternative,
+		IsFullArt,
+		IsPromo,
+		IsReprint,
 
 		COUNT,
 		UNKNOWN = -1
