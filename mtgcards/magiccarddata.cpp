@@ -70,6 +70,7 @@ const QVector<ColumnType> COLUMNS =
     ColumnType::CanBeCommander,
     ColumnType::IsAlternative,
     ColumnType::IsFullArt,
+    ColumnType::IsExtendedArt,
     ColumnType::IsPromo,
     ColumnType::IsReprint
 };
@@ -283,6 +284,7 @@ struct CardData::Pimpl
 		qs += "c.printings, ";
 		qs += "c.keywords, ";
 		qs += "c.leadershipSkills, ";
+		qs += "c.frameEffects, ";
 		qs += "c.convertedManaCost, ";
 		qs += "c.borderColor, ";
 		qs += "c.name, ";
@@ -333,15 +335,19 @@ struct CardData::Pimpl
 			{
 				continue;
 			}
-			QString border = q.value("cards.borderColor").toString();
 			QString setType = q.value("sets.type").toString();
+			if (setType == "token" || setType == "memorabilia")
+			{
+				continue;
+			}
+			QString border = q.value("cards.borderColor").toString();
 			QString cardType = q.value("cards.type").toString();
 			bool unSet = false;
 			if (setType == "funny" && (border == "silver" || (border == "borderless" && cardType.contains("Basic Land"))))
 			{
 				unSet = true;
 			}
-			if (!unSet && (setType == "funny" || setType == "memorabilia"))
+			if (!unSet && setType == "funny")
 			{
 				continue;
 			}
@@ -350,7 +356,6 @@ struct CardData::Pimpl
 			{
 				continue;
 			}
-
 			if (cardType == "Conspiracy")
 			{
 				continue;
@@ -358,10 +363,25 @@ struct CardData::Pimpl
 
 			bool isAlternative = q.value("cards.isAlternative").toBool();
 			bool isFullArt = q.value("cards.isFullArt").toBool();
+			bool isExtendedArt = q.value("cards.frameEffects").toString().contains("extendedart");
 			bool isPromo = q.value("cards.isPromo").toBool();
 			bool isReprint = q.value("cards.isReprint").toBool();
-			bool isOnlyPrint = !q.value("cards.printings").toString().contains(',');
-			bool includeInLatestPrintCheck = (isOnlyPrint || (!isAlternative && !isFullArt && !isPromo));
+			bool isOnlyPrint = !q.value("cards.printings").toString().contains(',') && q.value("cards.variations").isNull();
+			bool includeInLatestPrintCheck = false;
+			if (isOnlyPrint)
+			{
+				includeInLatestPrintCheck = true;
+			}
+			else if (!isAlternative && !isFullArt && !isExtendedArt && !isPromo
+			         && setType != "box"
+			         && setType != "from_the_vault"
+			         && setType != "masterpiece"
+			         && setType != "premium_deck"
+			         && setType != "spellbook"
+			         && setType != "starter")
+			{
+				includeInLatestPrintCheck = true;
+			}
 
 			QString setName = q.value("sets.name").toString();
 			QString setCode = q.value("sets.code").toString().toUpper();
@@ -431,6 +451,7 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::IsAlternative)] = isAlternative;
 			r[columnToIndex(ColumnType::IsPromo)] = isPromo;
 			r[columnToIndex(ColumnType::IsFullArt)] = isFullArt;
+			r[columnToIndex(ColumnType::IsExtendedArt)] = isExtendedArt;
 			r[columnToIndex(ColumnType::IsReprint)] = isReprint;
 
 			// misc

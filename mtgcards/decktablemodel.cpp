@@ -59,6 +59,7 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::CanBeCommander,
     mtg::ColumnType::IsAlternative,
     mtg::ColumnType::IsFullArt,
+    mtg::ColumnType::IsExtendedArt,
     mtg::ColumnType::IsPromo,
     mtg::ColumnType::IsReprint
 };

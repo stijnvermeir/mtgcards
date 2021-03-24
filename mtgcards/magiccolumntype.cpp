@@ -67,6 +67,7 @@ const QVector<QString> NAMES =
     "CanBeCommander",
     "IsAlternative",
     "IsFullArt",
+    "IsExtendedArt",
     "IsPromo",
     "IsReprint"
 };
@@ -132,6 +133,7 @@ const QVector<QString> DISPLAY_NAMES =
     "Commander",
     "Alternative",
     "Full art",
+    "Extended art",
     "Promo",
     "Reprint"
 };

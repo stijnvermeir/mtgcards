@@ -70,6 +70,7 @@ public:
 		CanBeCommander,
 		IsAlternative,
 		IsFullArt,
+		IsExtendedArt,
 		IsPromo,
 		IsReprint,
 
