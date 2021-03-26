@@ -3,6 +3,7 @@
 #include "magiccolumntype.h"
 #include "util.h"
 #include "tags.h"
+#include "prices.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -13,7 +14,9 @@
 #include <QProcess>
 #include <QFontDialog>
 #include <QInputDialog>
+#include <QProgressDialog>
 #include <QDebug>
+#include <QThread>
 
 namespace {
 
@@ -147,6 +150,7 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	// data bindings tab
 	connect(ui_.browseAllSetsJsonBtn, SIGNAL(clicked()), this, SLOT(browseAllSetsJsonBtnClicked()));
 	connect(ui_.downloadLatestBtn, SIGNAL(clicked()), this, SLOT(downloadLatestAllSetsJsonBtnClicked()));
+	connect(ui_.updatePricesBtn, SIGNAL(clicked()), this, SLOT(updatePrices()));
 	connect(ui_.browseCardPictureDirBtn, SIGNAL(clicked()), this, SLOT(browseCardPictureDirBtnClicked()));
 	ui_.allSetsJsonTxt->setText(Settings::instance().getPoolDataFile());
 	ui_.cardPictureDirTxt->setText(Settings::instance().getCardImageDir());
@@ -229,6 +233,27 @@ void OptionsDialog::downloadLatestAllSetsJsonBtnClicked()
 	{
 		QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
 		QApplication::quit();
+	}
+}
+
+void OptionsDialog::updatePrices()
+{
+	auto filename = QFileDialog::getOpenFileName(this, "Locate AllPrices.json", "", "AllPrices (*AllPrices.json)");
+	if (!filename.isNull())
+	{
+		QProgressDialog progress("Updating prices ...", QString(), 0, 0, this);
+		progress.setWindowModality(Qt::WindowModal);
+		progress.setWindowFlag(Qt::WindowCloseButtonHint, false);
+		progress.show();
+		QThread* thread = QThread::create([filename](){Prices::instance().update(filename);});
+		QEventLoop loop;
+		QObject::connect(thread, &QThread::finished, &loop, &QEventLoop::quit);
+		thread->start();
+		loop.exec();
+		delete thread;
+		progress.setValue(0);
+		progress.close();
+		QMessageBox::information(this, "Update prices", "Prices updated.");
 	}
 }
 

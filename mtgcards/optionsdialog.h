@@ -27,6 +27,7 @@ private slots:
 	// data bindings tab
 	void browseAllSetsJsonBtnClicked();
 	void downloadLatestAllSetsJsonBtnClicked();
+	void updatePrices();
 	bool confirmRestart();
 	void browseCardPictureDirBtnClicked();
 	void ultraHighQualityArtClicked(bool enabled);

@@ -43,6 +43,7 @@ SOURCES += main.cpp\
     magicitemdelegate.cpp \
     filter.cpp \
     magicconvert.cpp \
+    prices.cpp \
     settings.cpp \
     collectiontablemodel.cpp \
     magiccollection.cpp \
@@ -73,6 +74,7 @@ HEADERS  += mainwindow.h \
     commonactions.h \
     imagetablemodel.h \
     imagetableview.h \
+    json.hpp \
     pooldock.h \
     pooltablemodel.h \
     deckwindow.h \
@@ -92,6 +94,7 @@ HEADERS  += mainwindow.h \
     magicconvert.h \
     filters/regexfilterfunction.h \
     filters/datefilterfunction.h \
+    prices.h \
     settings.h \
     collectiontablemodel.h \
     magiccollection.h \
