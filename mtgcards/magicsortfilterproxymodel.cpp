@@ -3,6 +3,7 @@
 #include "manacost.h"
 #include "magiccarddata.h"
 #include "settings.h"
+#include "prices.h"
 
 #include <QDebug>
 #include <QUrl>
@@ -96,12 +97,28 @@ bool MagicSortFilterProxyModel::setData(const QModelIndex& index, const QVariant
 		emit dataChanged(index, index);
 		return true;
 	}
+	if (index.column() == columnToIndex(mtg::ColumnType::Price) && role == Qt::EditRole)
+	{
+		auto uuid = mtg::CardData::instance().get(getDataRowIndex(index), mtg::ColumnType::Uuid);
+		if (uuid.isValid() && value.isValid())
+		{
+			double price = value.toDouble();
+			price = std::round(price * 100.0) / 100.0;
+			Prices::instance().setPrice(uuid.toString(), price);
+		}
+		emit dataChanged(index, index);
+		return true;
+	}
 	return QSortFilterProxyModel::setData(index, value, role);
 }
 
 Qt::ItemFlags MagicSortFilterProxyModel::flags(const QModelIndex& index) const
 {
 	if (index.column() == columnToIndex(mtg::ColumnType::Tags))
+	{
+		return Qt::ItemIsEditable | QSortFilterProxyModel::flags(index);
+	}
+	if (index.column() == columnToIndex(mtg::ColumnType::Price))
 	{
 		return Qt::ItemIsEditable | QSortFilterProxyModel::flags(index);
 	}

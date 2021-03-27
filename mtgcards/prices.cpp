@@ -35,7 +35,7 @@ public:
 	std::string prices_;
 	std::string date_;
 	QDate mostRecentDate_;
-	std::vector<float> priceVector_;
+	std::vector<double> priceVector_;
 	Prices* instance_;
 
 	sax_event_consumer(Prices* instance)
@@ -181,8 +181,8 @@ public:
 			{
 				if (instance_)
 				{
-					auto price = std::accumulate(priceVector_.begin(), priceVector_.end(), 0.0f) / priceVector_.size();
-					price = std::round(price * 100.0f) / 100.0f;
+					auto price = std::accumulate(priceVector_.begin(), priceVector_.end(), 0.0) / priceVector_.size();
+					price = std::round(price * 100.0) / 100.0;
 					instance_->setPrice(cardUuid_.c_str(), price);
 				}
 			}
@@ -301,7 +301,7 @@ Prices::Prices()
 	while (selectQuery_->next())
 	{
 		auto uuid = selectQuery_->value(0).toString();
-		auto price = selectQuery_->value(1).toFloat();
+		auto price = selectQuery_->value(1).toDouble();
 		priceList_.insert(uuid, price);
 	}
 	selectQuery_->finish();
@@ -333,7 +333,7 @@ QVariant Prices::getPrice(const QString& uuid)
 	return QVariant();
 }
 
-void Prices::setPrice(const QString& uuid, float price)
+void Prices::setPrice(const QString& uuid, double price)
 {
 	if (getPrice(uuid).isValid())
 	{

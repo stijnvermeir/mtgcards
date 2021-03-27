@@ -12,12 +12,12 @@ public:
 
 	void update(const QString& allPricesJsonFile);
 	QVariant getPrice(const QString& uuid);
-	void setPrice(const QString& uuid, float price);
+	void setPrice(const QString& uuid, double price);
 private:
 	Prices();
 	~Prices();
 
-	QHash<QString, float> priceList_;
+	QHash<QString, double> priceList_;
 	QSqlDatabase conn_;
 	QSqlQuery* selectQuery_;
 	QSqlQuery* insertQuery_;
