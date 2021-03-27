@@ -243,6 +243,7 @@ Prices& Prices::instance()
 }
 
 Prices::Prices()
+    : priceList_()
 {
 }
 
@@ -253,7 +254,21 @@ Prices::~Prices()
 void Prices::update(const QString& allPricesJsonFile)
 {
 	std::ifstream ifs(allPricesJsonFile.toStdString());
-	QHash<QString, float> priceList;
-	sax_event_consumer sec(&priceList);
+	sax_event_consumer sec(&priceList_);
 	json::sax_parse(ifs, &sec);
+}
+
+QVariant Prices::getPrice(const QString& uuid) const
+{
+	auto it = priceList_.find(uuid);
+	if (it != priceList_.end())
+	{
+		return it.value();
+	}
+	return QVariant();
+}
+
+void Prices::setPrice(const QString& uuid, float price)
+{
+	priceList_.insert(uuid, price);
 }

@@ -5,6 +5,7 @@
 #include "onlinedatacache.h"
 #include "util.h"
 #include "tags.h"
+#include "prices.h"
 
 #include <QDate>
 #include <QDir>
@@ -559,6 +560,11 @@ struct CardData::Pimpl
 					return Tags::instance().getCardTags(names.join('/'));
 				}
 				return Tags::instance().getCardTags(data_[row][columnToIndex(ColumnType::Name)].toString());
+			}
+			else
+			if (column == ColumnType::PriceTrend)
+			{
+				return Prices::instance().getPrice(get(row, ColumnType::Uuid).toString());
 			}
 			else
 			if (OnlineDataCache::isOnlineColumn(column))
