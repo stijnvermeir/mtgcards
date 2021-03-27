@@ -40,7 +40,7 @@ const QVector<QString> DESCRIPTIONS =
 	 "Add Filter Node",
      "Remove Filter Node",
      "Download card art",
-     "Fetch online data",
+     "Fetch price online",
      "Copy deckstats.net format to clipboard"
 };
 

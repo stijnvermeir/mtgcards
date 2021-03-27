@@ -1,4 +1,5 @@
 #include "prices.h"
+#include "settings.h"
 
 #include "json.hpp"
 
@@ -6,10 +7,11 @@
 
 #include <QDate>
 #include <QHash>
+#include <QtSql>
 #include <QtDebug>
 
 using json = nlohmann::json;
-
+namespace  {
 class sax_event_consumer : public json::json_sax_t
 {
 public:
@@ -34,9 +36,9 @@ public:
 	std::string date_;
 	QDate mostRecentDate_;
 	float price_;
-	QHash<QString, float>* priceList_;
+	Prices* instance_;
 
-	sax_event_consumer(QHash<QString, float>* priceList)
+	sax_event_consumer(Prices* instance)
 	    : state_(Init)
 	    , key_()
 	    , cardUuid_()
@@ -47,7 +49,7 @@ public:
 	    , date_()
 	    , mostRecentDate_()
 	    , price_(0.0f)
-	    , priceList_(priceList)
+	    , instance_(instance)
 	{
 	}
 
@@ -185,11 +187,10 @@ public:
 		{
 			if (mostRecentDate_.isValid())
 			{
-				if (priceList_)
+				if (instance_)
 				{
-					priceList_->insert(cardUuid_.c_str(), price_);
+					instance_->setPrice(cardUuid_.c_str(), price_);
 				}
-				//qDebug() << cardUuid_.c_str() << mostRecentDate_ << price_;
 			}
 			mostRecentDate_ = QDate();
 			price_ = 0.0f;
@@ -236,6 +237,45 @@ public:
 	}
 };
 
+QSqlDatabase conn()
+{
+	return QSqlDatabase::database("prices");
+}
+
+QSqlError initDb()
+{
+	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "prices");
+	db.setDatabaseName(Settings::instance().getPricesDb());
+	if (!db.open()) return db.lastError();
+	if (!db.tables().contains("dbschema"))
+	{
+		QString query;
+		QSqlQuery q(db);
+		if (!q.exec("CREATE TABLE dbschema (version INTEGER PRIMARY KEY)")) return q.lastError();
+	}
+	int dbVersion = 0;
+	{
+		QSqlQuery q(db);
+		q.exec("SELECT MAX(version) FROM dbschema");
+		if (q.next())
+		{
+			dbVersion = q.value(0).toInt();
+		}
+		q.finish();
+	}
+	if (dbVersion == 0)
+	{
+		QSqlQuery q(db);
+		db.transaction();
+		if (!q.exec("CREATE TABLE prices(uuid TEXT PRIMARY KEY, price real)")) return q.lastError();
+		if (!q.exec("INSERT INTO dbschema(version) VALUES(1)")) return q.lastError();
+		db.commit();
+	}
+	return QSqlError();
+}
+
+} // namespace
+
 Prices& Prices::instance()
 {
 	static Prices prices;
@@ -244,21 +284,52 @@ Prices& Prices::instance()
 
 Prices::Prices()
     : priceList_()
+    , conn_()
 {
+	QSqlError err = initDb();
+	if (err.isValid())
+	{
+		qDebug() << err;
+	}
+	conn_ = conn();
+	QSqlQuery q(conn_);
+	q.exec("PRAGMA journal_mode = WAL");
+	q.exec("PRAGMA synchronous = NORMAL");
+
+	selectQuery_ = new QSqlQuery(conn_);
+	selectQuery_->prepare("SELECT uuid, price FROM prices");
+	insertQuery_ = new QSqlQuery(conn_);
+	insertQuery_->prepare("INSERT INTO prices(uuid, price) VALUES(?, ?)");
+	updateQuery_ = new QSqlQuery(conn_);
+	updateQuery_->prepare("UPDATE prices SET price = ? WHERE uuid = ?");
+
+	selectQuery_->exec();
+	while (selectQuery_->next())
+	{
+		auto uuid = selectQuery_->value(0).toString();
+		auto price = selectQuery_->value(1).toFloat();
+		priceList_.insert(uuid, price);
+	}
+	selectQuery_->finish();
 }
 
 Prices::~Prices()
 {
+	delete updateQuery_;
+	delete insertQuery_;
+	delete selectQuery_;
 }
 
 void Prices::update(const QString& allPricesJsonFile)
 {
+	conn_.transaction();
 	std::ifstream ifs(allPricesJsonFile.toStdString());
-	sax_event_consumer sec(&priceList_);
+	sax_event_consumer sec(this);
 	json::sax_parse(ifs, &sec);
+	conn_.commit();
 }
 
-QVariant Prices::getPrice(const QString& uuid) const
+QVariant Prices::getPrice(const QString& uuid)
 {
 	auto it = priceList_.find(uuid);
 	if (it != priceList_.end())
@@ -270,5 +341,19 @@ QVariant Prices::getPrice(const QString& uuid) const
 
 void Prices::setPrice(const QString& uuid, float price)
 {
-	priceList_.insert(uuid, price);
+	if (getPrice(uuid).isValid())
+	{
+		updateQuery_->bindValue(0, price);
+		updateQuery_->bindValue(1, uuid);
+		updateQuery_->exec();
+		updateQuery_->finish();
+	}
+	else
+	{
+		insertQuery_->bindValue(0, uuid);
+		insertQuery_->bindValue(1, price);
+		insertQuery_->exec();
+		insertQuery_->finish();
+	}
+	priceList_[uuid] = price;
 }

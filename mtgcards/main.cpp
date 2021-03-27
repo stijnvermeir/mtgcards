@@ -2,8 +2,8 @@
 #include "splashscreen.h"
 #include "magiccarddata.h"
 #include "magiccollection.h"
+#include "prices.h"
 #include "deckmanager.h"
-#include "onlinedatacache.h"
 #include "settings.h"
 #include "util.h"
 #include "tags.h"
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	a.processEvents();
 	mtg::Collection::instance();
 	a.processEvents();
-	OnlineDataCache::instance();
+	Prices::instance();
 	a.processEvents();
 	Tags::instance();
 	a.processEvents();

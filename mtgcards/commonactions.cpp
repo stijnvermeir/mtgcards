@@ -34,7 +34,7 @@ CommonActions::CommonActions(QObject *parent) : QObject(parent)
 	actionRemoveFromDeck->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 	actionDownloadCardArt = new QAction(createIcon(":/resources/icons/paint-board-and-brush.svg"), "Download card art", this);
 	actionDownloadCardArt->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	actionFetchOnlineData = new QAction(createIcon(":/resources/icons/internet43.svg"), "Fetch online data", this);
+	actionFetchOnlineData = new QAction(createIcon(":/resources/icons/internet43.svg"), "Fetch price online", this);
 	actionFetchOnlineData->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 }
 

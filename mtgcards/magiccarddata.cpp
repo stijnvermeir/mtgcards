@@ -2,7 +2,6 @@
 
 #include "manacost.h"
 #include "settings.h"
-#include "onlinedatacache.h"
 #include "util.h"
 #include "tags.h"
 #include "prices.h"
@@ -155,7 +154,7 @@ double downloadPrice(const QString& scryfallId)
 	if (reply->error())
 	{
 		qDebug() << reply->error() << reply->errorString();
-		return false;
+		return 0;
 	}
 	auto rawData = reply->readAll();
 	QJsonParseError parseError;
@@ -514,11 +513,6 @@ struct CardData::Pimpl
 				return Prices::instance().getPrice(get(row, ColumnType::Uuid).toString());
 			}
 			else
-			if (OnlineDataCache::isOnlineColumn(column))
-			{
-				return OnlineDataCache::instance().get(data_[row][columnToIndex(ColumnType::SetCode)].toString(), data_[row][columnToIndex(ColumnType::Name)].toString(), column);
-			}
-			else
 			{
 				auto index = columnToIndex(column);
 				if (index < COLUMNS.size())
@@ -624,10 +618,8 @@ struct CardData::Pimpl
 		auto price = downloadPrice(scryfallId);
 		if (price > 0)
 		{
-			QString set = data_[row][columnToIndex(ColumnType::SetCode)].toString();
-			QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
-			OnlineDataCache& cache = OnlineDataCache::instance();
-			cache.set(set, name, ColumnType::Price, price);
+			QString uuid = data_[row][columnToIndex(ColumnType::Uuid)].toString();
+			Prices::instance().setPrice(uuid, price);
 		}
 	}
 

@@ -56,7 +56,6 @@ SOURCES += main.cpp\
     util.cpp \
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
-    onlinedatacache.cpp \
     splashscreen.cpp \
     tags.cpp \
 	filters/comparetype.cpp \
@@ -111,7 +110,6 @@ HEADERS  += mainwindow.h \
     deckstatisticsdialog.h \
     manacurvelinewidget.h \
     filters/deckfilterfunction.h \
-    onlinedatacache.h \
     magicruling.h \
     splashscreen.h \
     tags.h \

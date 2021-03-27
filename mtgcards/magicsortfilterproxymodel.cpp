@@ -2,7 +2,6 @@
 
 #include "manacost.h"
 #include "magiccarddata.h"
-#include "onlinedatacache.h"
 #include "settings.h"
 
 #include <QDebug>
