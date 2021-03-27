@@ -35,7 +35,7 @@ public:
 	std::string prices_;
 	std::string date_;
 	QDate mostRecentDate_;
-	float price_;
+	std::vector<float> priceVector_;
 	Prices* instance_;
 
 	sax_event_consumer(Prices* instance)
@@ -48,7 +48,7 @@ public:
 	    , prices_()
 	    , date_()
 	    , mostRecentDate_()
-	    , price_(0.0f)
+	    , priceVector_()
 	    , instance_(instance)
 	{
 	}
@@ -77,15 +77,7 @@ public:
 	{
 		if (cardFormat_ == "paper" && priceProvider_ == "cardmarket" && priceProviderValue_ == "retail" && prices_ == "normal")
 		{
-			auto d = QDate::fromString(date_.c_str(), Qt::ISODate);
-			if (d.isValid())
-			{
-				if (mostRecentDate_.isNull() || mostRecentDate_ < d)
-				{
-					mostRecentDate_ = d;
-					price_ = val;
-				}
-			}
+			priceVector_.push_back(val);
 		}
 		return true;
 	}
@@ -185,15 +177,17 @@ public:
 		break;
 		case InPrices:
 		{
-			if (mostRecentDate_.isValid())
+			if (!priceVector_.empty())
 			{
 				if (instance_)
 				{
-					instance_->setPrice(cardUuid_.c_str(), price_);
+					auto price = std::accumulate(priceVector_.begin(), priceVector_.end(), 0.0f) / priceVector_.size();
+					price = std::round(price * 100.0f) / 100.0f;
+					instance_->setPrice(cardUuid_.c_str(), price);
 				}
 			}
 			mostRecentDate_ = QDate();
-			price_ = 0.0f;
+			priceVector_.clear();
 			date_.clear();
 			prices_.clear();
 			state_ = InProviderValues;
