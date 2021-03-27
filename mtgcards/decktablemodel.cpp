@@ -11,57 +11,29 @@ namespace {
 
 const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 {
-	mtg::ColumnType::Set,
-	mtg::ColumnType::SetCode,
-	mtg::ColumnType::SetGathererCode,
-	mtg::ColumnType::SetOldCode,
-	mtg::ColumnType::SetReleaseDate,
-	mtg::ColumnType::SetType,
-	mtg::ColumnType::Block,
-	mtg::ColumnType::OnlineOnly,
-	mtg::ColumnType::Border,
+    mtg::ColumnType::SetCode,
+    mtg::ColumnType::SetName,
+    mtg::ColumnType::SetReleaseDate,
 	mtg::ColumnType::Name,
 	mtg::ColumnType::Names,
-	mtg::ColumnType::Quantity,
-	mtg::ColumnType::Sideboard,
 	mtg::ColumnType::ManaCost,
 	mtg::ColumnType::CMC,
 	mtg::ColumnType::Color,
+    mtg::ColumnType::ColorIdentity,
+    mtg::ColumnType::LegalityCommander,
 	mtg::ColumnType::Type,
-	mtg::ColumnType::SuperTypes,
-	mtg::ColumnType::Types,
-	mtg::ColumnType::SubTypes,
 	mtg::ColumnType::Rarity,
 	mtg::ColumnType::Text,
-	mtg::ColumnType::Flavor,
-	mtg::ColumnType::Artist,
 	mtg::ColumnType::Power,
 	mtg::ColumnType::Toughness,
 	mtg::ColumnType::Loyalty,
-	mtg::ColumnType::Layout,
-	mtg::ColumnType::ImageName,
+    mtg::ColumnType::Quantity,
+    mtg::ColumnType::Sideboard,
 	mtg::ColumnType::Owned,
-	mtg::ColumnType::PriceLowest,
-	mtg::ColumnType::PriceLowestFoil,
-	mtg::ColumnType::PriceAverage,
-	mtg::ColumnType::PriceTrend,
-	mtg::ColumnType::Id,
-	mtg::ColumnType::Tags,
-    mtg::ColumnType::NotOwned,
-    mtg::ColumnType::ColorIdentity,
-    mtg::ColumnType::LegalityStandard,
-    mtg::ColumnType::LegalityModern,
-    mtg::ColumnType::LegalityLegacy,
-    mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander,
     mtg::ColumnType::OwnedAll,
-    mtg::ColumnType::IsCompanion,
-    mtg::ColumnType::CanBeCommander,
-    mtg::ColumnType::IsAlternative,
-    mtg::ColumnType::IsFullArt,
-    mtg::ColumnType::IsExtendedArt,
-    mtg::ColumnType::IsPromo,
-    mtg::ColumnType::IsReprint
+    mtg::ColumnType::NotOwned,
+    mtg::ColumnType::Price,
+    mtg::ColumnType::Tags
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -169,7 +141,7 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 					}
                     if (GetColumns()[index.column()] == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
                     {
-                        return deck_->get(index.row(), mtg::ColumnType::Set);
+						return deck_->get(index.row(), mtg::ColumnType::SetName);
                     }
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
@@ -221,6 +193,13 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 				if (section >= 0 && section < columnCount())
 				{
 					return GetColumns()[section].getDisplayName();
+				}
+			}
+			if (role == Qt::UserRole)
+			{
+				if (section >= 0 && section < columnCount())
+				{
+					return QString(GetColumns()[section]);
 				}
 			}
 		}

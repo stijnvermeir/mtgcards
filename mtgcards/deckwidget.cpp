@@ -247,11 +247,11 @@ void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 				int used = mtg::Collection::instance().getUsedCount(i);
 				if (owned > 0)
 				{
-					action->setText(QString("%1 (Owned: %2 - Used: %3)").arg(mtg::CardData::instance().get(i, mtg::ColumnType::Set).toString()).arg(owned).arg(used));
+					action->setText(QString("%1 (Owned: %2 - Used: %3)").arg(mtg::CardData::instance().get(i, mtg::ColumnType::SetName).toString()).arg(owned).arg(used));
 				}
 				else
 				{
-					action->setText(mtg::CardData::instance().get(i, mtg::ColumnType::Set).toString());
+					action->setText(mtg::CardData::instance().get(i, mtg::ColumnType::SetName).toString());
 				}
 				action->setData(i);
 				action->setChecked(dataRowIndex == i);

@@ -17,13 +17,36 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
+#include <QtDebug>
+
+namespace {
+
+QString logicalIndexToName(QHeaderView& view, int logicalIndex)
+{
+	return view.model()->headerData(logicalIndex, Qt::Horizontal, Qt::UserRole).toString();
+}
+
+QVariant nameToLogicalIndex(QHeaderView& view, const QString& name)
+{
+	for (int i = 0; i < view.count(); ++i)
+	{
+		auto n = view.model()->headerData(i, Qt::Horizontal, Qt::UserRole);
+		if (n.isValid() && n.toString() == name)
+		{
+			return i;
+		}
+	}
+	return QVariant();
+}
+
+}
 
 QString Util::saveHeaderViewState(QHeaderView& headerView)
 {
 	QVariantMap headerState;
-	headerState["sortIndicatorSection"] = headerView.sortIndicatorSection();
+	headerState["sortIndicatorSection"] = logicalIndexToName(headerView, headerView.sortIndicatorSection());
 	headerState["sortIndicatorOrder"] = headerView.sortIndicatorOrder();
-	QVariantList sections;
+	QVariantMap sections;
 	for (int logicalIndex = 0; logicalIndex < headerView.count(); ++logicalIndex)
 	{
 		QVariantMap section;
@@ -33,7 +56,7 @@ QString Util::saveHeaderViewState(QHeaderView& headerView)
 		section["size"] = headerView.sectionSize(logicalIndex);
 		headerView.setSectionHidden(logicalIndex, hidden);
 		section["hidden"] = hidden;
-		sections.append(section);
+		sections.insert(logicalIndexToName(headerView, logicalIndex), section);
 	}
 	headerState["sections"] = sections;
 	QString data = QJsonDocument::fromVariant(headerState).toJson(QJsonDocument::Compact);
@@ -43,12 +66,13 @@ QString Util::saveHeaderViewState(QHeaderView& headerView)
 void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
 {
 	QVariantMap headerState = QJsonDocument::fromJson(data.toUtf8()).toVariant().toMap();
-	QVariantList sections = headerState["sections"].toList();
-	for (int logicalIndex = 0; logicalIndex < sections.size(); ++logicalIndex)
+	QVariantMap sections = headerState["sections"].toMap();
+	for (int logicalIndex = 0; logicalIndex < headerView.count(); ++logicalIndex)
 	{
-		QVariantMap section = sections[logicalIndex].toMap();
-		if (logicalIndex < headerView.count())
+		auto sectionName = logicalIndexToName(headerView, logicalIndex);
+		if (sections.contains(sectionName))
 		{
+			QVariantMap section = sections[sectionName].toMap();
 			int currentVisualIndex = headerView.visualIndex(logicalIndex);
 			int newVisualIndex = section["visualIndex"].toInt();
             headerView.swapSections(currentVisualIndex, newVisualIndex);
@@ -61,11 +85,11 @@ void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
             headerView.setSectionHidden(logicalIndex, section["hidden"].toBool());
 		}
 	}
-	int sortSection = headerState["sortIndicatorSection"].toInt();
-	if (sortSection < headerView.count())
+	auto sortSection = nameToLogicalIndex(headerView, headerState["sortIndicatorSection"].toString());
+	if (sortSection.isValid())
 	{
 		Qt::SortOrder sortOrder = static_cast<Qt::SortOrder>(headerState["sortIndicatorOrder"].toInt());
-		headerView.setSortIndicator(sortSection, sortOrder);
+		headerView.setSortIndicator(sortSection.toInt(), sortOrder);
 	}
 }
 

@@ -14,12 +14,7 @@ namespace {
 
 const QVector<QPair<ColumnType, QString>> ONLINE_COLUMNS =
 {
-	{ ColumnType::PriceLowest, "real"},
-	{ ColumnType::PriceLowestFoil, "real"},
-	{ ColumnType::PriceAverage, "real"},
-	{ ColumnType::PriceTrend, "real"},
-	{ ColumnType::MkmProductId, "integer"},
-	{ ColumnType::MkmMetaproductId, "integer"}
+    { ColumnType::Price, "real"}
 };
 
 QVector<int> generateOnlineColumnIndices()

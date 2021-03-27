@@ -28,14 +28,10 @@ namespace {
 const QVector<ColumnType> COLUMNS =
 {
 	ColumnType::Id,
-	ColumnType::Set,
+    ColumnType::SetName,
 	ColumnType::SetCode,
-	ColumnType::SetGathererCode,
-	ColumnType::SetOldCode,
 	ColumnType::SetReleaseDate,
 	ColumnType::SetType,
-	ColumnType::Block,
-	ColumnType::OnlineOnly,
 	ColumnType::Border,
 	ColumnType::Name,
 	ColumnType::Names,
@@ -43,25 +39,15 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::CMC,
 	ColumnType::Color,
 	ColumnType::Type,
-	ColumnType::SuperTypes,
-	ColumnType::Types,
-	ColumnType::SubTypes,
 	ColumnType::Rarity,
 	ColumnType::Text,
-	ColumnType::Flavor,
-	ColumnType::Artist,
 	ColumnType::Power,
 	ColumnType::Toughness,
 	ColumnType::Loyalty,
 	ColumnType::Layout,
 	ColumnType::ImageName,
 	ColumnType::IsLatestPrint,
-    ColumnType::MultiverseId,
     ColumnType::ColorIdentity,
-    ColumnType::LegalityStandard,
-    ColumnType::LegalityModern,
-    ColumnType::LegalityLegacy,
-    ColumnType::LegalityVintage,
     ColumnType::LegalityCommander,
 	ColumnType::Uuid,
     ColumnType::ScryfallId,
@@ -275,7 +261,6 @@ struct CardData::Pimpl
 		qs += "s.code, ";
 		qs += "s.releaseDate, ";
 		qs += "s.type, ";
-		qs += "s.block, ";
 		qs += "c.isOnlineOnly, ";
 		qs += "c.availability, ";
 		qs += "c.isAlternative, ";
@@ -293,13 +278,8 @@ struct CardData::Pimpl
 		qs += "c.manaCost, ";
 		qs += "c.colors, ";
 		qs += "c.type, ";
-		qs += "c.supertypes, ";
-		qs += "c.types, ";
-		qs += "c.subtypes, ";
 		qs += "c.rarity, ";
 		qs += "c.text, ";
-		qs += "c.flavorText, ";
-		qs += "c.artist, ";
 		qs += "c.power, ";
 		qs += "c.toughness, ";
 		qs += "c.loyalty, ";
@@ -309,7 +289,6 @@ struct CardData::Pimpl
 		qs += "c.otherFaceIds, ";
 		qs += "c.side, ";
 		qs += "c.variations, ";
-		qs += "c.multiverseId, ";
 		qs += "c.scryfallId ";
 		qs += "FROM ";
 		qs += "cards c ";
@@ -388,19 +367,13 @@ struct CardData::Pimpl
 			QString setCode = q.value("sets.code").toString().toUpper();
 			QDate setReleaseDate = QDate::fromString(q.value("sets.releaseDate").toString(), "yyyy-MM-dd");
 
-			QString block = q.value("sets.block").toString();
-
 			Row r(COLUMNS.size());
 			r[columnToIndex(ColumnType::Id)] = data_.size();
 			// set
-			r[columnToIndex(ColumnType::Set)] = setName;
+			r[columnToIndex(ColumnType::SetName)] = setName;
 			r[columnToIndex(ColumnType::SetCode)] = setCode;
-			r[columnToIndex(ColumnType::SetGathererCode)] = setCode;
-			r[columnToIndex(ColumnType::SetOldCode)] = setCode;
 			r[columnToIndex(ColumnType::SetReleaseDate)] = setReleaseDate;
 			r[columnToIndex(ColumnType::SetType)] = setType;
-			r[columnToIndex(ColumnType::Block)] = block;
-			r[columnToIndex(ColumnType::OnlineOnly)] = onlineOnly;
 
 			// card
 			double cmc = q.value("cards.convertedManaCost").toDouble();
@@ -419,13 +392,8 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::CMC)] = cmc;
 			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
 			r[columnToIndex(ColumnType::Type)] = cardType;
-			r[columnToIndex(ColumnType::SuperTypes)] = q.value("cards.supertypes").toString().split(",");
-			r[columnToIndex(ColumnType::Types)] = q.value("cards.types").toString().split(",");
-			r[columnToIndex(ColumnType::SubTypes)] = q.value("cards.subtypes").toString().split(",");
 			r[columnToIndex(ColumnType::Rarity)] = q.value("cards.rarity").toString();
 			r[columnToIndex(ColumnType::Text)] = q.value("cards.text").toString();
-			r[columnToIndex(ColumnType::Flavor)] = q.value("cards.flavorText").toString();
-			r[columnToIndex(ColumnType::Artist)] = q.value("cards.artist").toString();
 			r[columnToIndex(ColumnType::Power)] = q.value("cards.power").toString();
 			r[columnToIndex(ColumnType::Toughness)] = q.value("cards.toughness").toString();
 			r[columnToIndex(ColumnType::Loyalty)] = q.value("cards.loyalty").toString();
@@ -476,11 +444,6 @@ struct CardData::Pimpl
 			}
 			r[columnToIndex(ColumnType::ImageName)] = imageName;
 
-			if (!q.value("cards.multiverseId").isNull())
-			{
-				r[columnToIndex(ColumnType::MultiverseId)] = q.value("cards.multiverseId").toInt();
-			}
-
 			r[columnToIndex(ColumnType::ScryfallId)] = q.value("cards.scryfallId").toString();
 
 			r[columnToIndex(ColumnType::IsLatestPrint)] = false;
@@ -512,22 +475,6 @@ struct CardData::Pimpl
 			const auto& legalities = tempLegalities[uuid];
 			if (!legalities.empty())
 			{
-				if (legalities.contains("standard"))
-				{
-					r[columnToIndex(ColumnType::LegalityStandard)] = legalities["standard"];
-				}
-				if (legalities.contains("modern"))
-				{
-					r[columnToIndex(ColumnType::LegalityModern)] = legalities["modern"];
-				}
-				if (legalities.contains("legacy"))
-				{
-					r[columnToIndex(ColumnType::LegalityLegacy)] = legalities["legacy"];
-				}
-				if (legalities.contains("vintage"))
-				{
-					r[columnToIndex(ColumnType::LegalityVintage)] = legalities["vintage"];
-				}
 				if (legalities.contains("commander"))
 				{
 					r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"];
@@ -562,7 +509,7 @@ struct CardData::Pimpl
 				return Tags::instance().getCardTags(data_[row][columnToIndex(ColumnType::Name)].toString());
 			}
 			else
-			if (column == ColumnType::PriceTrend)
+			if (column == ColumnType::Price)
 			{
 				return Prices::instance().getPrice(get(row, ColumnType::Uuid).toString());
 			}
@@ -680,7 +627,7 @@ struct CardData::Pimpl
 			QString set = data_[row][columnToIndex(ColumnType::SetCode)].toString();
 			QString name = data_[row][columnToIndex(ColumnType::Name)].toString();
 			OnlineDataCache& cache = OnlineDataCache::instance();
-			cache.set(set, name, ColumnType::PriceTrend, price);
+			cache.set(set, name, ColumnType::Price, price);
 		}
 	}
 

@@ -14,8 +14,6 @@
 
 namespace {
 
-const QString DEFAULT_HEADER_STATE = "{\"sections\": [{\"hidden\": true,\"size\": 100,\"visualIndex\": 0},{\"hidden\": false,\"size\": 61,\"visualIndex\": 3},{\"hidden\": true,\"size\": 100,\"visualIndex\": 1},{\"hidden\": true,\"size\": 100,\"visualIndex\": 2},{\"hidden\": true,\"size\": 100,\"visualIndex\": 4},{\"hidden\": true,\"size\": 294,\"visualIndex\": 5},{\"hidden\": true,\"size\": 100,\"visualIndex\": 6},{\"hidden\": true,\"size\": 37,\"visualIndex\": 7},{\"hidden\": true,\"size\": 37,\"visualIndex\": 8},{\"hidden\": false,\"size\": 264,\"visualIndex\": 9},{\"hidden\": true,\"size\": 233,\"visualIndex\": 10},{\"hidden\": false,\"size\": 38,\"visualIndex\": 11},{\"hidden\": false,\"size\": 41,\"visualIndex\": 12},{\"hidden\": false,\"size\": 218,\"visualIndex\": 13},{\"hidden\": false,\"size\": 41,\"visualIndex\": 14},{\"hidden\": false,\"size\": 77,\"visualIndex\": 15},{\"hidden\": false,\"size\": 287,\"visualIndex\": 16},{\"hidden\": true,\"size\": 47,\"visualIndex\": 17},{\"hidden\": true,\"size\": 100,\"visualIndex\": 18},{\"hidden\": true,\"size\": 100,\"visualIndex\": 19},{\"hidden\": false,\"size\": 72,\"visualIndex\": 22},{\"hidden\": true,\"size\": 86,\"visualIndex\": 23},{\"hidden\": true,\"size\": 100,\"visualIndex\": 24},{\"hidden\": true,\"size\": 100,\"visualIndex\": 25},{\"hidden\": false,\"size\": 20,\"visualIndex\": 20},{\"hidden\": false,\"size\": 20,\"visualIndex\": 21},{\"hidden\": true,\"size\": 100,\"visualIndex\": 26},{\"hidden\": true,\"size\": 100,\"visualIndex\": 27},{\"hidden\": true,\"size\": 100,\"visualIndex\": 28},{\"hidden\": false,\"size\": 107,\"visualIndex\": 29},{\"hidden\": true,\"size\": 111,\"visualIndex\": 30},{\"hidden\": true,\"size\": 85,\"visualIndex\": 31},{\"hidden\": false,\"size\": 79,\"visualIndex\": 32},{\"hidden\": true,\"size\": 62,\"visualIndex\": 33}],\"sortIndicatorOrder\": 0,\"sortIndicatorSection\": 9}";
-
 class CollectionItemDelegate : public MagicItemDelegate
 {
 public:
@@ -85,7 +83,10 @@ void CollectionDock::updateShortcuts()
 void CollectionDock::loadSettings()
 {
 	QSettings settings;
-	Util::loadHeaderViewState(*ui_.collectionTableView->horizontalHeader(), settings.value("collectionwindow/headerstate", DEFAULT_HEADER_STATE).toString());
+	if (settings.contains("collectionwindow/headerstate"))
+	{
+		Util::loadHeaderViewState(*ui_.collectionTableView->horizontalHeader(), settings.value("collectionwindow/headerstate").toString());
+	}
 	if (settings.contains("collectionwindow/filterEnable"))
 	{
 		commonActions_.getEnableFilter()->setChecked(settings.value("collectionwindow/filterEnable").toBool());
@@ -151,10 +152,7 @@ void CollectionDock::updateStatusBar()
 	stream << " Showing " << collectionTableModel_.rowCount() << " of " << mtg::Collection::instance().getNumRows() << " cards";
 	int numCopies = 0;
 	int numUsed = 0;
-	double sumPriceLowest = 0.0;
-	double sumPriceLowestFoil = 0.0;
-	double sumPriceAverage = 0.0;
-	double sumPriceTrend = 0.0;
+	double sumPrice = 0.0;
 	auto getValue = [this](int row, const mtg::ColumnType& columnType)
 	{
 		int column = collectionTableModel_.columnToIndex(columnType);
@@ -168,27 +166,12 @@ void CollectionDock::updateStatusBar()
 		numCopies += qty;
 		numUsed += mtg::Collection::instance().get(sourceIndex.row(), mtg::ColumnType::Used).toInt();
 
-		sumPriceLowest += qty * getValue(i, mtg::ColumnType::PriceLowest).toDouble();
-		sumPriceLowestFoil += qty * getValue(i, mtg::ColumnType::PriceLowestFoil).toDouble();
-		sumPriceAverage += qty * getValue(i, mtg::ColumnType::PriceAverage).toDouble();
-		sumPriceTrend += qty * getValue(i, mtg::ColumnType::PriceTrend).toDouble();
+		sumPrice += qty * getValue(i, mtg::ColumnType::Price).toDouble();
 	}
 	stream << " (" << numCopies << " copies, " << numUsed << " used)";
-	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowest)))
+	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::Price)))
 	{
-		stream << " [Sum lowest price: " << sumPriceLowest << "]";
-	}
-	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceLowestFoil)))
-	{
-		stream << " [Sum lowest price foil: " << sumPriceLowestFoil << "]";
-	}
-	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceAverage)))
-	{
-		stream << " [Sum average price: " << sumPriceAverage << "]";
-	}
-	if (!ui_.collectionTableView->isColumnHidden(collectionTableModel_.columnToIndex(mtg::ColumnType::PriceTrend)))
-	{
-		stream << " [Sum price trend: " << sumPriceTrend << "]";
+		stream << " [Sum price: " << sumPrice << "]";
 	}
 	ui_.collectionStatusBar->setMessage(message);
 }
