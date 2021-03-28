@@ -45,7 +45,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 
 	auto lambda = [&](const Deck& deck, int row, int dataRow)
 	{
-		int cmc = mtg::CardData::instance().get(dataRow, mtg::ColumnType::CMC).toInt();
+		int cmc = deck.get(row, mtg::ColumnType::CMC).toInt();
 		if (cmc > MAX_CMC)
 		{
 			cmc = MAX_CMC;

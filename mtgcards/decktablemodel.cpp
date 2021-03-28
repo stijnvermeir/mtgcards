@@ -178,6 +178,13 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 							return true;
 						}
 					}
+					else
+					if (GetColumns()[index.column()] == mtg::ColumnType::CMC)
+					{
+						deck_->overrideManaValue(dataRowIndex, value);
+						emit dataChanged(index, index);
+						return true;
+					}
 				}
 			}
 		}
@@ -211,7 +218,8 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 		if (index.column() < columnCount())
 		{
 			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity ||
-			    GetColumns()[index.column()] == mtg::ColumnType::Sideboard)
+			    GetColumns()[index.column()] == mtg::ColumnType::Sideboard ||
+			    GetColumns()[index.column()] == mtg::ColumnType::CMC)
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}

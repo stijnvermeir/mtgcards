@@ -20,11 +20,14 @@ struct Deck::Pimpl
 		int rowIndexInData;
 		QVariant quantity;
 		QVariant sideboard;
+		QVariant manaValue;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
-		    , sideboard(0){}
+		    , sideboard(0)
+		    , manaValue()
+		{}
 	};
 	QVector<Row> data_;
 	bool active_;
@@ -87,6 +90,10 @@ struct Deck::Pimpl
 					r.rowIndexInData = rowIndexInData;
 					r.quantity = card["Quantity"].toInt();
 					r.sideboard = card["Sideboard"].toInt();
+					if (card.contains("ManaValue"))
+					{
+						r.manaValue = card["ManaValue"].toInt();
+					}
 					data_.push_back(r);
 				}
 			}
@@ -107,6 +114,10 @@ struct Deck::Pimpl
 			cardObj["ImageName"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::ImageName).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
 			cardObj["Sideboard"] = r.sideboard.toInt();
+			if (r.manaValue.isValid())
+			{
+				cardObj["ManaValue"] = r.manaValue.toInt();
+			}
 			cards.append(cardObj);
 		}
 		QJsonObject obj;
@@ -153,6 +164,10 @@ struct Deck::Pimpl
 			if (column == ColumnType::Sideboard)
 			{
 				return entry.sideboard;
+			}
+			if (column == ColumnType::CMC && entry.manaValue.isValid())
+			{
+				return entry.manaValue;
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -272,6 +287,40 @@ struct Deck::Pimpl
 			}
 		}
 		hasUnsavedChanges_ = true;
+	}
+
+	void overrideManaValue(const int dataRowIndex, QVariant manaValue)
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			auto newValue = manaValue.toInt();
+			auto defaultValue = mtg::CardData::instance().get(row->rowIndexInData, mtg::ColumnType::CMC).toInt();
+			if (row->manaValue.isValid())
+			{
+				auto currentValue = row->manaValue.toInt();
+				if (newValue != currentValue)
+				{
+					if (newValue == -1 || newValue == defaultValue)
+					{
+						row->manaValue.clear();
+					}
+					else
+					{
+						row->manaValue = manaValue;
+					}
+					hasUnsavedChanges_ = true;
+				}
+			}
+			else
+			{
+				if (newValue != -1 && newValue != defaultValue)
+				{
+					row->manaValue = manaValue;
+					hasUnsavedChanges_ = true;
+				}
+			}
+		}
 	}
 
 	QVector<QPair<int,int>> getQuantities() const
@@ -400,6 +449,11 @@ int Deck::getSideboard(const int dataRowIndex) const
 void Deck::setSideboard(const int dataRowIndex, const int newSideboard)
 {
 	pimpl_->setSideboard(dataRowIndex, newSideboard);
+}
+
+void Deck::overrideManaValue(const int dataRowIndex, QVariant manaValue)
+{
+	pimpl_->overrideManaValue(dataRowIndex, manaValue);
 }
 
 bool Deck::isActive() const

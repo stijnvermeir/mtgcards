@@ -58,6 +58,14 @@ QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionView
 		return sbx;
 	}
 	else
+	if (columnType == mtg::ColumnType::CMC)
+	{
+		QSpinBox* sbx = new QSpinBox(parent);
+		sbx->setRange(-1, 99);
+		sbx->setSpecialValueText("C");
+		return sbx;
+	}
+	else
 	if (columnType == mtg::ColumnType::Tags)
 	{
 		QLineEdit* widget = new QLineEdit(parent);

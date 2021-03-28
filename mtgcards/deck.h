@@ -38,6 +38,8 @@ public:
 	int getSideboard(const int dataRowIndex) const;
 	void setSideboard(const int dataRowIndex, const int newSideboard);
 
+	void overrideManaValue(const int dataRowIndex, QVariant manaValue);
+
 	bool isActive() const;
 	void setActive(bool active);
 
