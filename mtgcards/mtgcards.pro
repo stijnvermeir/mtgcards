@@ -20,6 +20,13 @@ VERSION = $$cat(VERSION.txt)
 DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
+    bzip2/blocksort.c \
+    bzip2/bzlib.c \
+    bzip2/compress.c \
+    bzip2/crctable.c \
+    bzip2/decompress.c \
+    bzip2/huffman.c \
+    bzip2/randtable.c \
     carddock.cpp \
     collectiondock.cpp \
     commonactions.cpp \
@@ -68,6 +75,8 @@ SOURCES += main.cpp\
     filters/tagfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
+    bzip2/bzlib.h \
+    bzip2/bzlib_private.h \
     carddock.h \
     collectiondock.h \
     commonactions.h \

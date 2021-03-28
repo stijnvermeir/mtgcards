@@ -75,6 +75,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionGlobalFilter"/>
+    <addaction name="actionUpdatePrices"/>
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
    </widget>
@@ -401,6 +402,11 @@
   <action name="actionGlobalFilter">
    <property name="text">
     <string>Global filter ...</string>
+   </property>
+  </action>
+  <action name="actionUpdatePrices">
+   <property name="text">
+    <string>Update prices ...</string>
    </property>
   </action>
  </widget>

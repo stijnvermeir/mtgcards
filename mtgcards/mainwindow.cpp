@@ -7,6 +7,8 @@
 #include "deckmanager.h"
 #include "settings.h"
 #include "filtereditordialog.h"
+#include "prices.h"
+#include "util.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -19,6 +21,7 @@
 #include <QDesktopServices>
 #include <QInputDialog>
 #include <QScreen>
+#include <QThread>
 
 namespace {
 
@@ -63,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// options
 	connect(ui_.actionOptions, SIGNAL(triggered()), this, SLOT(optionsActionClicked()));
+	connect(ui_.actionUpdatePrices, SIGNAL(triggered()), this, SLOT(updatePrices()));
 
 	// about
 	connect(ui_.actionAbout, SIGNAL(triggered()), this, SLOT(aboutActionClicked()));
@@ -183,4 +187,44 @@ void MainWindow::globalFilter()
 	editor.exec();
 	Settings::instance().setGlobalFilter(editor.getFilterRootNode());
 	emit globalFilterChanged();
+}
+
+void MainWindow::updatePrices()
+{
+	if (!Util::downloadPricesFile())
+	{
+		return;
+	}
+	QProgressDialog progress("Updating prices ...", QString(), 0, 0, this);
+	progress.setWindowModality(Qt::WindowModal);
+	progress.setWindowFlag(Qt::WindowCloseButtonHint, false);
+	progress.show();
+	bool success = false;
+	QThread* thread = QThread::create([&]()
+	{
+		progress.setLabelText("Decompressing ...");
+		if (Util::decompressPricesFile())
+		{
+			progress.setLabelText("Parsing ...");
+			Prices::instance().update(Settings::instance().getPricesJsonFile());
+			success = true;
+			QFile::remove(Settings::instance().getPricesJsonFile());
+			QFile::remove(Settings::instance().getPricesBz2File());
+		}
+	});
+	QEventLoop loop;
+	QObject::connect(thread, &QThread::finished, &loop, &QEventLoop::quit);
+	thread->start();
+	loop.exec();
+	delete thread;
+	progress.setValue(0);
+	progress.close();
+	if (success)
+	{
+		QMessageBox::information(this, "Update prices", "Prices updated.");
+	}
+	else
+	{
+		QMessageBox::critical(this, "Update prices", "Prices update failed!");
+	}
 }

@@ -25,6 +25,8 @@ public:
 	const QString& getCollectionFile() const;
 	const QString& getCollectionDb() const;
 	const QString& getPricesDb() const;
+	const QString& getPricesBz2File() const;
+	const QString& getPricesJsonFile() const;
 	const QString& getTagsDb() const;
 	const QString& getFiltersDir() const;
 	const QString& getDecksDir() const;
