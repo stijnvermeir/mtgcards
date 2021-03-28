@@ -164,9 +164,9 @@ void MainWindow::optionsActionClicked()
 	connect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
 	connect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));
 	options.exec();
-	poolDock_->updateShortcuts();
-	collectionDock_->updateShortcuts();
-	deckWindow_->updateShortcuts();
+	poolDock_->updateOptions();
+	collectionDock_->updateOptions();
+	deckWindow_->updateOptions();
 	disconnect(&options, SIGNAL(fontChanged()), poolDock_, SIGNAL(fontChanged()));
 	disconnect(&options, SIGNAL(fontChanged()), collectionDock_, SIGNAL(fontChanged()));
 	disconnect(&options, SIGNAL(fontChanged()), deckWindow_, SIGNAL(fontChanged()));

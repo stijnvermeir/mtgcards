@@ -27,5 +27,7 @@
         <file>resources/icons/import.svg</file>
         <file>resources/icons/exchange.svg</file>
         <file>resources/icons/export.svg</file>
+        <file>resources/icons/grid.svg</file>
+        <file>resources/icons/list.svg</file>
     </qresource>
 </RCC>

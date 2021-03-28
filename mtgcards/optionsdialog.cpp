@@ -150,14 +150,14 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	connect(ui_.browseCardPictureDirBtn, SIGNAL(clicked()), this, SLOT(browseCardPictureDirBtnClicked()));
 	ui_.allSetsJsonTxt->setText(Settings::instance().getPoolDataFile());
 	ui_.cardPictureDirTxt->setText(Settings::instance().getCardImageDir());
+	ui_.ultraHQArtChk->setChecked(Settings::instance().getArtIsHighQuality());
+	connect(ui_.ultraHQArtChk, SIGNAL(clicked(bool)), this, SLOT(ultraHighQualityArtClicked(bool)));
 
 	// tags tab
 	ui_.tagsList->addItems(Tags::instance().getTags());
 	ui_.tagsList->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	connect(ui_.addTagBtn, SIGNAL(clicked()), this, SLOT(addTagClicked()));
 	connect(ui_.removeTagsBtn, SIGNAL(clicked()), this, SLOT(removeTagsClicked()));
-	ui_.ultraHQArtChk->setChecked(Settings::instance().getArtIsHighQuality());
-	connect(ui_.ultraHQArtChk, SIGNAL(clicked(bool)), this, SLOT(ultraHighQualityArtClicked(bool)));
 
 	// shortcuts tab
 	ui_.shortcutsTbl->setModel(shortcutsModel_.data());
@@ -189,6 +189,10 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	ui_.appDataDirTxt->setText(Settings::instance().getAppDataDir());
 	connect(ui_.fontBtn, SIGNAL(clicked()), this, SLOT(changeFontBtnClicked()));
 	ui_.fontTxt->setText(Settings::instance().getFont().toString());
+	ui_.poolViewButtonsChk->setCheckState(Settings::instance().getPoolViewButtons() ? Qt::Checked : Qt::Unchecked);
+	connect(ui_.poolViewButtonsChk, SIGNAL(stateChanged(int)), this, SLOT(poolViewButtonsCheckChanged(int)));
+	ui_.collectionViewButtonsChk->setCheckState(Settings::instance().getCollectionViewButtons() ? Qt::Checked : Qt::Unchecked);
+	connect(ui_.collectionViewButtonsChk, SIGNAL(stateChanged(int)), this, SLOT(collectionViewButtonsCheckChanged(int)));
 }
 
 OptionsDialog::~OptionsDialog()
@@ -319,4 +323,19 @@ void OptionsDialog::changeFontBtnClicked()
 		ui_.fontTxt->setText(Settings::instance().getFont().toString());
 		emit fontChanged();
 	}
+}
+
+void OptionsDialog::poolViewButtonsCheckChanged(int state)
+{
+	Settings::instance().setPoolViewButtons(state == Qt::Checked);
+}
+
+void OptionsDialog::collectionViewButtonsCheckChanged(int state)
+{
+	Settings::instance().setCollectionViewButtons(state == Qt::Checked);
+}
+
+void OptionsDialog::deckViewButtonsCheckChanged(int state)
+{
+	Settings::instance().setDeckViewButtons(state == Qt::Checked);
 }

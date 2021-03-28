@@ -17,7 +17,7 @@ public:
 	explicit PoolDock(Ui::MainWindow& ui, QObject* parent = nullptr);
 	virtual ~PoolDock();
 
-	void updateShortcuts();
+	void updateOptions();
 	void loadSettings();
 	void saveSettings();
 

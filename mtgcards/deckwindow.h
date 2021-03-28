@@ -20,7 +20,7 @@ public:
 	explicit DeckWindow(Ui::MainWindow& ui, QWidget* parent = 0);
 	virtual ~DeckWindow();
 
-	void updateShortcuts();
+	void updateOptions();
 	void loadSettings();
 	void saveSettings();
 	bool hasUnsavedChanges() const;

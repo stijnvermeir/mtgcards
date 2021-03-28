@@ -42,4 +42,7 @@ private slots:
 	// misc tab
 	void browseAppDataDirBtnClicked();
 	void changeFontBtnClicked();
+	void poolViewButtonsCheckChanged(int state);
+	void collectionViewButtonsCheckChanged(int state);
+	void deckViewButtonsCheckChanged(int state);
 };

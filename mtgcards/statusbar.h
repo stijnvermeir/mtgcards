@@ -28,6 +28,10 @@ signals:
 	void viewChanged(int);
 	void sliderValueChanged(int);
 
+private slots:
+	void listViewBtnClicked(bool checked);
+	void gridViewBtnClicked(bool checked);
+
 public slots:
 	void setMessage(const QString& message);
 	void setSearch(const QString& search);

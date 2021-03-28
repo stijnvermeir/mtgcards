@@ -21,7 +21,7 @@ public:
 	virtual ~CollectionDock();
 
 	void reload();
-	void updateShortcuts();
+	void updateOptions();
 	void loadSettings();
 	void saveSettings();
 

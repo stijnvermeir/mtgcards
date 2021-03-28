@@ -51,6 +51,14 @@ public:
 
 	const QVector<mtg::ColumnType>& getCopyColumns() const;
 	void setCopyColumns(const QVector<mtg::ColumnType>& copyColumns);
+
+	bool getPoolViewButtons() const;
+	void setPoolViewButtons(bool enabled);
+	bool getCollectionViewButtons() const;
+	void setCollectionViewButtons(bool enabled);
+	bool getDeckViewButtons() const;
+	void setDeckViewButtons(bool enabled);
+
 private:
 
 	struct Pimpl;

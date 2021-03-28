@@ -67,9 +67,10 @@ PoolDock::~PoolDock()
 {
 }
 
-void PoolDock::updateShortcuts()
+void PoolDock::updateOptions()
 {
 	commonActions_.updateShortcuts();
+	ui_.poolStatusBar->setViewChangerEnabled(Settings::instance().getPoolViewButtons());
 }
 
 void PoolDock::loadSettings()
@@ -96,7 +97,7 @@ void PoolDock::loadSettings()
 	ui_.poolStatusBar->setSliderValue(settings.value("poolwindow/imagePromille", 500).toInt());
 
 	updateStatusBar();
-	updateShortcuts();
+	updateOptions();
 }
 
 void PoolDock::saveSettings()

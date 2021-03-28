@@ -26,6 +26,9 @@ struct Settings::Pimpl
 	FilterNode::Ptr globalFilter_;
 	QFont font_;
 	QVector<mtg::ColumnType> copyColumns_;
+	bool poolViewButtons_;
+	bool collectionViewButtons_;
+	bool deckViewButtons_;
 
 	Pimpl()
 	{
@@ -77,6 +80,10 @@ struct Settings::Pimpl
 			copyColumns_.push_back(mtg::ColumnType::Name);
 			copyColumns_.push_back(mtg::ColumnType::Quantity);
 		}
+
+		poolViewButtons_ = settings.value("options/misc/poolviewbuttons", true).toBool();
+		collectionViewButtons_ = settings.value("options/misc/collectionviewbuttons", true).toBool();
+		deckViewButtons_ = settings.value("options/misc/deckviewbuttons", false).toBool();
 	}
 
 	void setAppDataDir(const QString& appDataDir)
@@ -167,6 +174,30 @@ struct Settings::Pimpl
 
 		QSettings settings;
 		settings.setValue("options/copyColumns", value);
+	}
+
+	void setPoolViewButtons(bool enabled)
+	{
+		poolViewButtons_ = enabled;
+
+		QSettings settings;
+		settings.setValue("options/misc/poolviewbuttons", enabled);
+	}
+
+	void setCollectionViewButtons(bool enabled)
+	{
+		collectionViewButtons_ = enabled;
+
+		QSettings settings;
+		settings.setValue("options/misc/collectionviewbuttons", enabled);
+	}
+
+	void setDeckViewButtons(bool enabled)
+	{
+		deckViewButtons_ = enabled;
+
+		QSettings settings;
+		settings.setValue("options/misc/deckviewbuttons", enabled);
 	}
 };
 
@@ -303,4 +334,34 @@ const QVector<mtg::ColumnType>& Settings::getCopyColumns() const
 void Settings::setCopyColumns(const QVector<mtg::ColumnType>& copyColumns)
 {
 	pimpl_->setCopyColumns(copyColumns);
+}
+
+bool Settings::getPoolViewButtons() const
+{
+	return pimpl_->poolViewButtons_;
+}
+
+void Settings::setPoolViewButtons(bool enabled)
+{
+	pimpl_->setPoolViewButtons(enabled);
+}
+
+bool Settings::getCollectionViewButtons() const
+{
+	return pimpl_->collectionViewButtons_;
+}
+
+void Settings::setCollectionViewButtons(bool enabled)
+{
+	pimpl_->setCollectionViewButtons(enabled);
+}
+
+bool Settings::getDeckViewButtons() const
+{
+	return pimpl_->deckViewButtons_;
+}
+
+void Settings::setDeckViewButtons(bool enabled)
+{
+	pimpl_->setDeckViewButtons(enabled);
 }

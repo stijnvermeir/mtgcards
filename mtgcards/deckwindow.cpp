@@ -90,8 +90,6 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
 	ui_.tabWidget->addAction(actionCopyDeckStatsClipboard_);
-
-	ui_.deckStatusBar->setViewChangerEnabled(false);
 }
 
 DeckWindow::~DeckWindow()
@@ -99,7 +97,7 @@ DeckWindow::~DeckWindow()
 	delete toolBar_;
 }
 
-void DeckWindow::updateShortcuts()
+void DeckWindow::updateOptions()
 {
 	actionNewDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::NewFile]);
 	actionImportDec_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::ImportFile]);
@@ -107,6 +105,8 @@ void DeckWindow::updateShortcuts()
 	actionSaveDeck_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFile]);
 	actionSaveDeckAs_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::SaveFileAs]);
 	commonActions_.updateShortcuts();
+
+	ui_.deckStatusBar->setViewChangerEnabled(false);
 }
 
 void DeckWindow::loadSettings()
@@ -133,7 +133,7 @@ void DeckWindow::loadSettings()
 		}
 	}
 	updateStatusBar();
-	updateShortcuts();
+	updateOptions();
 }
 
 void DeckWindow::saveSettings()

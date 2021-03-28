@@ -75,9 +75,10 @@ void CollectionDock::reload()
 	updateStatusBar();
 }
 
-void CollectionDock::updateShortcuts()
+void CollectionDock::updateOptions()
 {
 	commonActions_.updateShortcuts();
+	ui_.collectionStatusBar->setViewChangerEnabled(Settings::instance().getCollectionViewButtons());
 }
 
 void CollectionDock::loadSettings()
@@ -104,7 +105,7 @@ void CollectionDock::loadSettings()
 	ui_.collectionStatusBar->setSliderValue(settings.value("collectionwindow/imagePromille", 500).toInt());
 
 	updateStatusBar();
-	updateShortcuts();
+	updateOptions();
 }
 
 void CollectionDock::saveSettings()
