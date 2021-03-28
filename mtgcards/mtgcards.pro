@@ -20,6 +20,13 @@ VERSION = $$cat(VERSION.txt)
 DEFINES += "MTGCARDS_VERSION=\"\\\"$$VERSION\\\"\""
 
 SOURCES += main.cpp\
+    bzip2/blocksort.c \
+    bzip2/bzlib.c \
+    bzip2/compress.c \
+    bzip2/crctable.c \
+    bzip2/decompress.c \
+    bzip2/huffman.c \
+    bzip2/randtable.c \
     carddock.cpp \
     collectiondock.cpp \
     commonactions.cpp \
@@ -43,6 +50,7 @@ SOURCES += main.cpp\
     magicitemdelegate.cpp \
     filter.cpp \
     magicconvert.cpp \
+    prices.cpp \
     settings.cpp \
     collectiontablemodel.cpp \
     magiccollection.cpp \
@@ -55,7 +63,6 @@ SOURCES += main.cpp\
     util.cpp \
     deckstatisticsdialog.cpp \
     manacurvelinewidget.cpp \
-    onlinedatacache.cpp \
     splashscreen.cpp \
     tags.cpp \
 	filters/comparetype.cpp \
@@ -68,11 +75,14 @@ SOURCES += main.cpp\
     filters/tagfilterfunction.cpp
 
 HEADERS  += mainwindow.h \
+    bzip2/bzlib.h \
+    bzip2/bzlib_private.h \
     carddock.h \
     collectiondock.h \
     commonactions.h \
     imagetablemodel.h \
     imagetableview.h \
+    json.hpp \
     pooldock.h \
     pooltablemodel.h \
     deckwindow.h \
@@ -92,6 +102,7 @@ HEADERS  += mainwindow.h \
     magicconvert.h \
     filters/regexfilterfunction.h \
     filters/datefilterfunction.h \
+    prices.h \
     settings.h \
     collectiontablemodel.h \
     magiccollection.h \
@@ -108,7 +119,6 @@ HEADERS  += mainwindow.h \
     deckstatisticsdialog.h \
     manacurvelinewidget.h \
     filters/deckfilterfunction.h \
-    onlinedatacache.h \
     magicruling.h \
     splashscreen.h \
     tags.h \

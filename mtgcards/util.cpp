@@ -17,13 +17,38 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
+#include <QtDebug>
+
+#include "bzip2/bzlib.h"
+
+namespace {
+
+QString logicalIndexToName(QHeaderView& view, int logicalIndex)
+{
+	return view.model()->headerData(logicalIndex, Qt::Horizontal, Qt::UserRole).toString();
+}
+
+QVariant nameToLogicalIndex(QHeaderView& view, const QString& name)
+{
+	for (int i = 0; i < view.count(); ++i)
+	{
+		auto n = view.model()->headerData(i, Qt::Horizontal, Qt::UserRole);
+		if (n.isValid() && n.toString() == name)
+		{
+			return i;
+		}
+	}
+	return QVariant();
+}
+
+}
 
 QString Util::saveHeaderViewState(QHeaderView& headerView)
 {
 	QVariantMap headerState;
-	headerState["sortIndicatorSection"] = headerView.sortIndicatorSection();
+	headerState["sortIndicatorSection"] = logicalIndexToName(headerView, headerView.sortIndicatorSection());
 	headerState["sortIndicatorOrder"] = headerView.sortIndicatorOrder();
-	QVariantList sections;
+	QVariantMap sections;
 	for (int logicalIndex = 0; logicalIndex < headerView.count(); ++logicalIndex)
 	{
 		QVariantMap section;
@@ -33,7 +58,7 @@ QString Util::saveHeaderViewState(QHeaderView& headerView)
 		section["size"] = headerView.sectionSize(logicalIndex);
 		headerView.setSectionHidden(logicalIndex, hidden);
 		section["hidden"] = hidden;
-		sections.append(section);
+		sections.insert(logicalIndexToName(headerView, logicalIndex), section);
 	}
 	headerState["sections"] = sections;
 	QString data = QJsonDocument::fromVariant(headerState).toJson(QJsonDocument::Compact);
@@ -43,12 +68,13 @@ QString Util::saveHeaderViewState(QHeaderView& headerView)
 void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
 {
 	QVariantMap headerState = QJsonDocument::fromJson(data.toUtf8()).toVariant().toMap();
-	QVariantList sections = headerState["sections"].toList();
-	for (int logicalIndex = 0; logicalIndex < sections.size(); ++logicalIndex)
+	QVariantMap sections = headerState["sections"].toMap();
+	for (int logicalIndex = 0; logicalIndex < headerView.count(); ++logicalIndex)
 	{
-		QVariantMap section = sections[logicalIndex].toMap();
-		if (logicalIndex < headerView.count())
+		auto sectionName = logicalIndexToName(headerView, logicalIndex);
+		if (sections.contains(sectionName))
 		{
+			QVariantMap section = sections[sectionName].toMap();
 			int currentVisualIndex = headerView.visualIndex(logicalIndex);
 			int newVisualIndex = section["visualIndex"].toInt();
             headerView.swapSections(currentVisualIndex, newVisualIndex);
@@ -61,11 +87,11 @@ void Util::loadHeaderViewState(QHeaderView& headerView, const QString& data)
             headerView.setSectionHidden(logicalIndex, section["hidden"].toBool());
 		}
 	}
-	int sortSection = headerState["sortIndicatorSection"].toInt();
-	if (sortSection < headerView.count())
+	auto sortSection = nameToLogicalIndex(headerView, headerState["sortIndicatorSection"].toString());
+	if (sortSection.isValid())
 	{
 		Qt::SortOrder sortOrder = static_cast<Qt::SortOrder>(headerState["sortIndicatorOrder"].toInt());
-		headerView.setSortIndicator(sortSection, sortOrder);
+		headerView.setSortIndicator(sortSection.toInt(), sortOrder);
 	}
 }
 
@@ -102,6 +128,99 @@ bool Util::downloadPoolDataFile()
 	fi.absoluteDir().mkpath(fi.absolutePath());
 	file.open(QIODevice::WriteOnly);
 	file.write(reply->readAll());
+	return true;
+}
+
+bool Util::downloadPricesFile()
+{
+	QNetworkAccessManager network;
+	QNetworkRequest request;
+	QString whichFile = "AllPrices.json.bz2";
+	request.setUrl(QString("https://mtgjson.com/api/v5/%1").arg(whichFile));
+	QScopedPointer<QNetworkReply> reply(network.get(request));
+	QEventLoop loop;
+	QProgressDialog progress("Downloading ...", "Cancel", 0, 0);
+	progress.setWindowModality(Qt::WindowModal);
+	progress.setMinimum(0);
+	progress.show();
+	QObject::connect(reply.data(), &QNetworkReply::downloadProgress,
+	[&progress, &whichFile](qint64 bytesReceived, qint64 bytesTotal)
+	{
+		progress.setLabelText(QString("<p><b>Downloading %1 ...</b></p><p>Received %2 of %3 KiB</p>").arg(whichFile).arg(bytesReceived/1024).arg(bytesTotal/1024));
+		progress.setMaximum(bytesTotal);
+		progress.setValue(bytesReceived);
+	});
+	QObject::connect(&progress, &QProgressDialog::canceled, reply.data(), &QNetworkReply::abort);
+	QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
+	if (reply->error())
+	{
+		QMessageBox::critical(nullptr, "Download error", reply->errorString());
+		return false;
+	}
+
+	QFile file(Settings::instance().getPricesBz2File());
+	QFileInfo fi(file);
+	fi.absoluteDir().mkpath(fi.absolutePath());
+	file.open(QIODevice::WriteOnly);
+	file.write(reply->readAll());
+	return true;
+}
+
+bool Util::decompressPricesFile()
+{
+	FILE*   f;
+	BZFILE* b;
+	int     nBuf;
+	const size_t BUF_SIZE = 1024;
+	char    buf[BUF_SIZE];
+	int     bzerror;
+	FILE*   fOut;
+
+	auto bz2File = Settings::instance().getPricesBz2File().toStdString();
+	qDebug() << bz2File.c_str();
+	fopen_s(&f, bz2File.c_str(), "rb");
+	if (!f)
+	{
+		qDebug() << "Failed to open bz2 input file";
+		return false;
+	}
+	fopen_s(&fOut, Settings::instance().getPricesJsonFile().toStdString().c_str(), "wb");
+	if (!fOut)
+	{
+		qDebug() << "Failed to open json output file";
+		fclose(f);
+		return false;
+	}
+	b = BZ2_bzReadOpen(&bzerror, f, 0, 0, NULL, 0);
+	if (bzerror != BZ_OK)
+	{
+		qDebug() << "BZ2_bzReadOpen failed: " << bzerror;
+		BZ2_bzReadClose(&bzerror, b);
+		fclose(f);
+		fclose(fOut);
+		return false;
+	}
+	bzerror = BZ_OK;
+	while (bzerror == BZ_OK)
+	{
+		nBuf = BZ2_bzRead(&bzerror, b, buf, BUF_SIZE);
+		if (bzerror == BZ_OK)
+		{
+			fwrite(buf, 1, nBuf, fOut);
+		}
+	}
+	if (bzerror != BZ_STREAM_END)
+	{
+		qDebug() << "BZ2_bzRead failed: " << bzerror;
+		BZ2_bzReadClose(&bzerror, b);
+		fclose(f);
+		fclose(fOut);
+		return false;
+	}
+	BZ2_bzReadClose(&bzerror, b);
+	fclose(f);
+	fclose(fOut);
 	return true;
 }
 

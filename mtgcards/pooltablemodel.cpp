@@ -12,58 +12,41 @@ namespace {
 
 const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
 {
-	mtg::ColumnType::Set,
-	mtg::ColumnType::SetCode,
-	mtg::ColumnType::SetGathererCode,
-	mtg::ColumnType::SetOldCode,
+    mtg::ColumnType::SetName,
+    mtg::ColumnType::SetCode,
 	mtg::ColumnType::SetReleaseDate,
 	mtg::ColumnType::SetType,
-	mtg::ColumnType::Block,
-	mtg::ColumnType::OnlineOnly,
-	mtg::ColumnType::Border,
 	mtg::ColumnType::Name,
 	mtg::ColumnType::Names,
 	mtg::ColumnType::ManaCost,
 	mtg::ColumnType::CMC,
 	mtg::ColumnType::Color,
+    mtg::ColumnType::ColorIdentity,
+    mtg::ColumnType::LegalityCommander,
+    mtg::ColumnType::CanBeCommander,
+    mtg::ColumnType::IsCompanion,
 	mtg::ColumnType::Type,
-	mtg::ColumnType::SuperTypes,
-	mtg::ColumnType::Types,
-	mtg::ColumnType::SubTypes,
 	mtg::ColumnType::Rarity,
 	mtg::ColumnType::Text,
-	mtg::ColumnType::Flavor,
-	mtg::ColumnType::Artist,
 	mtg::ColumnType::Power,
 	mtg::ColumnType::Toughness,
 	mtg::ColumnType::Loyalty,
-	mtg::ColumnType::Layout,
-	mtg::ColumnType::ImageName,
-	mtg::ColumnType::IsLatestPrint,
-	mtg::ColumnType::PriceLowest,
-	mtg::ColumnType::PriceLowestFoil,
-	mtg::ColumnType::PriceAverage,
-	mtg::ColumnType::PriceTrend,
-	mtg::ColumnType::Id,
-    mtg::ColumnType::Tags,
-    mtg::ColumnType::ColorIdentity,
-    mtg::ColumnType::LegalityStandard,
-    mtg::ColumnType::LegalityModern,
-    mtg::ColumnType::LegalityLegacy,
-    mtg::ColumnType::LegalityVintage,
-    mtg::ColumnType::LegalityCommander,
     mtg::ColumnType::Owned,
     mtg::ColumnType::OwnedAll,
     mtg::ColumnType::Used,
     mtg::ColumnType::UsedAll,
     mtg::ColumnType::NotOwned,
-    mtg::ColumnType::IsCompanion,
-    mtg::ColumnType::CanBeCommander,
+    mtg::ColumnType::Price,
+    mtg::ColumnType::Tags,
     mtg::ColumnType::IsAlternative,
     mtg::ColumnType::IsFullArt,
     mtg::ColumnType::IsExtendedArt,
     mtg::ColumnType::IsPromo,
-    mtg::ColumnType::IsReprint
+    mtg::ColumnType::IsReprint,
+    mtg::ColumnType::IsLatestPrint,
+    mtg::ColumnType::Layout,
+    mtg::ColumnType::Border,
+    mtg::ColumnType::ImageName
 };
 
 } // namespace
@@ -88,7 +71,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		if (index.isValid())
 		{
-			if (role == Qt::DisplayRole || role == Qt::ToolTipRole)
+			if (role == Qt::DisplayRole || role == Qt::EditRole || role == Qt::ToolTipRole)
 			{
 				if (index.row() < mtg::CardData::instance().getNumRows() && index.column() < columnCount())
 				{
@@ -129,7 +112,7 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
                     }
                     if (columnType == mtg::ColumnType::SetCode && role == Qt::ToolTipRole)
                     {
-                        return mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Set);
+						return mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::SetName);
                     }
                     return mtg::CardData::instance().get(dataRowIndex, columnType);
 				}
@@ -147,6 +130,13 @@ struct PoolTableModel::Pimpl : public virtual QAbstractTableModel
 				if (section >= 0 && section < columnCount())
 				{
 					return POOLTABLE_COLUMNS[section].getDisplayName();
+				}
+			}
+			if (role == Qt::UserRole)
+			{
+				if (section >= 0 && section < columnCount())
+				{
+					return QString(POOLTABLE_COLUMNS[section]);
 				}
 			}
 		}

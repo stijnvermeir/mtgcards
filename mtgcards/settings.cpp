@@ -13,7 +13,9 @@ struct Settings::Pimpl
 	QString appDataDir_;
 	QString collectionFile_;
     QString collectionDb_;
-	QString onlineDataCacheDb_;
+	QString pricesDb_;
+	QString pricesBz2_;
+	QString pricesJson_;
 	QString tagsDb_;
 	QString filtersDir_;
 	QString decksDir_;
@@ -87,7 +89,9 @@ struct Settings::Pimpl
 		appDataDir_ = appDataDir;
 		collectionFile_ = appDataDir_ + QDir::separator() + "collection.json";
         collectionDb_ = appDataDir_ + QDir::separator() + "collection.db";
-		onlineDataCacheDb_ = appDataDir_ + QDir::separator() + "onlinedatacache.db";
+		pricesDb_ = appDataDir_ + QDir::separator() + "prices.db";
+		pricesBz2_ = appDataDir_ + QDir::separator() + "AllPrices.json.bz2";
+		pricesJson_ = appDataDir_ + QDir::separator() + "AllPrices.json";
 		tagsDb_ =  appDataDir_ + QDir::separator() + "tags.db";
 		filtersDir_ = appDataDir_ + QDir::separator() + "filters";
 		decksDir_ = appDataDir_ + QDir::separator() + "decks";
@@ -201,9 +205,19 @@ const QString& Settings::getCollectionDb() const
     return pimpl_->collectionDb_;
 }
 
-const QString& Settings::getOnlineDataCacheDb() const
+const QString& Settings::getPricesDb() const
 {
-	return pimpl_->onlineDataCacheDb_;
+	return pimpl_->pricesDb_;
+}
+
+const QString& Settings::getPricesBz2File() const
+{
+	return pimpl_->pricesBz2_;
+}
+
+const QString& Settings::getPricesJsonFile() const
+{
+	return pimpl_->pricesJson_;
 }
 
 const QString& Settings::getTagsDb() const

@@ -20,12 +20,6 @@
 #include <QClipboard>
 #include <QDebug>
 
-namespace {
-
-const QString DEFAULT_HEADER_STATE = "{\"sections\": [{\"hidden\": true,\"size\": 100,\"visualIndex\": 0},{\"hidden\": false,\"size\": 46,\"visualIndex\": 2},{\"hidden\": true,\"size\": 100,\"visualIndex\": 8},{\"hidden\": true,\"size\": 133,\"visualIndex\": 9},{\"hidden\": true,\"size\": 100,\"visualIndex\": 3},{\"hidden\": true,\"size\": 377,\"visualIndex\": 1},{\"hidden\": true,\"size\": 100,\"visualIndex\": 10},{\"hidden\": true,\"size\": 40,\"visualIndex\": 11},{\"hidden\": true,\"size\": 36,\"visualIndex\": 12},{\"hidden\": false,\"size\": 305,\"visualIndex\": 4},{\"hidden\": true,\"size\": 114,\"visualIndex\": 5},{\"hidden\": false,\"size\": 37,\"visualIndex\": 6},{\"hidden\": false,\"size\": 29,\"visualIndex\": 7},{\"hidden\": false,\"size\": 222,\"visualIndex\": 14},{\"hidden\": false,\"size\": 34,\"visualIndex\": 15},{\"hidden\": false,\"size\": 124,\"visualIndex\": 16},{\"hidden\": false,\"size\": 266,\"visualIndex\": 17},{\"hidden\": true,\"size\": 100,\"visualIndex\": 18},{\"hidden\": true,\"size\": 100,\"visualIndex\": 19},{\"hidden\": true,\"size\": 100,\"visualIndex\": 20},{\"hidden\": false,\"size\": 90,\"visualIndex\": 21},{\"hidden\": false,\"size\": 188,\"visualIndex\": 22},{\"hidden\": true,\"size\": 100,\"visualIndex\": 23},{\"hidden\": true,\"size\": 100,\"visualIndex\": 26},{\"hidden\": false,\"size\": 24,\"visualIndex\": 24},{\"hidden\": false,\"size\": 26,\"visualIndex\": 25},{\"hidden\": true,\"size\": 100,\"visualIndex\": 27},{\"hidden\": true,\"size\": 127,\"visualIndex\": 28},{\"hidden\": true,\"size\": 100,\"visualIndex\": 29},{\"hidden\": false,\"size\": 62,\"visualIndex\": 13},{\"hidden\": false,\"size\": 110,\"visualIndex\": 30},{\"hidden\": true,\"size\": 113,\"visualIndex\": 31},{\"hidden\": true,\"size\": 87,\"visualIndex\": 32},{\"hidden\": false,\"size\": 85,\"visualIndex\": 33},{\"hidden\": true,\"size\": 100,\"visualIndex\": 34}],\"sortIndicatorOrder\": 0,\"sortIndicatorSection\": 16}";
-
-}
-
 DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
     : QObject(parent)
     , ui_(ui)
@@ -116,7 +110,10 @@ void DeckWindow::updateShortcuts()
 void DeckWindow::loadSettings()
 {
 	QSettings settings;
-	headerState_ = settings.value("deckwindow/headerstate", DEFAULT_HEADER_STATE).toString();
+	if (settings.contains("deckwindow/headerstate"))
+	{
+		headerState_ = settings.value("deckwindow/headerstate").toString();
+	}
 	if (settings.contains("deckwindow/filterEnable"))
 	{
 		commonActions_.getEnableFilter()->setChecked(settings.value("deckwindow/filterEnable").toBool());
@@ -201,10 +198,7 @@ void DeckWindow::updateStatusBar()
 		int numLands = 0;
 		int numCreatures = 0;
 		int numCopies = 0;
-		double sumPriceLowest = 0.0;
-		double sumPriceLowestFoil = 0.0;
-		double sumPriceAverage = 0.0;
-		double sumPriceTrend = 0.0;
+		double sumPrice = 0.0;
 		for (int row = 0; row < model.rowCount(); ++row)
 		{
 			int quantity = getValue(row, mtg::ColumnType::Quantity).toInt();
@@ -219,30 +213,15 @@ void DeckWindow::updateStatusBar()
 			}
 			numCopies += quantity;
 
-			sumPriceLowest += quantity * getValue(row, mtg::ColumnType::PriceLowest).toDouble();
-			sumPriceLowestFoil += quantity * getValue(row, mtg::ColumnType::PriceLowestFoil).toDouble();
-			sumPriceAverage += quantity * getValue(row, mtg::ColumnType::PriceAverage).toDouble();
-			sumPriceTrend += quantity * getValue(row, mtg::ColumnType::PriceTrend).toDouble();
+			sumPrice += quantity * getValue(row, mtg::ColumnType::Price).toDouble();
 		}
 		QString message;
 		QTextStream str(&message);
 		str << "Showing " << model.rowCount() << " of " << deckWidget->deck().getNumRows() << " cards";
 		str << " (" << numCopies << " copies, " << numLands << " lands, " << numCreatures << " creatures, " << numCopies - numCreatures - numLands << " others)";
-		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceLowest))
+		if (!deckWidget->isColumnHidden(mtg::ColumnType::Price))
 		{
-			str << " [Sum lowest price: " << sumPriceLowest << "]";
-		}
-		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceLowestFoil))
-		{
-			str << " [Sum lowest price foil: " << sumPriceLowestFoil << "]";
-		}
-		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceAverage))
-		{
-			str << " [Sum average price: " << sumPriceAverage << "]";
-		}
-		if (!deckWidget->isColumnHidden(mtg::ColumnType::PriceTrend))
-		{
-			str << " [Sum price trend: " << sumPriceTrend << "]";
+			str << " [Sum price: " << sumPrice << "]";
 		}
 		ui_.deckStatusBar->setMessage(message);
 		actionToggleDeckActive_->setChecked(deckWidget->deck().isActive());

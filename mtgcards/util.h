@@ -13,6 +13,8 @@ public:
 	static void loadHeaderViewState(QHeaderView& headerView, const QString& data);
 
 	static bool downloadPoolDataFile();
+	static bool downloadPricesFile();
+	static bool decompressPricesFile();
 
     static QString getOwnedAllTooltip(const int dataRowIndex);
     static QString getUsedTooltip(const int dataRowIndex);

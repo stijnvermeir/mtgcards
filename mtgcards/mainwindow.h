@@ -35,4 +35,5 @@ private slots:
 	void optionsActionClicked();
 	void aboutActionClicked();
 	void globalFilter();
+	void updatePrices();
 };

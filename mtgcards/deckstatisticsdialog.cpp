@@ -80,7 +80,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	};
 	for (int row = 0; row < deck.getNumRows(); ++row)
 	{
-		QStringList types = deck.get(row, mtg::ColumnType::Types).toStringList();
+		QString types = deck.get(row, mtg::ColumnType::Type).toString();
 		int q = deck.get(row, mtg::ColumnType::Quantity).toInt();
 		for (const QString& type : TYPES)
 		{
