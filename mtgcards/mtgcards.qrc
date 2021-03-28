@@ -25,5 +25,7 @@
         <file>resources/icons/document24.svg</file>
         <file>resources/icons/paint-board-and-brush.svg</file>
         <file>resources/icons/import.svg</file>
+        <file>resources/icons/exchange.svg</file>
+        <file>resources/icons/export.svg</file>
     </qresource>
 </RCC>

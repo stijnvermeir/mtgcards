@@ -18,7 +18,7 @@ class DeckWidget : public QWidget
 	Q_OBJECT
 
 public:
-	explicit DeckWidget(const QString& filename, CommonActions& commonActions, QAction& actionCopyDeckStatsClipboard, QWidget* parent = 0);
+	explicit DeckWidget(const QString& filename, CommonActions& commonActions, QWidget* parent = 0);
 	~DeckWidget();
 
 	void save(const QString& filename);
@@ -45,7 +45,6 @@ private:
 	QScopedPointer<QAbstractItemDelegate> itemDelegate_;
 	bool headerStateChangedSlotDisabled_;
 	CommonActions& commonActions_;
-	QAction& actionCopyDeckStatsClipboard_;
 
 public slots:
 	void resetSearchString();

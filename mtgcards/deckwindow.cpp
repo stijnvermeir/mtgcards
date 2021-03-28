@@ -49,7 +49,7 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	actionAddDeckToCollection_ = new QAction(QIcon(":/resources/icons/document24.svg"), "Add deck to collection", this);
 	actionCreateProxies_= new QAction(QIcon(":/resources/icons/printer11.svg"), "Create proxies", this);
 	actionStats_ = new QAction(QIcon(":/resources/icons/chart59.svg"), "Stats", this);
-	actionCopyDeckStatsClipboard_ = new QAction("Copy deckstats.net format to clipboard", this);
+	actionCopyDeckStatsClipboard_ = new QAction(QIcon(":/resources/icons/export.svg"), "Copy deckstats.net format to clipboard", this);
 	actionCopyDeckStatsClipboard_->setShortcut(Settings::instance().getShortcuts()[ShortcutType::DeckstatsClipboard]);
 
 	toolBar_->setIconSize(QSize(16, 16));
@@ -58,6 +58,7 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	toolBar_->addAction(actionOpenDeck_);
 	toolBar_->addAction(actionSaveDeck_);
 	toolBar_->addAction(actionSaveDeckAs_);
+	toolBar_->addAction(actionCopyDeckStatsClipboard_);
 	toolBar_->addSeparator();
 	toolBar_->addAction(actionToggleDeckActive_);
 	toolBar_->addAction(actionStats_);
@@ -84,6 +85,7 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	ui_.menuFile->addAction(actionOpenDeck_);
 	ui_.menuFile->addAction(actionSaveDeck_);
 	ui_.menuFile->addAction(actionSaveDeckAs_);
+	ui_.menuFile->addAction(actionCopyDeckStatsClipboard_);
 
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
@@ -251,7 +253,7 @@ DeckWidget* DeckWindow::createDeckWidget(const QString& filename)
 		}
 	}
 
-	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_, *actionCopyDeckStatsClipboard_);
+	DeckWidget* deckWidget = new DeckWidget(filename, commonActions_);
 	deckWidget->setHeaderState(headerState_);
 	if (commonActions_.getEnableFilter()->isChecked())
 	{
