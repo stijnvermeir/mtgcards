@@ -28,6 +28,7 @@ SOURCES += main.cpp\
     bzip2/huffman.c \
     bzip2/randtable.c \
     carddock.cpp \
+    categories.cpp \
     collectiondock.cpp \
     commonactions.cpp \
     imagetablemodel.cpp \
@@ -78,6 +79,7 @@ HEADERS  += mainwindow.h \
     bzip2/bzlib.h \
     bzip2/bzlib_private.h \
     carddock.h \
+    categories.h \
     collectiondock.h \
     commonactions.h \
     imagetablemodel.h \

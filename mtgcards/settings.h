@@ -28,6 +28,7 @@ public:
 	const QString& getPricesBz2File() const;
 	const QString& getPricesJsonFile() const;
 	const QString& getTagsDb() const;
+	const QString& getCategoriesDb() const;
 	const QString& getFiltersDir() const;
 	const QString& getDecksDir() const;
 

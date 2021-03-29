@@ -45,6 +45,10 @@ public:
 
 	QVector<QPair<int,int>> getQuantities() const;
 
+	QStringList getCategories(const int dataRowIndex) const;
+	QStringList getCategoryCompletions(const int dataRowIndex) const;
+	void updateCategories(const int dataRowIndex, const QString& update);
+
 signals:
 	void changed();
 

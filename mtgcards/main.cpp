@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "util.h"
 #include "tags.h"
+#include "categories.h"
 
 #include <QApplication>
 #include <QWindow>
@@ -61,6 +62,8 @@ int main(int argc, char *argv[])
 	Prices::instance();
 	a.processEvents();
 	Tags::instance();
+	a.processEvents();
+	Categories::instance();
 	a.processEvents();
 	MainWindow mainWindow;
 	a.processEvents();

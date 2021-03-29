@@ -17,6 +17,7 @@ struct Settings::Pimpl
 	QString pricesBz2_;
 	QString pricesJson_;
 	QString tagsDb_;
+	QString categoriesDb_;
 	QString filtersDir_;
 	QString decksDir_;
 	QString poolDataFile_;
@@ -100,6 +101,7 @@ struct Settings::Pimpl
 		pricesBz2_ = appDataDir_ + QDir::separator() + "AllPrices.json.bz2";
 		pricesJson_ = appDataDir_ + QDir::separator() + "AllPrices.json";
 		tagsDb_ =  appDataDir_ + QDir::separator() + "tags.db";
+		categoriesDb_ =  appDataDir_ + QDir::separator() + "categories.db";
 		filtersDir_ = appDataDir_ + QDir::separator() + "filters";
 		decksDir_ = appDataDir_ + QDir::separator() + "decks";
 	}
@@ -254,6 +256,11 @@ const QString& Settings::getPricesJsonFile() const
 const QString& Settings::getTagsDb() const
 {
 	return pimpl_->tagsDb_;
+}
+
+const QString& Settings::getCategoriesDb() const
+{
+	return pimpl_->categoriesDb_;
 }
 
 const QString& Settings::getFiltersDir() const
