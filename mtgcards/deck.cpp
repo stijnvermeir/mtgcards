@@ -1,6 +1,7 @@
 #include "deck.h"
 
 #include "magiccarddata.h"
+#include "categories.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -30,6 +31,7 @@ struct Deck::Pimpl
 		{}
 	};
 	QVector<Row> data_;
+	QHash<QString, QStringList> categories_;
 	bool active_;
 	QString filename_;
 	QString id_;
@@ -37,6 +39,7 @@ struct Deck::Pimpl
 
 	Pimpl()
 		: data_()
+	    , categories_()
 		, active_(true)
 		, filename_()
 		, id_()
@@ -94,6 +97,15 @@ struct Deck::Pimpl
 					{
 						r.manaValue = card["ManaValue"].toInt();
 					}
+					if (card.contains("Categories"))
+					{
+						auto arr = card["Categories"].toArray();
+						QStringList& list = categories_[name];
+						for (const auto& i : arr)
+						{
+							list.append(i.toString());
+						}
+					}
 					data_.push_back(r);
 				}
 			}
@@ -109,14 +121,19 @@ struct Deck::Pimpl
 		for (const Row& r : data_)
 		{
 			QJsonObject cardObj;
+			auto cardName = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
 			cardObj["Set"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::SetCode).toString();
-			cardObj["Name"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::Name).toString();
+			cardObj["Name"] = cardName;
 			cardObj["ImageName"] = mtg::CardData::instance().get(r.rowIndexInData, ColumnType::ImageName).toString();
 			cardObj["Quantity"] = r.quantity.toInt();
 			cardObj["Sideboard"] = r.sideboard.toInt();
 			if (r.manaValue.isValid())
 			{
 				cardObj["ManaValue"] = r.manaValue.toInt();
+			}
+			if (categories_.contains(cardName) && !categories_[cardName].empty())
+			{
+				cardObj["Categories"] = QJsonArray::fromStringList(categories_[cardName]);
 			}
 			cards.append(cardObj);
 		}
@@ -168,6 +185,10 @@ struct Deck::Pimpl
 			if (column == ColumnType::CMC && entry.manaValue.isValid())
 			{
 				return entry.manaValue;
+			}
+			if (column == ColumnType::Categories)
+			{
+				return getCategories(entry.rowIndexInData);
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -337,6 +358,89 @@ struct Deck::Pimpl
 
 		return quantities;
 	}
+
+	QStringList getCategories(const int dataRowIndex) const
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			auto name = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+			return categories_.value(name);
+		}
+		return QStringList();
+	}
+
+	QStringList getCategoryCompletions(const int dataRowIndex) const
+	{
+		QStringList result;
+		auto categories = Categories::instance().getCategories();
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			auto name = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+			if (categories_.contains(name))
+			{
+				auto cardCategories = categories_.value(name);
+				for (const QString& category : categories)
+				{
+					if (cardCategories.contains(category))
+					{
+						result << ("- " + category);
+					}
+					else
+					{
+						result << ("+ " + category);
+					}
+				}
+				return result;
+			}
+		}
+
+		for (const QString& category : categories)
+		{
+			result << ("+ " + category);
+		}
+		return result;
+	}
+
+	void updateCategories(const int dataRowIndex, const QString& update)
+	{
+		auto row = findRow(dataRowIndex);
+		if (!row)
+		{
+			return;
+		}
+		auto cardName = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+		auto categories = Categories::instance().getCategories();
+		if (update.startsWith('+'))
+		{
+			auto catName = update.mid(1).trimmed();
+			if (categories.contains(catName))
+			{
+				if (!categories_[cardName].contains(catName))
+				{
+					categories_[cardName].append(catName);
+					hasUnsavedChanges_ = true;
+				}
+			}
+		}
+		else
+		if (update.startsWith('-'))
+		{
+			auto catName = update.mid(1).trimmed();
+			if (categories.contains(catName))
+			{
+				if (categories_.contains(cardName))
+				{
+					if (categories_[cardName].contains(catName))
+					{
+						categories_[cardName].removeAll(catName);
+						hasUnsavedChanges_ = true;
+					}
+				}
+			}
+		}
+	}
 };
 
 Deck::Deck()
@@ -471,4 +575,19 @@ void Deck::setActive(bool active)
 QVector<QPair<int, int>> Deck::getQuantities() const
 {
 	return pimpl_->getQuantities();
+}
+
+QStringList Deck::getCategories(const int dataRowIndex) const
+{
+	return pimpl_->getCategories(dataRowIndex);
+}
+
+QStringList Deck::getCategoryCompletions(const int dataRowIndex) const
+{
+	return pimpl_->getCategoryCompletions(dataRowIndex);
+}
+
+void Deck::updateCategories(const int dataRowIndex, const QString& update)
+{
+	pimpl_->updateCategories(dataRowIndex, update);
 }

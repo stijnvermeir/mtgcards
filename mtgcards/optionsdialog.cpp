@@ -3,6 +3,7 @@
 #include "magiccolumntype.h"
 #include "util.h"
 #include "tags.h"
+#include "categories.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -159,6 +160,12 @@ OptionsDialog::OptionsDialog(QWidget* parent)
 	connect(ui_.addTagBtn, SIGNAL(clicked()), this, SLOT(addTagClicked()));
 	connect(ui_.removeTagsBtn, SIGNAL(clicked()), this, SLOT(removeTagsClicked()));
 
+	// categories tab
+	ui_.categoriesList->addItems(Categories::instance().getCategories());
+	ui_.categoriesList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	connect(ui_.addCategoryBtn, SIGNAL(clicked()), this, SLOT(addCategoryClicked()));
+	connect(ui_.removeCategoriesBtn, SIGNAL(clicked()), this, SLOT(removeCategoriesClicked()));
+
 	// shortcuts tab
 	ui_.shortcutsTbl->setModel(shortcutsModel_.data());
 	ui_.shortcutsTbl->setItemDelegate(shortcutsItemDelegate_.data());
@@ -285,6 +292,27 @@ void OptionsDialog::removeTagsClicked()
 	}
 	ui_.tagsList->clear();
 	ui_.tagsList->addItems(Tags::instance().getTags());
+}
+
+void OptionsDialog::addCategoryClicked()
+{
+	QString cat = QInputDialog::getText(this, "New category", "Category:");
+	if (!cat.isNull())
+	{
+		Categories::instance().addCategory(cat);
+		ui_.categoriesList->clear();
+		ui_.categoriesList->addItems(Categories::instance().getCategories());
+	}
+}
+
+void OptionsDialog::removeCategoriesClicked()
+{
+	for (QListWidgetItem* item : ui_.categoriesList->selectedItems())
+	{
+		Categories::instance().removeCategory(item->text());
+	}
+	ui_.categoriesList->clear();
+	ui_.categoriesList->addItems(Categories::instance().getCategories());
 }
 
 void OptionsDialog::shortcutsChanged(QModelIndex, QModelIndex)

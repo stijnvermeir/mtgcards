@@ -44,6 +44,7 @@ public:
 		UsedAll,
 		Price,
 		Tags,
+		Categories,
 		Border,
 		Layout,
 		Side,

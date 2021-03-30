@@ -35,6 +35,10 @@ private slots:
 	void addTagClicked();
 	void removeTagsClicked();
 
+	// categories tab
+	void addCategoryClicked();
+	void removeCategoriesClicked();
+
 	// shortcuts tab
 	void shortcutsChanged(QModelIndex, QModelIndex);
 	void saveShortcutsClicked();

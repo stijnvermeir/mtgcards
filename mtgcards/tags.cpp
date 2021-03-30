@@ -52,9 +52,9 @@ QSqlError initDb()
 		int currentVersion = q.value(0).toInt();
 		if (currentVersion != DB_VERSION)
 		{
-			qDebug() << "Collection db version" << currentVersion;
+			qDebug() << "Tags db version" << currentVersion;
 			// for auto database model updates later
-			qFatal("Invalid collection db version");
+			qFatal("Invalid tags db version");
 		}
 	}
 

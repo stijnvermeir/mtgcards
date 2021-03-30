@@ -66,14 +66,14 @@ QWidget* MagicItemDelegate::createEditor(QWidget* parent, const QStyleOptionView
 		return sbx;
 	}
 	else
-	if (columnType == mtg::ColumnType::Tags)
+	if (columnType == mtg::ColumnType::Tags || columnType == mtg::ColumnType::Categories)
 	{
 		QLineEdit* widget = new QLineEdit(parent);
 		QCompleter* completer = new QCompleter(index.data(Qt::EditRole).toStringList(), widget);
 		completer->setCaseSensitivity(Qt::CaseInsensitive);
 		completer->setFilterMode(Qt::MatchContains);
 		widget->setCompleter(completer);
-		widget->setPlaceholderText("Type to add/remove tag ...");
+		widget->setPlaceholderText("Type to add/remove ...");
 		return widget;
 	}
 	return QStyledItemDelegate::createEditor(parent, option, index);
@@ -91,7 +91,7 @@ void MagicItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index)
 		}
 	}
 	else
-	if (columnType == mtg::ColumnType::Tags)
+	if (columnType == mtg::ColumnType::Tags || columnType == mtg::ColumnType::Categories)
 	{
 		// empty
 	}
@@ -113,7 +113,7 @@ void MagicItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 		}
 	}
 	else
-	if (columnType == mtg::ColumnType::Tags)
+	if (columnType == mtg::ColumnType::Tags || columnType == mtg::ColumnType::Categories)
 	{
 		QLineEdit* widget = static_cast<QLineEdit*>(editor);
 		if (widget && model)
