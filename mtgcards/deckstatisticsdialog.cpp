@@ -42,6 +42,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	QMap<QString, int> colorCount;
 	QMap<QString, int> rarityCount;
 	QMap<QString, int> tagsCount;
+	QMap<QString, int> categoriesCount;
 
 	auto lambda = [&](const Deck& deck, int row, int dataRow)
 	{
@@ -135,6 +136,12 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 		for (const QString& tag : tags)
 		{
 			tagsCount[tag] += q;
+		}
+
+		auto categories = deck.get(row, mtg::ColumnType::Categories).toStringList();
+		for (const QString& cat : categories)
+		{
+			categoriesCount[cat] += q;
 		}
 	}
 
@@ -311,6 +318,24 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			++r;
 		}
 		ui_.tagsTbl->resizeColumnsToContents();
+
+	}
+
+	// Categories stats
+	{
+		ui_.categoriesTbl->setRowCount(categoriesCount.size());
+		int r = 0;
+		auto cat = categoriesCount.constBegin();
+		while (cat != categoriesCount.constEnd())
+		{
+			ui_.categoriesTbl->setItem(r, 0, new QTableWidgetItem(cat.key()));
+			auto item = new QTableWidgetItem(QString::number(cat.value()));
+			item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+			ui_.categoriesTbl->setItem(r, 1, item);
+			++cat;
+			++r;
+		}
+		ui_.categoriesTbl->resizeColumnsToContents();
 
 	}
 }

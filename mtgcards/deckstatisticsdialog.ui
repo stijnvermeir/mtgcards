@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>564</width>
-    <height>340</height>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,7 +72,7 @@
           <item>
            <layout class="QVBoxLayout" name="colorsLayout">
             <property name="spacing">
-             <number>-1</number>
+             <number>6</number>
             </property>
             <property name="leftMargin">
              <number>5</number>
@@ -318,9 +318,38 @@
      </widget>
      <widget class="QWidget" name="tagsTab">
       <attribute name="title">
-       <string>Tags</string>
+       <string>Categories &amp;&amp; tags</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QTableWidget" name="categoriesTbl">
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Category</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Amount</string>
+          </property>
+          <property name="textAlignment">
+           <set>AlignCenter</set>
+          </property>
+         </column>
+        </widget>
+       </item>
        <item>
         <widget class="QTableWidget" name="tagsTbl">
          <property name="editTriggers">
