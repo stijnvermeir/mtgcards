@@ -186,6 +186,10 @@ struct Deck::Pimpl
 			{
 				return entry.manaValue;
 			}
+			if (column == ColumnType::Categories)
+			{
+				return getCategories(entry.rowIndexInData);
+			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
 		return QVariant();

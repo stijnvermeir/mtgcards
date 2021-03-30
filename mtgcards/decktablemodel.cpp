@@ -33,7 +33,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::OwnedAll,
     mtg::ColumnType::NotOwned,
     mtg::ColumnType::Price,
-    mtg::ColumnType::Tags
+    mtg::ColumnType::Tags,
+    mtg::ColumnType::Categories
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -143,6 +144,18 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
                     {
 						return deck_->get(index.row(), mtg::ColumnType::SetName);
                     }
+					if (GetColumns()[index.column()] == mtg::ColumnType::Categories)
+					{
+						int dataRowIndex = deck_->getDataRowIndex(index.row());
+						if (role == Qt::DisplayRole || role == Qt::ToolTipRole)
+						{
+							return deck_->getCategories(dataRowIndex).join('/');
+						}
+						if (role == Qt::EditRole)
+						{
+							return deck_->getCategoryCompletions(dataRowIndex);
+						}
+					}
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
 			}
@@ -185,6 +198,12 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						emit dataChanged(index, index);
 						return true;
 					}
+					if (GetColumns()[index.column()] == mtg::ColumnType::Categories)
+					{
+						deck_->updateCategories(dataRowIndex, value.toString());
+						emit dataChanged(index, index);
+						return true;
+					}
 				}
 			}
 		}
@@ -219,7 +238,8 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 		{
 			if (GetColumns()[index.column()] == mtg::ColumnType::Quantity ||
 			    GetColumns()[index.column()] == mtg::ColumnType::Sideboard ||
-			    GetColumns()[index.column()] == mtg::ColumnType::CMC)
+			    GetColumns()[index.column()] == mtg::ColumnType::CMC ||
+			    GetColumns()[index.column()] == mtg::ColumnType::Categories)
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}
