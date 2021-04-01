@@ -22,12 +22,14 @@ struct Deck::Pimpl
 		QVariant quantity;
 		QVariant sideboard;
 		QVariant manaValue;
+		bool isCommander;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
 		    , sideboard(0)
 		    , manaValue()
+		    , isCommander(false)
 		{}
 	};
 	QVector<Row> data_;
@@ -106,6 +108,10 @@ struct Deck::Pimpl
 							list.append(i.toString());
 						}
 					}
+					if (card.contains("Commander"))
+					{
+						r.isCommander = card["Commander"].toBool();
+					}
 					data_.push_back(r);
 				}
 			}
@@ -134,6 +140,10 @@ struct Deck::Pimpl
 			if (categories_.contains(cardName) && !categories_[cardName].empty())
 			{
 				cardObj["Categories"] = QJsonArray::fromStringList(categories_[cardName]);
+			}
+			if (r.isCommander)
+			{
+				cardObj["Commander"] = true;
 			}
 			cards.append(cardObj);
 		}
@@ -441,6 +451,29 @@ struct Deck::Pimpl
 			}
 		}
 	}
+
+	bool isCommander(const int dataRowIndex) const
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			return row->isCommander;
+		}
+		return false;
+	}
+
+	void setCommander(const int dataRowIndex, bool commander)
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			if (row->isCommander != commander)
+			{
+				row->isCommander = commander;
+				hasUnsavedChanges_ = true;
+			}
+		}
+	}
 };
 
 Deck::Deck()
@@ -590,4 +623,14 @@ QStringList Deck::getCategoryCompletions(const int dataRowIndex) const
 void Deck::updateCategories(const int dataRowIndex, const QString& update)
 {
 	pimpl_->updateCategories(dataRowIndex, update);
+}
+
+bool Deck::isCommander(const int dataRowIndex) const
+{
+	return pimpl_->isCommander(dataRowIndex);
+}
+
+void Deck::setCommander(const int dataRowIndex, bool commander)
+{
+	pimpl_->setCommander(dataRowIndex, commander);
 }

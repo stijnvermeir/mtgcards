@@ -49,6 +49,9 @@ public:
 	QStringList getCategoryCompletions(const int dataRowIndex) const;
 	void updateCategories(const int dataRowIndex, const QString& update);
 
+	bool isCommander(const int dataRowIndex) const;
+	void setCommander(const int dataRowIndex, bool commander);
+
 signals:
 	void changed();
 
