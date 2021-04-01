@@ -229,10 +229,25 @@ void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 	QMenu contextMenu(ui_.tableView);
 	auto indices = currentDataRowIndices();
 	int dataRowIndex = -1;
+	QAction* setCommanderAction = nullptr;
 	if (indices.size() == 1)
 	{
 		dataRowIndex = indices.at(0);
 		int rowIndex = deck().getRowIndex(dataRowIndex);
+		bool addSeperator = false;
+		if (deck().get(rowIndex, mtg::ColumnType::CanBeCommander).toBool())
+		{
+			QAction* action = new QAction(&contextMenu);
+			action->setCheckable(true);
+			if (deck().isCommander(dataRowIndex))
+			{
+				action->setChecked(true);
+			}
+			action->setText("Set as commander");
+			contextMenu.addAction(action);
+			setCommanderAction = action;
+			addSeperator = true;
+		}
 		auto name = deck().get(rowIndex, mtg::ColumnType::Name).toString();
 		auto reprints = mtg::CardData::instance().findRowsFast(name);
 		if (reprints.size() > 1 && reprints.size() < 50)
@@ -257,6 +272,10 @@ void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 				action->setChecked(dataRowIndex == i);
 				menu->addAction(action);
 			}
+			addSeperator = true;
+		}
+		if (addSeperator)
+		{
 			contextMenu.addSeparator();
 		}
 	}
@@ -264,17 +283,25 @@ void DeckWidget::rowContextMenuRequested(const QPoint& pos)
 	QAction* a = contextMenu.exec(ui_.tableView->mapToGlobal(pos));
 	if (a)
 	{
-		if (a->data().isValid())
+		if (a == setCommanderAction && a != nullptr)
 		{
-			int newDataRowIndex = a->data().toInt();
-			if (newDataRowIndex != dataRowIndex)
+			deckTableModel_.setCommander(dataRowIndex, a->isChecked());
+			emit deckEdited();
+		}
+		else
+		{
+			if (a->data().isValid())
 			{
-				int quantity = deck().getQuantity(dataRowIndex);
-				int sb = deck().getSideboard(dataRowIndex);
-				deckTableModel_.setQuantity(dataRowIndex, -1);
-				deckTableModel_.setQuantity(newDataRowIndex, quantity);
-				deckTableModel_.setSideboard(newDataRowIndex, sb);
-				emit deckEdited();
+				int newDataRowIndex = a->data().toInt();
+				if (newDataRowIndex != dataRowIndex)
+				{
+					int quantity = deck().getQuantity(dataRowIndex);
+					int sb = deck().getSideboard(dataRowIndex);
+					deckTableModel_.setQuantity(dataRowIndex, -1);
+					deckTableModel_.setQuantity(newDataRowIndex, quantity);
+					deckTableModel_.setSideboard(newDataRowIndex, sb);
+					emit deckEdited();
+				}
 			}
 		}
 	}

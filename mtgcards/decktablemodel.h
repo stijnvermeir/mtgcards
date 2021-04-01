@@ -18,6 +18,7 @@ public:
 	void setDeckActive(const bool active);
 	void setQuantity(const int dataRowIndex, const int newQuantity);
 	void setSideboard(const int dataRowIndex, const int newSideboard);
+	void setCommander(const int dataRowIndex, const bool commander);
 	const Deck& deck() const;
 
 	virtual int getDataRowIndex(const QModelIndex& proxyIndex) const;

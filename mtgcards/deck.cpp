@@ -469,6 +469,7 @@ struct Deck::Pimpl
 		{
 			if (row->isCommander != commander)
 			{
+				// TODO: Unset other rows (take into account partners)
 				row->isCommander = commander;
 				hasUnsavedChanges_ = true;
 			}
