@@ -79,7 +79,7 @@ const QVector<QString> DISPLAY_NAMES =
 	"Loyalty",
     "Commander Legal",
     "Commander",
-    "🛡",
+    "🏴",
     "Companion",
     "Qty",
     "Used",
