@@ -46,7 +46,8 @@ const QVector<mtg::ColumnType> POOLTABLE_COLUMNS =
     mtg::ColumnType::IsLatestPrint,
     mtg::ColumnType::Layout,
     mtg::ColumnType::Border,
-    mtg::ColumnType::ImageName
+    mtg::ColumnType::ImageName,
+    mtg::ColumnType::Id
 };
 
 } // namespace

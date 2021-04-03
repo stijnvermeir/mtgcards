@@ -32,6 +32,7 @@ signals:
 	void addToCollection(QVector<QPair<int,int>>);
 	void removeFromCollection(QVector<int>);
 	void fontChanged();
+	void currentDeckChanged(QString);
 
 private:
 	Ui::MainWindow& ui_;

@@ -25,8 +25,13 @@ public:
     int getUsedAllCount(const int dataRowIndex) const;
 	QVector<QSharedPointer<Deck>> getDecksUsedIn(const int dataRowIndex) const;
 
+	QSharedPointer<Deck> getCurrentDeck();
+
 signals:
 	void deckChanged();
+
+public slots:
+	void currentDeckChanged(QString);
 
 private:
 	DeckManager();

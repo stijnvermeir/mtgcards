@@ -35,7 +35,8 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::Price,
     mtg::ColumnType::Tags,
     mtg::ColumnType::Categories,
-    mtg::ColumnType::DeckCommander
+    mtg::ColumnType::DeckCommander,
+    mtg::ColumnType::Id
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
