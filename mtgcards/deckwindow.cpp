@@ -225,6 +225,7 @@ void DeckWindow::updateStatusBar()
 		{
 			str << " [Sum price: " << sumPrice << "]";
 		}
+		str << " [" << deckWidget->deck().getColorIdentity() << "]";
 		ui_.deckStatusBar->setMessage(message);
 		actionToggleDeckActive_->setChecked(deckWidget->deck().isActive());
 	}

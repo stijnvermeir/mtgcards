@@ -2,6 +2,7 @@
 
 #include "magiccarddata.h"
 #include "categories.h"
+#include "magicconvert.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -38,6 +39,7 @@ struct Deck::Pimpl
 	QString filename_;
 	QString id_;
 	bool hasUnsavedChanges_;
+	QString colorIdentity_;
 
 	Pimpl()
 		: data_()
@@ -46,6 +48,7 @@ struct Deck::Pimpl
 		, filename_()
 		, id_()
 		, hasUnsavedChanges_(false)
+	    , colorIdentity_("WUBRG")
 	{
 	}
 
@@ -115,6 +118,7 @@ struct Deck::Pimpl
 					data_.push_back(r);
 				}
 			}
+			updateColorIdentity();
 		}
 
 		filename_ = filename;
@@ -529,8 +533,52 @@ struct Deck::Pimpl
 				}
 				row->isCommander = commander;
 				hasUnsavedChanges_ = true;
+				updateColorIdentity();
 			}
 		}
+	}
+
+	void updateColorIdentity()
+	{
+		QString wubrg = "WUBRG";
+		QMap<QChar,bool> colors;
+		for (QChar c : wubrg)
+		{
+			colors[c] = false;
+		}
+		bool hasCommander = false;
+		for (Row& r : data_)
+		{
+			if (r.isCommander)
+			{
+				auto colId = mtg::toString(mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::ColorIdentity));
+				for (QChar c : wubrg)
+				{
+					colors[c] = colors[c] || colId.contains(c);
+				}
+				hasCommander = true;
+			}
+		}
+		if (hasCommander)
+		{
+			colorIdentity_.clear();
+			for (QChar c : wubrg)
+			{
+				if (colors[c])
+				{
+					colorIdentity_.append(c);
+				}
+			}
+		}
+		else
+		{
+			colorIdentity_ = wubrg;
+		}
+	}
+
+	QString getColorIdentity() const
+	{
+		return colorIdentity_;
 	}
 };
 
@@ -691,4 +739,9 @@ bool Deck::isCommander(const int dataRowIndex) const
 void Deck::setCommander(const int dataRowIndex, bool commander)
 {
 	pimpl_->setCommander(dataRowIndex, commander);
+}
+
+QString Deck::getColorIdentity() const
+{
+	return pimpl_->getColorIdentity();
 }
