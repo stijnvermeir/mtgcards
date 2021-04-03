@@ -469,7 +469,64 @@ struct Deck::Pimpl
 		{
 			if (row->isCommander != commander)
 			{
-				// TODO: Unset other rows (take into account partners)
+				if (commander)
+				{
+					bool hasPartner = false;
+					bool hasPartnerWith = false;
+					QString mustContain;
+					if (mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Text).toString().contains("Partner"))
+					{
+						hasPartner = true;
+						hasPartnerWith = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Text).toString().contains("Partner with");
+						if (hasPartnerWith)
+						{
+							mustContain = "Partner with " + mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+						}
+					}
+					bool foundPartner = false;
+					for (Row& r : data_)
+					{
+						if (r.isCommander)
+						{
+							if (hasPartnerWith)
+							{
+								bool isPartner = mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains(mustContain);
+								if (!isPartner)
+								{
+									r.isCommander = false;
+								}
+							}
+							else
+							if (hasPartner)
+							{
+								bool otherHasPartner = mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains("Partner");
+								if (otherHasPartner)
+								{
+									if (mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains("Partner with"))
+									{
+										r.isCommander = false;
+									}
+									else if (!foundPartner)
+									{
+										foundPartner = true;
+									}
+									else
+									{
+										r.isCommander = false;
+									}
+								}
+								else
+								{
+									r.isCommander = false;
+								}
+							}
+							else
+							{
+								r.isCommander = false;
+							}
+						}
+					}
+				}
 				row->isCommander = commander;
 				hasUnsavedChanges_ = true;
 			}
