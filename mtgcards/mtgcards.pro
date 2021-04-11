@@ -31,6 +31,7 @@ SOURCES += main.cpp\
     categories.cpp \
     collectiondock.cpp \
     commonactions.cpp \
+    filters/commanderfilterfunction.cpp \
     filters/currentcommanderdeckfilterfunction.cpp \
     imagetablemodel.cpp \
     imagetableview.cpp \
@@ -83,6 +84,7 @@ HEADERS  += mainwindow.h \
     categories.h \
     collectiondock.h \
     commonactions.h \
+    filters/commanderfilterfunction.h \
     filters/currentcommanderdeckfilterfunction.h \
     imagetablemodel.h \
     imagetableview.h \
