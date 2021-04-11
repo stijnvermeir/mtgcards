@@ -17,6 +17,7 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
 	mtg::ColumnType::Name,
 	mtg::ColumnType::Names,
 	mtg::ColumnType::ManaCost,
+    mtg::ColumnType::ManaSource,
 	mtg::ColumnType::CMC,
 	mtg::ColumnType::Color,
     mtg::ColumnType::ColorIdentity,

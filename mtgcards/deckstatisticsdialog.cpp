@@ -26,9 +26,9 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	ui_.setupUi(this);
 
 	const int MAX_CMC = 10;
-	const QString COLORS = "WUBRG";
+	const QString COLORS = "WUBRGC";
 	const QStringList TYPES = {"Creature", "Artifact", "Enchantment", "Instant", "Sorcery", "Land", "Planeswalker"};
-	const QStringList COLOR_NAMES = {"White", "Blue", "Black", "Red", "Green", "Multicolor", "Colorless"};
+	const QStringList COLOR_NAMES = {"White", "Blue", "Black", "Red", "Green", "Colorless", "Multicolor"};
 	const QStringList RARITIES = {"Common", "Uncommon", "Rare", "Mythic Rare"};
 	const QStringList RARITIES_CODE = {"common", "uncommon", "rare", "mythic"};
 
@@ -80,6 +80,22 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			totalCmc += cmc * q;
 		}
 	};
+
+	QMap<QChar, int> manaSource;
+	auto manaSourceLambda = [&](int row, int dataRow)
+	{
+		auto ms =  mtg::toString(mtg::CardData::instance().get(dataRow, mtg::ColumnType::ManaSource));
+		int q = deck.get(row, mtg::ColumnType::Quantity).toInt();
+		QMap<QChar, bool> isManaSource;
+		for (QChar c : COLORS)
+		{
+			if (ms.contains(c))
+			{
+				manaSource[c] += q;
+			}
+		}
+	};
+
 	for (int row = 0; row < deck.getNumRows(); ++row)
 	{
 		QString types = deck.get(row, mtg::ColumnType::Type).toString();
@@ -122,22 +138,27 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			rarityCount[RARITIES[rarityIndex]] += q;
 		}
 
-		// if not a land
-		if (!types.contains("Land"))
+		mtg::LayoutType layout(deck.get(row, mtg::ColumnType::Layout).toString());
+		if (layout.hasMultipleNames())
 		{
-			if (deck.get(row, mtg::ColumnType::Layout).toString() == "split")
+			QString set = deck.get(row, mtg::ColumnType::SetCode).toString();
+			for (const QString& name : deck.get(row, mtg::ColumnType::Names).toStringList())
 			{
-				QString set = deck.get(row, mtg::ColumnType::SetCode).toString();
-				for (const QString& name : deck.get(row, mtg::ColumnType::Names).toStringList())
+				int dataRow = mtg::CardData::instance().findRowFast(set, name);
+				if (!types.contains("Land"))
 				{
-					int dataRow = mtg::CardData::instance().findRowFast(set, name);
 					lambda(deck, row, dataRow);
 				}
+				manaSourceLambda(row, dataRow);
 			}
-			else
+		}
+		else
+		{
+			if (!types.contains("Land"))
 			{
 				lambda(deck, row, deck.getDataRowIndex(row));
 			}
+			manaSourceLambda(row, deck.getDataRowIndex(row));
 		}
 
 		auto tags = deck.get(row, mtg::ColumnType::Tags).toStringList();
@@ -228,11 +249,30 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			str << "{" << c << "}" << " x" << cost[c];
 			if (total > 0)
 			{
-				str << " (" << (1.0 * cost[c] * 100 / total) << " %)";
+				str << " (" << (1.0 * cost[c] * 100 / total) << "%)";
 			}
 			QLabel* lbl = new QLabel(ManaCost::replaceTagsWithSymbols(text, MAGIC_SYMBOL_FONT_SIZE), this);
 			ui_.manaColorsLayout->addWidget(lbl);
-			ui_.manaColorsLayout->setAlignment(lbl, Qt::AlignHCenter);
+			ui_.manaColorsLayout->setAlignment(lbl, Qt::AlignLeft);
+		}
+	}
+	// mana sources
+	{
+		int total = numCards;
+		for (const auto& c : COLORS)
+		{
+			QString text;
+			QTextStream str(&text);
+			str.setRealNumberPrecision(2);
+			str.setRealNumberNotation(QTextStream::FixedNotation);
+			str << "{" << c << "}" << " x" << manaSource[c];
+			if (total > 0)
+			{
+				str << " (" << (1.0 * manaSource[c] * 100 / total) << "%)";
+			}
+			QLabel* lbl = new QLabel(ManaCost::replaceTagsWithSymbols(text, MAGIC_SYMBOL_FONT_SIZE), this);
+			ui_.manaSourcesLayout->addWidget(lbl);
+			ui_.manaSourcesLayout->setAlignment(lbl, Qt::AlignLeft);
 		}
 	}
 

@@ -19,6 +19,7 @@
 #include <QtSql>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QRegularExpression>
 
 using namespace mtg;
 
@@ -35,6 +36,7 @@ const QVector<ColumnType> COLUMNS =
 	ColumnType::Name,
 	ColumnType::Names,
 	ColumnType::ManaCost,
+    ColumnType::ManaSource,
 	ColumnType::CMC,
 	ColumnType::Color,
 	ColumnType::Type,
@@ -501,6 +503,56 @@ struct CardData::Pimpl
 		return data_.size();
 	}
 
+	QVariant getManaSource(const QString& text) const
+	{
+		QMap<QChar, bool> isManaSource;
+		QRegularExpression regex;
+		QString wubrg = "WUBRG";
+		QString wubrgc = "WUBRGC";
+		for (QChar c : wubrgc)
+		{
+			regex.setPattern(QString("[Aa]dds? .*{%1}").arg(c));
+			if (regex.match(text).hasMatch())
+			{
+				isManaSource[c] = true;
+			}
+		}
+		regex.setPattern("[Aa]dd.*mana.*any.*color");
+		if (regex.match(text).hasMatch())
+		{
+			for (QChar c : wubrg)
+			{
+				isManaSource[c] = true;
+			}
+		}
+		regex.setPattern("[Ss]earch.*library.*for.* land.*card");
+		if (regex.match(text).hasMatch())
+		{
+			for (QChar c : wubrg)
+			{
+				isManaSource[c] = true;
+			}
+		}
+		QStringList lands = {"Plains", "Island", "Swamp", "Mountain", "Forest"};
+		for (const QString& land : lands)
+		{
+			regex.setPattern(QString("[Ss]earch.*library.*for.*%1.*card").arg(land));
+			if (regex.match(text).hasMatch())
+			{
+				 isManaSource[wubrg[lands.indexOf(land)]] = true;
+			}
+		}
+		QString manaSource;
+		for (QChar c : wubrgc)
+		{
+			if (isManaSource.contains(c))
+			{
+				manaSource += QString("{%1}").arg(c);
+			}
+		}
+		return QVariant::fromValue(ManaCost(manaSource, 0.0));
+	}
+
 	QVariant get(const int row, const ColumnType& column) const
 	{
 		if (row >= 0 && row < getNumRows())
@@ -518,6 +570,11 @@ struct CardData::Pimpl
 			if (column == ColumnType::Price)
 			{
 				return Prices::instance().getPrice(get(row, ColumnType::Uuid).toString());
+			}
+			else
+			if (column == ColumnType::ManaSource)
+			{
+				return getManaSource(get(row, ColumnType::Text).toString());
 			}
 			else
 			{

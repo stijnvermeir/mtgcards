@@ -54,3 +54,18 @@ LayoutType::operator type_t () const
 {
 	return value_;
 }
+
+bool LayoutType::hasMultipleNames() const
+{
+	static const QVector<type_t> list
+	{
+		Split,
+		Aftermath,
+		Flip,
+		Transform,
+		ModalDFC,
+		Adventure
+	};
+	return list.contains(value_);
+}
+

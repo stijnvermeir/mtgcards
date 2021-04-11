@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
+    <width>604</width>
     <height>346</height>
    </rect>
   </property>
@@ -239,7 +239,7 @@
           <widget class="QGroupBox" name="groupBox_2">
            <property name="minimumSize">
             <size>
-             <width>200</width>
+             <width>120</width>
              <height>0</height>
             </size>
            </property>
@@ -269,6 +269,52 @@
              <layout class="QVBoxLayout" name="manaColorsLayout">
               <property name="spacing">
                <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>5</number>
+              </property>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_7">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Sources</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" name="manaSourcesLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>5</number>
               </property>
              </layout>
             </item>

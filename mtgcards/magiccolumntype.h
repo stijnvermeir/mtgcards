@@ -22,6 +22,7 @@ public:
 		Name,
 		Names,
 		ManaCost,
+		ManaSource,
 		CMC,
 		Color,
 		ColorIdentity,

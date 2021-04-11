@@ -37,6 +37,8 @@ public:
 	operator QString () const;
 	operator type_t () const;
 
+	bool hasMultipleNames() const;
+
 private:
 	type_t value_;
 };
