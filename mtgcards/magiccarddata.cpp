@@ -389,7 +389,14 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::Names)] = cardNames;
 			r[columnToIndex(ColumnType::ManaCost)] = QVariant::fromValue(ManaCost(q.value("cards.manaCost").toString(), cmc));
 			r[columnToIndex(ColumnType::CMC)] = cmc;
-			r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
+			if (q.value("cards.colors").isNull())
+			{
+				r[columnToIndex(ColumnType::Color)] = QStringList();
+			}
+			else
+			{
+				r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
+			}
 			r[columnToIndex(ColumnType::Type)] = cardType;
 			r[columnToIndex(ColumnType::Rarity)] = q.value("cards.rarity").toString();
 			r[columnToIndex(ColumnType::Text)] = q.value("cards.text").toString();

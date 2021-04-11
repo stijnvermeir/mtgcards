@@ -29,7 +29,8 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 	const QString COLORS = "WUBRG";
 	const QStringList TYPES = {"Creature", "Artifact", "Enchantment", "Instant", "Sorcery", "Land", "Planeswalker"};
 	const QStringList COLOR_NAMES = {"White", "Blue", "Black", "Red", "Green", "Multicolor", "Colorless"};
-	const QStringList RARITIES = {"Common", "Uncommon", "Rare", "Mythic Rare", "Special", "Basic Land"};
+	const QStringList RARITIES = {"Common", "Uncommon", "Rare", "Mythic Rare"};
+	const QStringList RARITIES_CODE = {"common", "uncommon", "rare", "mythic"};
 
 	int maxCmcCount = 0;
 	int xCmcCount = 0;
@@ -91,28 +92,35 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			}
 		}
 
-		QStringList colors = deck.get(row, mtg::ColumnType::Color).toStringList();
-		if (colors.empty())
+		if (!types.contains("Land"))
 		{
-			colorCount["Colorless"] += q;
-		}
-		else
-		if (colors.size() > 1)
-		{
-			colorCount["Multicolor"] += q;
-		}
-		else
-		{
-			for (const QString& color : COLOR_NAMES)
+			QStringList colors = deck.get(row, mtg::ColumnType::Color).toStringList();
+			if (colors.empty())
 			{
-				if (colors.contains(color))
+				colorCount["Colorless"] += q;
+			}
+			else
+			if (colors.size() > 1)
+			{
+				colorCount["Multicolor"] += q;
+			}
+			else
+			{
+				for (QChar color : COLORS)
 				{
-					colorCount[color] += q;
+					if (colors.contains(color))
+					{
+						colorCount[COLOR_NAMES[COLORS.indexOf(color)]] += q;
+					}
 				}
 			}
 		}
 
-		rarityCount[deck.get(row, mtg::ColumnType::Rarity).toString()] += q;
+		int rarityIndex = RARITIES_CODE.indexOf(deck.get(row, mtg::ColumnType::Rarity).toString());
+		if (rarityIndex != -1)
+		{
+			rarityCount[RARITIES[rarityIndex]] += q;
+		}
 
 		// if not a land
 		if (!types.contains("Land"))
@@ -155,7 +163,7 @@ DeckStatisticsDialog::DeckStatisticsDialog(const Deck& deck, QWidget* parent)
 			QTextStream str(&text);
 			str.setRealNumberPrecision(2);
 			str.setRealNumberNotation(QTextStream::FixedNotation);
-			str << color << ": " << colorCount[color] << " (" << 100.0 * colorCount[color] / numCards << " %)";
+			str << color << ": " << colorCount[color] << " (" << 100.0 * colorCount[color] / totalCards << " %)";
 			ui_.colorsLayout->addWidget(new QLabel(text, this));
 		}
 	}
