@@ -207,6 +207,28 @@ struct Deck::Pimpl
 			{
 				return getCategories(entry.rowIndexInData);
 			}
+			if (column == ColumnType::DeckCommander)
+			{
+				if (entry.isCommander)
+				{
+					return "✔";
+				}
+				else
+				{
+					return QVariant();
+				}
+			}
+			if (column == ColumnType::DeckLegal)
+			{
+				if (isLegalForCommander(row))
+				{
+					return QVariant();
+				}
+				else
+				{
+					return "🚫";
+				}
+			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
 		return QVariant();
@@ -599,9 +621,20 @@ struct Deck::Pimpl
 		colorIdentityRegex_.setPattern(pattern);
 	}
 
-	bool matchesColorIdentity(const QString& colorId)
+	bool matchesColorIdentity(const QString& colorId) const
 	{
 		return !colorIdentityRegex_.match(colorId).hasMatch();
+	}
+
+	bool isLegalForCommander(int row) const
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			const Row& entry = data_[row];
+			auto colId = mtg::toString(mtg::CardData::instance().get(entry.rowIndexInData, mtg::ColumnType::ColorIdentity));
+			return mtg::CardData::instance().get(entry.rowIndexInData, mtg::ColumnType::LegalityCommander).toString() == "Legal" && matchesColorIdentity(colId);
+		}
+		return true;
 	}
 };
 
@@ -769,7 +802,12 @@ QString Deck::getColorIdentity() const
 	return pimpl_->getColorIdentity();
 }
 
-bool Deck::matchesColorIdentity(const QString& colorId)
+bool Deck::matchesColorIdentity(const QString& colorId) const
 {
 	return pimpl_->matchesColorIdentity(colorId);
+}
+
+bool Deck::isLegalForCommander(int row) const
+{
+	return pimpl_->isLegalForCommander(row);
 }

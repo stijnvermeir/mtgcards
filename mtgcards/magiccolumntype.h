@@ -34,6 +34,7 @@ public:
 		LegalityCommander,
 		CanBeCommander,
 		DeckCommander,
+		DeckLegal,
 		IsCompanion,
 		Quantity,
 		Used,

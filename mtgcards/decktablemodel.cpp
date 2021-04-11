@@ -36,6 +36,7 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::Tags,
     mtg::ColumnType::Categories,
     mtg::ColumnType::DeckCommander,
+    mtg::ColumnType::DeckLegal,
     mtg::ColumnType::Id
 };
 
@@ -165,18 +166,6 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 							return deck_->getCategoryCompletions(dataRowIndex);
 						}
 					}
-					if (GetColumns()[index.column()] == mtg::ColumnType::DeckCommander)
-					{
-						int dataRowIndex = deck_->getDataRowIndex(index.row());
-						if (deck_->isCommander(dataRowIndex))
-						{
-							return "✔";
-						}
-						else
-						{
-							return QVariant();
-						}
-					}
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
 			}
@@ -197,6 +186,17 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						QFont f;
 						f.setWeight(QFont::Bold);
 						return f;
+					}
+
+				}
+			}
+			if (role == Qt::ForegroundRole)
+			{
+				if (index.row() < rowCount())
+				{
+					if (!deck_->isLegalForCommander(index.row()))
+					{
+						return QColor(255, 0, 0);
 					}
 				}
 			}
