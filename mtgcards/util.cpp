@@ -179,13 +179,21 @@ bool Util::decompressPricesFile()
 
 	auto bz2File = Settings::instance().getPricesBz2File().toStdString();
 	qDebug() << bz2File.c_str();
+#ifndef Q_OS_WINDOWS
+	f = fopen(bz2File.c_str(), "rb");
+#else
 	fopen_s(&f, bz2File.c_str(), "rb");
+#endif
 	if (!f)
 	{
 		qDebug() << "Failed to open bz2 input file";
 		return false;
 	}
+#ifndef Q_OS_WINDOWS
+	fOut = fopen(Settings::instance().getPricesJsonFile().toStdString().c_str(), "wb");
+#else
 	fopen_s(&fOut, Settings::instance().getPricesJsonFile().toStdString().c_str(), "wb");
+#endif
 	if (!fOut)
 	{
 		qDebug() << "Failed to open json output file";
