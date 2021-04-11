@@ -44,7 +44,8 @@ const QVector<mtg::ColumnType> COLLECTIONTABLE_COLUMNS =
     mtg::ColumnType::IsReprint,
     mtg::ColumnType::IsLatestPrint,
     mtg::ColumnType::Layout,
-    mtg::ColumnType::Border
+    mtg::ColumnType::Border,
+    mtg::ColumnType::Id
 };
 
 const QVector<mtg::ColumnType>& GetColumns()

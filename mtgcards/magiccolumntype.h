@@ -33,6 +33,8 @@ public:
 		Loyalty,
 		LegalityCommander,
 		CanBeCommander,
+		DeckCommander,
+		DeckLegal,
 		IsCompanion,
 		Quantity,
 		Used,

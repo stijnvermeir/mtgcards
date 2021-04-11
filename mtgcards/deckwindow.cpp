@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "util.h"
 #include "deckstatisticsdialog.h"
+#include "deckmanager.h"
 
 #include <QSettings>
 #include <QFileDialog>
@@ -90,6 +91,8 @@ DeckWindow::DeckWindow(Ui::MainWindow& ui, QWidget* parent)
 	commonActions_.connectSignals(this);
 	commonActions_.addToWidget(ui_.tabWidget);
 	ui_.tabWidget->addAction(actionCopyDeckStatsClipboard_);
+
+	connect(this, SIGNAL(currentDeckChanged(QString)), &(DeckManager::instance()), SLOT(currentDeckChanged(QString)));
 }
 
 DeckWindow::~DeckWindow()
@@ -225,6 +228,7 @@ void DeckWindow::updateStatusBar()
 		{
 			str << " [Sum price: " << sumPrice << "]";
 		}
+		str << " [" << deckWidget->deck().getColorIdentity() << "]";
 		ui_.deckStatusBar->setMessage(message);
 		actionToggleDeckActive_->setChecked(deckWidget->deck().isActive());
 	}
@@ -359,10 +363,13 @@ void DeckWindow::currentTabChangedSlot(int)
 	if (deckWidget)
 	{
 		deckWidget->resetSearchString();
+		handleGlobalFilterChanged();
+		emit currentDeckChanged(deckWidget->deck().getId());
 	}
 	else
 	{
 		ui_.deckStatusBar->setMessage("");
+		emit currentDeckChanged(QString());
 	}
 }
 

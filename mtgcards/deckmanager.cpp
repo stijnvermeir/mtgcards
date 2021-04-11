@@ -10,9 +10,12 @@ struct DeckManager::Pimpl
 {
 	DeckManager* self_;
 	QVector<QSharedPointer<Deck>> decks_;
+	QSharedPointer<Deck> currentDeck_;
 
 	Pimpl(DeckManager* self)
-		: self_(self)
+	    : self_(self)
+	    , decks_()
+	    , currentDeck_()
 	{
 		QDir deckDir(Settings::instance().getDecksDir());
 		QStringList nameFilters;
@@ -130,6 +133,16 @@ struct DeckManager::Pimpl
 		}
 		return decks;
 	}
+
+	QSharedPointer<Deck> getCurrentDeck()
+	{
+		return currentDeck_;
+	}
+
+	void currentDeckChanged(const QString& id)
+	{
+		currentDeck_ = findDeck(id);
+	}
 };
 
 DeckManager& DeckManager::instance()
@@ -171,6 +184,16 @@ int DeckManager::getUsedAllCount(const int dataRowIndex) const
 QVector<QSharedPointer<Deck>> DeckManager::getDecksUsedIn(const int dataRowIndex) const
 {
 	return pimpl_->getDecksUsedIn(dataRowIndex);
+}
+
+QSharedPointer<Deck> DeckManager::getCurrentDeck()
+{
+	return pimpl_->getCurrentDeck();
+}
+
+void DeckManager::currentDeckChanged(QString id)
+{
+	pimpl_->currentDeckChanged(id);
 }
 
 DeckManager::DeckManager()

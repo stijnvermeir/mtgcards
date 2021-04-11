@@ -2,6 +2,7 @@
 
 #include "magiccarddata.h"
 #include "categories.h"
+#include "magicconvert.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -9,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QVector>
+#include <QRegularExpression>
 #include <QDebug>
 
 using namespace std;
@@ -22,12 +24,14 @@ struct Deck::Pimpl
 		QVariant quantity;
 		QVariant sideboard;
 		QVariant manaValue;
+		bool isCommander;
 
 		Row()
 			: rowIndexInData(-1)
 			, quantity(0)
 		    , sideboard(0)
 		    , manaValue()
+		    , isCommander(false)
 		{}
 	};
 	QVector<Row> data_;
@@ -36,6 +40,8 @@ struct Deck::Pimpl
 	QString filename_;
 	QString id_;
 	bool hasUnsavedChanges_;
+	QString colorIdentity_;
+	QRegularExpression colorIdentityRegex_;
 
 	Pimpl()
 		: data_()
@@ -44,6 +50,8 @@ struct Deck::Pimpl
 		, filename_()
 		, id_()
 		, hasUnsavedChanges_(false)
+	    , colorIdentity_("WUBRG")
+	    , colorIdentityRegex_()
 	{
 	}
 
@@ -106,9 +114,14 @@ struct Deck::Pimpl
 							list.append(i.toString());
 						}
 					}
+					if (card.contains("Commander"))
+					{
+						r.isCommander = card["Commander"].toBool();
+					}
 					data_.push_back(r);
 				}
 			}
+			updateColorIdentity();
 		}
 
 		filename_ = filename;
@@ -134,6 +147,10 @@ struct Deck::Pimpl
 			if (categories_.contains(cardName) && !categories_[cardName].empty())
 			{
 				cardObj["Categories"] = QJsonArray::fromStringList(categories_[cardName]);
+			}
+			if (r.isCommander)
+			{
+				cardObj["Commander"] = true;
 			}
 			cards.append(cardObj);
 		}
@@ -189,6 +206,28 @@ struct Deck::Pimpl
 			if (column == ColumnType::Categories)
 			{
 				return getCategories(entry.rowIndexInData);
+			}
+			if (column == ColumnType::DeckCommander)
+			{
+				if (entry.isCommander)
+				{
+					return "✔";
+				}
+				else
+				{
+					return QVariant();
+				}
+			}
+			if (column == ColumnType::DeckLegal)
+			{
+				if (isLegalForCommander(row))
+				{
+					return QVariant();
+				}
+				else
+				{
+					return "🚫";
+				}
 			}
 			return mtg::CardData::instance().get(entry.rowIndexInData, column);
 		}
@@ -441,6 +480,162 @@ struct Deck::Pimpl
 			}
 		}
 	}
+
+	bool isCommander(const int dataRowIndex) const
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			return row->isCommander;
+		}
+		return false;
+	}
+
+	void setCommander(const int dataRowIndex, bool commander)
+	{
+		auto row = findRow(dataRowIndex);
+		if (row)
+		{
+			if (row->isCommander != commander)
+			{
+				if (commander)
+				{
+					bool hasPartner = false;
+					bool hasPartnerWith = false;
+					QString mustContain;
+					if (mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Text).toString().contains("Partner"))
+					{
+						hasPartner = true;
+						hasPartnerWith = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Text).toString().contains("Partner with");
+						if (hasPartnerWith)
+						{
+							mustContain = "Partner with " + mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
+						}
+					}
+					bool foundPartner = false;
+					for (Row& r : data_)
+					{
+						if (r.isCommander)
+						{
+							if (hasPartnerWith)
+							{
+								bool isPartner = mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains(mustContain);
+								if (!isPartner)
+								{
+									r.isCommander = false;
+								}
+							}
+							else
+							if (hasPartner)
+							{
+								bool otherHasPartner = mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains("Partner");
+								if (otherHasPartner)
+								{
+									if (mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::Text).toString().contains("Partner with"))
+									{
+										r.isCommander = false;
+									}
+									else if (!foundPartner)
+									{
+										foundPartner = true;
+									}
+									else
+									{
+										r.isCommander = false;
+									}
+								}
+								else
+								{
+									r.isCommander = false;
+								}
+							}
+							else
+							{
+								r.isCommander = false;
+							}
+						}
+					}
+				}
+				row->isCommander = commander;
+				hasUnsavedChanges_ = true;
+				updateColorIdentity();
+			}
+		}
+	}
+
+	void updateColorIdentity()
+	{
+		QString wubrg = "WUBRG";
+		QMap<QChar,bool> colors;
+		for (QChar c : wubrg)
+		{
+			colors[c] = false;
+		}
+		bool hasCommander = false;
+		for (Row& r : data_)
+		{
+			if (r.isCommander)
+			{
+				auto colId = mtg::toString(mtg::CardData::instance().get(r.rowIndexInData, mtg::ColumnType::ColorIdentity));
+				for (QChar c : wubrg)
+				{
+					colors[c] = colors[c] || colId.contains(c);
+				}
+				hasCommander = true;
+			}
+		}
+		if (hasCommander)
+		{
+			colorIdentity_.clear();
+			for (QChar c : wubrg)
+			{
+				if (colors[c])
+				{
+					colorIdentity_.append(c);
+				}
+			}
+		}
+		else
+		{
+			colorIdentity_ = wubrg;
+		}
+		updateColorIdentityRegex();
+	}
+
+	QString getColorIdentity() const
+	{
+		return colorIdentity_;
+	}
+
+	void updateColorIdentityRegex()
+	{
+		QString pattern = "[";
+		for (QChar c : "WUBRG")
+		{
+			if (!colorIdentity_.contains(c))
+			{
+				pattern.append(c);
+			}
+		}
+		pattern.append(']');
+		colorIdentityRegex_.setPattern(pattern);
+	}
+
+	bool matchesColorIdentity(const QString& colorId) const
+	{
+		return !colorIdentityRegex_.match(colorId).hasMatch();
+	}
+
+	bool isLegalForCommander(int row) const
+	{
+		if (row >= 0 && row < getNumRows())
+		{
+			const Row& entry = data_[row];
+			auto colId = mtg::toString(mtg::CardData::instance().get(entry.rowIndexInData, mtg::ColumnType::ColorIdentity));
+			return mtg::CardData::instance().get(entry.rowIndexInData, mtg::ColumnType::LegalityCommander).toString() == "Legal" && matchesColorIdentity(colId);
+		}
+		return true;
+	}
 };
 
 Deck::Deck()
@@ -590,4 +785,29 @@ QStringList Deck::getCategoryCompletions(const int dataRowIndex) const
 void Deck::updateCategories(const int dataRowIndex, const QString& update)
 {
 	pimpl_->updateCategories(dataRowIndex, update);
+}
+
+bool Deck::isCommander(const int dataRowIndex) const
+{
+	return pimpl_->isCommander(dataRowIndex);
+}
+
+void Deck::setCommander(const int dataRowIndex, bool commander)
+{
+	pimpl_->setCommander(dataRowIndex, commander);
+}
+
+QString Deck::getColorIdentity() const
+{
+	return pimpl_->getColorIdentity();
+}
+
+bool Deck::matchesColorIdentity(const QString& colorId) const
+{
+	return pimpl_->matchesColorIdentity(colorId);
+}
+
+bool Deck::isLegalForCommander(int row) const
+{
+	return pimpl_->isLegalForCommander(row);
 }

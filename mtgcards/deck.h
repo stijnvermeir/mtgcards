@@ -49,6 +49,12 @@ public:
 	QStringList getCategoryCompletions(const int dataRowIndex) const;
 	void updateCategories(const int dataRowIndex, const QString& update);
 
+	bool isCommander(const int dataRowIndex) const;
+	void setCommander(const int dataRowIndex, bool commander);
+	QString getColorIdentity() const;
+	bool matchesColorIdentity(const QString& colorId) const;
+	bool isLegalForCommander(int row) const;
+
 signals:
 	void changed();
 

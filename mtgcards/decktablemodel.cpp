@@ -34,7 +34,10 @@ const QVector<mtg::ColumnType> DECKTABLE_COLUMNS =
     mtg::ColumnType::NotOwned,
     mtg::ColumnType::Price,
     mtg::ColumnType::Tags,
-    mtg::ColumnType::Categories
+    mtg::ColumnType::Categories,
+    mtg::ColumnType::DeckCommander,
+    mtg::ColumnType::DeckLegal,
+    mtg::ColumnType::Id
 };
 
 const QVector<mtg::ColumnType>& GetColumns()
@@ -91,6 +94,13 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 	{
 		beginResetModel();
 		deck_->setSideboard(dataRowIndex, newSideboard);
+		endResetModel();
+	}
+
+	void setCommander(const int dataRowIndex, const bool commander)
+	{
+		beginResetModel();
+		deck_->setCommander(dataRowIndex, commander);
 		endResetModel();
 	}
 
@@ -159,6 +169,37 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 					return deck_->get(index.row(), GetColumns()[index.column()]);
 				}
 			}
+			if (role == Qt::TextAlignmentRole)
+			{
+				if (GetColumns()[index.column()] == mtg::ColumnType::DeckCommander)
+				{
+					return Qt::AlignCenter;
+				}
+			}
+			if (role == Qt::FontRole)
+			{
+				if (index.row() < rowCount())
+				{
+					int dataRowIndex = deck_->getDataRowIndex(index.row());
+					if (deck_->isCommander(dataRowIndex))
+					{
+						QFont f;
+						f.setWeight(QFont::Bold);
+						return f;
+					}
+
+				}
+			}
+			if (role == Qt::ForegroundRole)
+			{
+				if (index.row() < rowCount())
+				{
+					if (!deck_->isLegalForCommander(index.row()))
+					{
+						return QColor(255, 0, 0);
+					}
+				}
+			}
 		}
 		return QVariant();
 	}
@@ -204,6 +245,12 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 						emit dataChanged(index, index);
 						return true;
 					}
+					if (GetColumns()[index.column()] == mtg::ColumnType::DeckCommander)
+					{
+						deck_->setCommander(dataRowIndex, value.toBool());
+						emit dataChanged(index, index);
+						return true;
+					}
 				}
 			}
 		}
@@ -243,6 +290,16 @@ struct DeckTableModel::Pimpl : public virtual QAbstractTableModel
 			{
 				return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 			}
+			if (GetColumns()[index.column()] == mtg::ColumnType::DeckCommander)
+			{
+				if (index.row() < rowCount())
+				{
+					if (deck_->get(index.row(), mtg::ColumnType::CanBeCommander).toBool())
+					{
+						return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
+					}
+				}
+			}
 		}
 		return QAbstractTableModel::flags(index);
 	}
@@ -277,6 +334,11 @@ void DeckTableModel::setQuantity(const int dataRowIndex, const int newQuantity)
 void DeckTableModel::setSideboard(const int dataRowIndex, const int newSideboard)
 {
 	pimpl_->setSideboard(dataRowIndex, newSideboard);
+}
+
+void DeckTableModel::setCommander(const int dataRowIndex, const bool commander)
+{
+	pimpl_->setCommander(dataRowIndex, commander);
 }
 
 const Deck& DeckTableModel::deck() const
