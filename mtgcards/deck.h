@@ -52,6 +52,7 @@ public:
 	bool isCommander(const int dataRowIndex) const;
 	void setCommander(const int dataRowIndex, bool commander);
 	QString getColorIdentity() const;
+	bool matchesColorIdentity(const QString& colorId);
 
 signals:
 	void changed();

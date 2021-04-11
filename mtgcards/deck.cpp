@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QVector>
+#include <QRegularExpression>
 #include <QDebug>
 
 using namespace std;
@@ -40,6 +41,7 @@ struct Deck::Pimpl
 	QString id_;
 	bool hasUnsavedChanges_;
 	QString colorIdentity_;
+	QRegularExpression colorIdentityRegex_;
 
 	Pimpl()
 		: data_()
@@ -49,6 +51,7 @@ struct Deck::Pimpl
 		, id_()
 		, hasUnsavedChanges_(false)
 	    , colorIdentity_("WUBRG")
+	    , colorIdentityRegex_()
 	{
 	}
 
@@ -574,11 +577,31 @@ struct Deck::Pimpl
 		{
 			colorIdentity_ = wubrg;
 		}
+		updateColorIdentityRegex();
 	}
 
 	QString getColorIdentity() const
 	{
 		return colorIdentity_;
+	}
+
+	void updateColorIdentityRegex()
+	{
+		QString pattern = "[";
+		for (QChar c : "WUBRG")
+		{
+			if (!colorIdentity_.contains(c))
+			{
+				pattern.append(c);
+			}
+		}
+		pattern.append(']');
+		colorIdentityRegex_.setPattern(pattern);
+	}
+
+	bool matchesColorIdentity(const QString& colorId)
+	{
+		return !colorIdentityRegex_.match(colorId).hasMatch();
 	}
 };
 
@@ -744,4 +767,9 @@ void Deck::setCommander(const int dataRowIndex, bool commander)
 QString Deck::getColorIdentity() const
 {
 	return pimpl_->getColorIdentity();
+}
+
+bool Deck::matchesColorIdentity(const QString& colorId)
+{
+	return pimpl_->matchesColorIdentity(colorId);
 }

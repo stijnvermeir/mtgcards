@@ -96,10 +96,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// open used decks
 	connect(collectionDock_, SIGNAL(requestOpenDeck(QString)), deckWindow_, SLOT(handleOpenDeckRequest(QString)));
-
-	// deck changes
-	connect(deckWindow_, SIGNAL(currentDeckChanged(QString)), poolDock_, SLOT(handleGlobalFilterChanged()));
-	connect(deckWindow_, SIGNAL(currentDeckChanged(QString)), collectionDock_, SLOT(handleGlobalFilterChanged()));
 }
 
 MainWindow::~MainWindow()

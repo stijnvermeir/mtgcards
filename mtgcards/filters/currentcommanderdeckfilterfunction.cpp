@@ -3,9 +3,6 @@
 #include "magicconvert.h"
 #include "magiccarddata.h"
 
-#include <QRegularExpression>
-#include <QDebug>
-
 using namespace std;
 
 namespace {
@@ -34,24 +31,8 @@ bool CurrentCommanderDeckFilterFunction::apply(const QVariant& data) const
 		auto deck = DeckManager::instance().getCurrentDeck();
 		if (deck)
 		{
-			auto deckColId = deck->getColorIdentity();
-			if (deckColId == "WUBRG")
-			{
-				return true;
-			}
-			QString pattern = "[";
-			for (QChar c : "WUBRG")
-			{
-				if (!deckColId.contains(c))
-				{
-					pattern.append(c);
-				}
-			}
-			pattern.append(']');
-			QRegularExpression regex;
-			regex.setPattern(pattern);
 			auto colId = mtg::toString(mtg::CardData::instance().get(data.toInt(), mtg::ColumnType::ColorIdentity));
-			return mtg::CardData::instance().get(data.toInt(), mtg::ColumnType::LegalityCommander).toBool() && !regex.match(colId).hasMatch();
+			return mtg::CardData::instance().get(data.toInt(), mtg::ColumnType::LegalityCommander).toBool() && deck->matchesColorIdentity(colId);
 		}
 	}
 	return true;
