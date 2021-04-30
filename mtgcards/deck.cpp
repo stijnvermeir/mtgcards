@@ -36,6 +36,7 @@ struct Deck::Pimpl
 	};
 	QVector<Row> data_;
 	QHash<QString, QStringList> categories_;
+	QStringList deckCategories_;
 	bool active_;
 	QString filename_;
 	QString id_;
@@ -46,6 +47,7 @@ struct Deck::Pimpl
 	Pimpl()
 		: data_()
 	    , categories_()
+	    , deckCategories_()
 		, active_(true)
 		, filename_()
 		, id_()
@@ -53,6 +55,7 @@ struct Deck::Pimpl
 	    , colorIdentity_("WUBRG")
 	    , colorIdentityRegex_()
 	{
+		updateColorIdentityRegex();
 	}
 
 	void reload()
@@ -75,6 +78,7 @@ struct Deck::Pimpl
 			active_ = obj["active"].toBool();
 			QJsonArray cards = obj["cards"].toArray();
 			data_.reserve(cards.size());
+			auto globalCategories = Categories::instance().getCategories();
 			for (const auto c : cards)
 			{
 				QJsonObject card = c.toObject();
@@ -111,7 +115,15 @@ struct Deck::Pimpl
 						QStringList& list = categories_[name];
 						for (const auto& i : arr)
 						{
-							list.append(i.toString());
+							auto cat = i.toString();
+							list.append(cat);
+							if (!globalCategories.contains(cat))
+							{
+								if (!deckCategories_.contains(cat))
+								{
+									deckCategories_.push_back(cat);
+								}
+							}
 						}
 					}
 					if (card.contains("Commander"))
@@ -122,6 +134,7 @@ struct Deck::Pimpl
 				}
 			}
 			updateColorIdentity();
+			deckCategories_.sort();
 		}
 
 		filename_ = filename;
@@ -412,7 +425,9 @@ struct Deck::Pimpl
 	QStringList getCategoryCompletions(const int dataRowIndex) const
 	{
 		QStringList result;
-		auto categories = Categories::instance().getCategories();
+		auto allCategories = Categories::instance().getCategories();
+		allCategories.append(deckCategories_);
+		allCategories.sort();
 		auto row = findRow(dataRowIndex);
 		if (row)
 		{
@@ -420,22 +435,22 @@ struct Deck::Pimpl
 			if (categories_.contains(name))
 			{
 				auto cardCategories = categories_.value(name);
-				for (const QString& category : categories)
+				for (const QString& cat : allCategories)
 				{
-					if (cardCategories.contains(category))
+					if (cardCategories.contains(cat))
 					{
-						result << ("- " + category);
+						result << ("- " + cat);
 					}
 					else
 					{
-						result << ("+ " + category);
+						result << ("+ " + cat);
 					}
 				}
 				return result;
 			}
 		}
 
-		for (const QString& category : categories)
+		for (const QString& category : allCategories)
 		{
 			result << ("+ " + category);
 		}
@@ -450,11 +465,11 @@ struct Deck::Pimpl
 			return;
 		}
 		auto cardName = mtg::CardData::instance().get(dataRowIndex, mtg::ColumnType::Name).toString();
-		auto categories = Categories::instance().getCategories();
+		auto globalCategories = Categories::instance().getCategories();
 		if (update.startsWith('+'))
 		{
 			auto catName = update.mid(1).trimmed();
-			if (categories.contains(catName))
+			if (globalCategories.contains(catName) || deckCategories_.contains(catName))
 			{
 				if (!categories_[cardName].contains(catName))
 				{
@@ -462,12 +477,19 @@ struct Deck::Pimpl
 					hasUnsavedChanges_ = true;
 				}
 			}
+			else
+			{
+				deckCategories_.append(catName);
+				deckCategories_.sort();
+				categories_[cardName].append(catName);
+				hasUnsavedChanges_ = true;
+			}
 		}
 		else
 		if (update.startsWith('-'))
 		{
 			auto catName = update.mid(1).trimmed();
-			if (categories.contains(catName))
+			if (globalCategories.contains(catName) || deckCategories_.contains(catName))
 			{
 				if (categories_.contains(cardName))
 				{
