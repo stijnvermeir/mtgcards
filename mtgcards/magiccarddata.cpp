@@ -232,7 +232,7 @@ struct CardData::Pimpl
 
 		QHash<QString, QVector<mtg::Ruling>> tempRulings;
 		QSqlQuery queryRulings(db);
-		if (!queryRulings.exec("SELECT uuid, date, text FROM rulings")) return queryRulings.lastError();
+		if (!queryRulings.exec("SELECT uuid, date, text FROM cardRulings")) return queryRulings.lastError();
 		tempRulings.reserve(queryRulings.size());
 		while (queryRulings.next())
 		{
@@ -243,16 +243,15 @@ struct CardData::Pimpl
 			tempRulings[uuid].push_back(ruling);
 		}
 
-		QHash<QString, QMap<QString, QString>> tempLegalities;
+		QHash<QString, QString> tempCommanderLegality;
 		QSqlQuery queryLegalities(db);
-		if (!queryLegalities.exec("SELECT uuid, format, status FROM legalities")) return queryLegalities.lastError();
-		tempLegalities.reserve(queryLegalities.size());
+		if (!queryLegalities.exec("SELECT uuid, commander FROM cardLegalities")) return queryLegalities.lastError();
+		tempCommanderLegality.reserve(queryLegalities.size());
 		while (queryLegalities.next())
 		{
 			QString uuid = queryLegalities.value("uuid").toString();
-			QString format = queryLegalities.value("format").toString();
-			QString status = queryLegalities.value("status").toString();
-			tempLegalities[uuid].insert(format, status);
+			QString status = queryLegalities.value("commander").toString();
+			tempCommanderLegality[uuid] = status;
 		}
 
 		QSqlQuery q(db);
@@ -272,7 +271,7 @@ struct CardData::Pimpl
 		qs += "c.keywords, ";
 		qs += "c.leadershipSkills, ";
 		qs += "c.frameEffects, ";
-		qs += "c.convertedManaCost, ";
+		qs += "c.manaValue, ";
 		qs += "c.borderColor, ";
 		qs += "c.name, ";
 		qs += "c.faceName, ";
@@ -290,12 +289,11 @@ struct CardData::Pimpl
 		qs += "c.otherFaceIds, ";
 		qs += "c.side, ";
 		qs += "c.variations, ";
-		qs += "c.scryfallId ";
+		qs += "ci.scryfallId ";
 		qs += "FROM ";
 		qs += "cards c ";
-		qs += "JOIN ";
-		qs += "sets s ";
-		qs += "ON c.setCode = s.code ";
+		qs += "JOIN sets s ON c.setCode = s.code ";
+		qs += "JOIN cardIdentifiers ci ON c.uuid = ci.uuid ";
 		qs += "ORDER BY ";
 		qs += "s.code, c.name ";
 		if (!q.exec(qs)) return q.lastError();
@@ -377,7 +375,7 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::SetType)] = setType;
 
 			// card
-			double cmc = q.value("cards.convertedManaCost").toDouble();
+			double cmc = q.value("cards.manaValue").toDouble();
 			r[columnToIndex(ColumnType::Border)] = border;
 			QString cardName = q.value("cards.name").toString();
 			QStringList cardNames;
@@ -452,7 +450,7 @@ struct CardData::Pimpl
 			}
 			r[columnToIndex(ColumnType::ImageName)] = imageName;
 
-			r[columnToIndex(ColumnType::ScryfallId)] = q.value("cards.scryfallId").toString();
+			r[columnToIndex(ColumnType::ScryfallId)] = q.value("cardIdentifiers.scryfallId").toString();
 
 			r[columnToIndex(ColumnType::IsLatestPrint)] = false;
 			if (includeInLatestPrintCheck)
@@ -479,15 +477,8 @@ struct CardData::Pimpl
 			// rulings
 			rulings_.push_back(tempRulings[uuid]);
 
-			// Legalities
-			const auto& legalities = tempLegalities[uuid];
-			if (!legalities.empty())
-			{
-				if (legalities.contains("commander"))
-				{
-					r[columnToIndex(ColumnType::LegalityCommander)] = legalities["commander"];
-				}
-			}
+			// Legality
+			r[columnToIndex(ColumnType::LegalityCommander)] = tempCommanderLegality[uuid];
 
 			quickLookUpTable_[setCode + cardName][imageName] = data_.size();
 			quickLookUpTableByNameOnly_[cardName.toLower()].push_back(data_.size());
