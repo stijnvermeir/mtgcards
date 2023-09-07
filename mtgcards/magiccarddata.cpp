@@ -395,7 +395,7 @@ struct CardData::Pimpl
 			}
 			else
 			{
-				r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(",");
+				r[columnToIndex(ColumnType::Color)] = q.value("cards.colors").toString().split(", ");
 			}
 			r[columnToIndex(ColumnType::Type)] = cardType;
 			r[columnToIndex(ColumnType::Rarity)] = q.value("cards.rarity").toString();
@@ -403,7 +403,7 @@ struct CardData::Pimpl
 			r[columnToIndex(ColumnType::Power)] = q.value("cards.power").toString();
 			r[columnToIndex(ColumnType::Toughness)] = q.value("cards.toughness").toString();
 			r[columnToIndex(ColumnType::Loyalty)] = q.value("cards.loyalty").toString();
-			auto colorIdentities = q.value("cards.colorIdentity").toString().split(",");
+			auto colorIdentities = q.value("cards.colorIdentity").toString().split(", ");
 			QString colorIdentityStr;
 			for (const auto& c : QString("WUBRG"))
 			{
@@ -435,14 +435,14 @@ struct CardData::Pimpl
 			QString uuid = q.value("cards.uuid").toString();
 			r[columnToIndex(ColumnType::Uuid)] = uuid;
 
-			r[columnToIndex(ColumnType::OtherFaceIds)] = q.value("cards.otherFaceIds").toString().split(",");
+			r[columnToIndex(ColumnType::OtherFaceIds)] = q.value("cards.otherFaceIds").toString().split(", ");
 			r[columnToIndex(ColumnType::Side)] = q.value("cards.side").toString();
 
 			// Generate image name
 			auto imageName = removeAccents(cardName.toLower());
 			if (!q.value("cards.variations").isNull())
 			{
-				QStringList variations = q.value("cards.variations").toString().split(",");
+				QStringList variations = q.value("cards.variations").toString().split(", ");
 				variations.push_back(uuid);
 				variations.sort();
 				auto index = variations.indexOf(uuid);
