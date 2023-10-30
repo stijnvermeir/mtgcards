@@ -17,13 +17,6 @@ Main features:
 
 And it's free and always will be!
 
-![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot1.png)
-![screenshot](http://mtgcards.stijn-v.be/screens/win/screenshot1.png)
-![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot2.png)
-![screenshot](http://mtgcards.stijn-v.be/screens/macos/screenshot3.png)
-![screenshot](http://mtgcards.stijn-v.be/screens/win/screenshot2.png)
-
-
 Application Files and Folder
 ----------------------------
 
