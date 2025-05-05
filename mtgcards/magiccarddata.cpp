@@ -122,7 +122,7 @@ bool downloadPicture(const QString& scryfallId, const QString& filename, bool hq
 	 auto url = QString("https://api.scryfall.com/cards/%1?format=image&version=%2&face=%3").arg(scryfallId).arg(hq ? QString("large") : QString("border_crop")).arg(backFace ? QString("back") : QString("front"));
 	 qDebug() << url;
 	 request.setUrl(url);
-	 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	 QScopedPointer<QNetworkReply> reply(m.get(request));
 	 QEventLoop loop;
 	 QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -147,7 +147,7 @@ double downloadPrice(const QString& scryfallId)
 	auto url = QString("https://api.scryfall.com/cards/%1").arg(scryfallId);
 	qDebug() << url;
 	request.setUrl(url);
-	request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	QScopedPointer<QNetworkReply> reply(m.get(request));
 	QEventLoop loop;
 	QObject::connect(reply.data(), &QNetworkReply::finished, &loop, &QEventLoop::quit);

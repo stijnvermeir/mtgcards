@@ -207,7 +207,7 @@ struct Collection::Pimpl
 
 		if (it != data_.end())
 		{
-			return it;
+            return &(*it);
 		}
 		return nullptr;
 	}
@@ -219,7 +219,7 @@ struct Collection::Pimpl
 
 		if (it != data_.end())
 		{
-			return it;
+            return &(*it);
 		}
 		return nullptr;
 	}
@@ -229,7 +229,7 @@ struct Collection::Pimpl
 		auto row = findRow(dataRowIndex);
 		if (row)
 		{
-			return row - data_.begin();
+            return row - &(*data_.begin());
 		}
 		return -1;
 	}
@@ -282,7 +282,7 @@ struct Collection::Pimpl
 				q.exec();
 				if (!q.lastError().isValid())
 				{
-					data_.erase(row);
+                    data_.erase(QVector<Row>::const_iterator(row));
 				}
 			}
 		}

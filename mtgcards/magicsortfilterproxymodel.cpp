@@ -82,7 +82,7 @@ QVariant MagicSortFilterProxyModel::data(const QModelIndex& index, int role) con
 			return mtg::CardData::instance().getCardTagCompletions(getDataRowIndex(index));
 		}
 	}
-	if (d.type() == QVariant::StringList && (role == Qt::DisplayRole || role == Qt::ToolTipRole))
+    if (d.typeId() == QMetaType::QStringList && (role == Qt::DisplayRole || role == Qt::ToolTipRole))
 	{
 		return d.toStringList().join("/");
 	}

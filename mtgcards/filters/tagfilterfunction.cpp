@@ -26,7 +26,7 @@ const QString& TagFilterFunction::getId() const
 
 bool TagFilterFunction::apply(const QVariant& data) const
 {
-	if (data.type() == QVariant::Int)
+    if (data.typeId() == QMetaType::Int)
 	{
 		return mtg::CardData::instance().get(data.toInt(), mtg::ColumnType::Tags).toStringList().contains(tag_);
 	}

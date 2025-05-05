@@ -15,7 +15,6 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QDesktopWidget>
 #include <QProgressDialog>
 #include <QXmlStreamReader>
 #include <QDesktopServices>
@@ -29,7 +28,8 @@ namespace {
 
 void moveToCenterOfScreen(QDialog* dialog)
 {
-	const QRect screen = QGuiApplication::screens().first()->availableGeometry();
+    auto screens = QGuiApplication::screens();
+    const QRect screen = screens.first()->availableGeometry();
 	dialog->move(screen.center() - dialog->rect().center());
 }
 

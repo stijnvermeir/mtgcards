@@ -29,7 +29,7 @@ const QString& CommanderFilterFunction::getId() const
 
 bool CommanderFilterFunction::apply(const QVariant& data) const
 {
-	if (data.type() == QVariant::Int)
+    if (data.typeId() == QMetaType::Int)
 	{
 		if (!mtg::CardData::instance().get(data.toInt(), mtg::ColumnType::CanBeCommander).toBool())
 		{

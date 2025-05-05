@@ -28,7 +28,7 @@ const QString& DeckFilterFunction::getId() const
 
 bool DeckFilterFunction::apply(const QVariant& data) const
 {
-	if (data.type() == QVariant::Int && deck_)
+    if (data.typeId() == QMetaType::Int && deck_)
 	{
 		return deck_.toStrongRef().data()->getRowIndex(data.toInt()) != -1;
 	}

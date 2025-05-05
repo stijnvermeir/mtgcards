@@ -256,16 +256,16 @@ struct Deck::Pimpl
 		return -1;
 	}
 
-	const Row* findRow(const int dataRowIndex) const
+    const Row* findRow(const int dataRowIndex) const
 	{
 		auto it = find_if(data_.begin(), data_.end(), [&dataRowIndex](const Row& row)
 			{ return row.rowIndexInData == dataRowIndex; });
 
 		if (it != data_.end())
 		{
-			return it;
+            return &(*it);
 		}
-		return nullptr;
+        return nullptr;
 	}
 
 	Row* findRow(const int dataRowIndex)
@@ -275,9 +275,9 @@ struct Deck::Pimpl
 
 		if (it != data_.end())
 		{
-			return it;
+            return &(*it);
 		}
-		return nullptr;
+        return nullptr;
 	}
 
 	int getRowIndex(const int dataRowIndex) const
@@ -285,7 +285,7 @@ struct Deck::Pimpl
 		auto row = findRow(dataRowIndex);
 		if (row)
 		{
-			return row - data_.begin();
+            return row - &(*data_.begin());
 		}
 		return -1;
 	}
@@ -311,7 +311,7 @@ struct Deck::Pimpl
 			}
 			else
 			{
-				data_.erase(row);
+                data_.erase(QVector<Row>::const_iterator(row));
 			}
 		}
 		else

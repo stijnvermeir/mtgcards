@@ -26,7 +26,7 @@ const QString& CurrentCommanderDeckFilterFunction::getId() const
 
 bool CurrentCommanderDeckFilterFunction::apply(const QVariant& data) const
 {
-	if (data.type() == QVariant::Int)
+    if (data.typeId() == QMetaType::Int)
 	{
 		auto deck = DeckManager::instance().getCurrentDeck();
 		if (deck)

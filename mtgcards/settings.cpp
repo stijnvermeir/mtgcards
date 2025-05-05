@@ -34,7 +34,7 @@ struct Settings::Pimpl
 	Pimpl()
 	{
 		QSettings settings;
-		setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::DataLocation)).toString());
+        setAppDataDir(settings.value("options/misc/appdatadir", QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)).toString());
 		poolDataFile_ = settings.value("options/datasources/allprintingssqlite", appDataDir_ + QDir::separator() + "AllPrintings.sqlite").toString();
 		cardImageDir_ = settings.value("options/datasources/cardpicturedir", appDataDir_ + QDir::separator() + "cardart").toString();
 		ultraHighQualityArt_ = settings.value("options/misc/ultraHighQualityArtEnabled", false).toBool();
